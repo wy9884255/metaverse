@@ -1,0 +1,69 @@
+{
+  "id": "ep02_proxima_sunset",
+  "title": "第02期 · 飞往4.2光年外的比邻星b看日落",
+  "bgmPreset": "space_sleep",
+  "totalDuration": 59.034,
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "segments": [
+    {
+      "index": 0,
+      "scene": "earth_pale_blue",
+      "tag": "🌍 告别蔚蓝家园 · 距离太阳 1.00 AU",
+      "text": "如果今晚逃离地球，去往离人类最近的系外行星，一路上你会看到什么？",
+      "t0": 0.45,
+      "voiceEnd": 7.89,
+      "t1": 8.49,
+      "duration": 7.44
+    },
+    {
+      "index": 1,
+      "scene": "warp_to_centauri",
+      "tag": "🚀 星际跃迁 · 航程 4.2465 光年",
+      "text": "哪怕以光速飞行，这趟旅程也要四年零三个月。前方亮起的双星，就是半人马座南门二。",
+      "t0": 8.49,
+      "voiceEnd": 18.354,
+      "t1": 18.954,
+      "duration": 9.864
+    },
+    {
+      "index": 2,
+      "scene": "proxima_flare",
+      "tag": "🔥 比邻星 Proxima · 表面温度 2,992 K",
+      "text": "而在双星外围，这颗暗红色的红矮星就是比邻星。它表面翻涌着剧烈的磁耀斑。",
+      "t0": 18.954,
+      "voiceEnd": 28.002,
+      "t1": 28.602,
+      "duration": 9.048
+    },
+    {
+      "index": 3,
+      "scene": "proximab_arrival",
+      "tag": "🪐 抵达比邻星 b · 0.048 AU 宜居带",
+      "text": "轻轻掠过七百万公里外的比邻星 b，它比地球略大一点，刚好位于液态水宜居带。",
+      "t0": 28.602,
+      "voiceEnd": 37.122,
+      "t1": 37.722,
+      "duration": 8.52
+    },
+    {
+      "index": 4,
+      "scene": "proximab_twilight",
+      "tag": "🌅 潮汐锁定晨昏圈 · 永不落幕的绯红黄昏",
+      "text": "因为它被潮汐锁定，一面永远白昼，一面永远黑夜。唯有这道晨昏线，留着永恒的日落与极光。",
+      "t0": 37.722,
+      "voiceEnd": 48.426,
+      "t1": 49.026,
+      "duration": 10.704
+    },
+    {
+      "index": 5,
+      "scene": "return_galaxy",
+      "tag": "✨ 晚安宇宙 · 评论区点名下一颗星球",
+      "text": "宇宙很大，愿今晚的星光陪你入眠。关注我，下期继续带你穿越深空。",
+      "t0": 49.026,
+      "voiceEnd": 57.234,
+      "t1": 59.034,
+      "duration": 8.208
+    }
+  ]
+}

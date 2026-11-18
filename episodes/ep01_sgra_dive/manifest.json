@@ -1,0 +1,69 @@
+{
+  "id": "ep01_sgra_dive",
+  "title": "第01期 · 第一视角坠向银心黑洞人马座A*",
+  "bgmPreset": "interstellar_slow",
+  "totalDuration": 60.92,
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "segments": [
+    {
+      "index": 0,
+      "scene": "earth_depart",
+      "tag": "📍 起点：地球夜空 · 距银心 26,673 光年",
+      "text": "请调暗屏幕，深呼吸。现在，我们脱离地球引力，以第一视角向银河系最深处出发。",
+      "t0": 0.45,
+      "voiceEnd": 10.29,
+      "t1": 10.84,
+      "duration": 9.84
+    },
+    {
+      "index": 1,
+      "scene": "galaxy_overview",
+      "tag": "🌌 银河系全景 · 直径 105,700 光年",
+      "text": "当你飞出银盘回望，两千亿颗恒星汇聚成四条旋臂，地球连一粒微尘都算不上。",
+      "t0": 10.84,
+      "voiceEnd": 19.312,
+      "t1": 19.862,
+      "duration": 8.472
+    },
+    {
+      "index": 2,
+      "scene": "dust_rift_warp",
+      "tag": "⚡ 超光速跃迁 · 穿越星际暗尘埃裂谷",
+      "text": "穿过遮蔽星光的暗分子云大裂谷，我们正在跨越两万六千光年的漫长孤独。",
+      "t0": 19.862,
+      "voiceEnd": 27.878,
+      "t1": 28.428,
+      "duration": 8.016
+    },
+    {
+      "index": 3,
+      "scene": "s2_star_orbit",
+      "tag": "💫 银心 S 星团 · 恒星 S2 极限引力弹弓",
+      "text": "看前方那颗蓝白色恒星 S2，它正被一股看不见的恐怖引力，加速到每秒七千六百公里。",
+      "t0": 28.428,
+      "voiceEnd": 37.956,
+      "t1": 38.506,
+      "duration": 9.528
+    },
+    {
+      "index": 4,
+      "scene": "sgra_horizon",
+      "tag": "🕳️ 终点：人马座 A* · 430 万倍太阳质量",
+      "text": "它就是银河系的心脏，人马座 A 星超大质量黑洞。史瓦西半径一千两百六十九万公里。",
+      "t0": 38.506,
+      "voiceEnd": 48.466,
+      "t1": 49.016,
+      "duration": 9.96
+    },
+    {
+      "index": 5,
+      "scene": "sgra_photon_ring",
+      "tag": "⏳ 广义相对论视界 · 光子环与引力透镜",
+      "text": "在这里，连光都被弯曲成璀璨的光环，时间也变得无比缓慢。下一站，你想去哪颗星？",
+      "t0": 49.016,
+      "voiceEnd": 59.12,
+      "t1": 60.92,
+      "duration": 10.104
+    }
+  ]
+}
