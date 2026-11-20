@@ -1315,7 +1315,11 @@
     // Indices 10..12: Saturn's Iconic Ring-Shepherd & Inner/Outer Moons (Pan in Encke Gap, Death-Star Mimas, Yin-Yang Iapetus!)
     { id: 'pan',       parent: 'saturn',  name: '土卫十八 Pan',     aKm: 133584.0,  radiusKm: 17.2,   flatF: 0.4400, periodDays: 0.57505,   incEqDeg: 0.001,   theta0: 0.48,   pType: 26, color: [0.95, 0.90, 0.78, 0.36] },
     { id: 'mimas',     parent: 'saturn',  name: '土卫一 Mimas',     aKm: 185539.0,  radiusKm: 198.2,  flatF: 0.0880, periodDays: 0.942422,  incEqDeg: 1.574,   theta0: -0.42,  pType: 27, color: [0.84, 0.88, 0.94, 0.46] },
-    { id: 'iapetus',   parent: 'saturn',  name: '土卫八 Iapetus',   aKm: 3560820.0, radiusKm: 734.5,  flatF: 0.0450, periodDays: 79.3215,   incEqDeg: 15.47,   theta0: 1.65,   pType: 28, color: [0.78, 0.74, 0.68, 0.38] }
+    { id: 'iapetus',   parent: 'saturn',  name: '土卫八 Iapetus',   aKm: 3560820.0, radiusKm: 734.5,  flatF: 0.0450, periodDays: 79.3215,   incEqDeg: 15.47,   theta0: 1.65,   pType: 28, color: [0.78, 0.74, 0.68, 0.38] },
+    // Indices 13..15: Uranus's Iconic Voyager 2 Moons (Miranda 20-km Verona Rupes cliff, Ariel Kachina canyons, Titania Messina Chasmata!)
+    { id: 'miranda',   parent: 'uranus',  name: '天卫五 Miranda',   aKm: 129390.0,  radiusKm: 235.8,  flatF: 0.0250, periodDays: 1.413479,  incEqDeg: 4.232,   theta0: 0.42,   pType: 31, color: [0.76, 0.86, 0.90, 0.52] },
+    { id: 'ariel',     parent: 'uranus',  name: '天卫一 Ariel',     aKm: 191020.0,  radiusKm: 578.9,  flatF: 0.0030, periodDays: 2.520379,  incEqDeg: 0.260,   theta0: -1.15,  pType: 32, color: [0.80, 0.88, 0.92, 0.48] },
+    { id: 'titania',   parent: 'uranus',  name: '天卫三 Titania',   aKm: 435910.0,  radiusKm: 788.4,  flatF: 0.0002, periodDays: 8.706234,  incEqDeg: 0.340,   theta0: 2.05,   pType: 33, color: [0.74, 0.78, 0.82, 0.46] }
   ].map(m => ({
     ...m,
     a_AU: m.aKm / AU_KM,
@@ -1588,6 +1592,49 @@
       }
       return helioScaled;
     }
+  }
+
+  // === EP.07: 1:1 VOYAGER 2 GRAND TOUR & SOUTHERN INTERSTELLAR ESCAPE (-48.0° South, 119 AU Heliopause -> 144.5 AU 2026) ===
+  let VOY2_REF = null;
+  function ensureVoyager2Ref(ephSample) {
+    if (VOY2_REF || !ephSample || !ephSample.solarMap) return;
+    const pNep = ephSample.solarMap.neptune.relAU;
+    const rN = Math.hypot(pNep[0], pNep[1], pNep[2]);
+    const angN = Math.atan2(dot3(pNep, ECL_Y_BASE), dot3(pNep, ECL_X_BASE));
+    const azEsc2 = (VOY1_REF ? VOY1_REF.azEsc : angN) + 0.58;
+    const latEsc2 = (-48.0 * Math.PI) / 180.0; // Exact NASA/JPL Voyager 2 Post-Triton -48.0° Southward Ecliptic Plunge!
+    const cl2 = Math.cos(latEsc2), sl2 = Math.sin(latEsc2);
+    const ca2 = Math.cos(azEsc2),  sa2 = Math.sin(azEsc2);
+    const escDir2 = normVec3([
+      cl2 * (ECL_X_BASE[0] * ca2 + ECL_Y_BASE[0] * sa2) + sl2 * ECL_Z_BASE[0],
+      cl2 * (ECL_X_BASE[1] * ca2 + ECL_Y_BASE[1] * sa2) + sl2 * ECL_Z_BASE[1],
+      cl2 * (ECL_X_BASE[2] * ca2 + ECL_Y_BASE[2] * sa2) + sl2 * ECL_Z_BASE[2]
+    ]);
+    VOY2_REF = { pNep, rN, angN, azEsc2, escDir2 };
+  }
+
+  // Exact Voyager 2 Heliocentric Position in AU for post-Neptune/interstellar progress p in [0.0, 1.0]:
+  //   p = 0.00 -> 1989.08.25 Neptune/Triton Departure (30.11 AU)
+  //   p = 0.72 -> 2018.11.05 Heliopause Plasma Wall Crossing (119.00 AU = 178.0亿 km)
+  //   p = 1.00 -> 2026.11    Interstellar Cruise (144.50 AU = 216.2亿 km, 15.26 km/s, 20h01m light-time!)
+  function evalVoyager2HelioAU(p) {
+    if (!VOY2_REF) return [0, -108.0, 96.0];
+    const { pNep, rN, escDir2 } = VOY2_REF;
+    let targetR;
+    if (p <= 0.72) {
+      targetR = rN + (119.00 - rN) * Math.max(0.0, p / 0.72);
+    } else {
+      targetR = 119.00 + (144.50 - 119.00) * Math.min(1.5, (p - 0.72) / 0.28);
+    }
+    const dPast = Math.max(0.0, targetR - rN);
+    const raw = [
+      pNep[0] + escDir2[0] * dPast,
+      pNep[1] + escDir2[1] * dPast,
+      pNep[2] + escDir2[2] * dPast
+    ];
+    const rNow = Math.hypot(raw[0], raw[1], raw[2]) || 1.0;
+    const sc = targetR / rNow;
+    return [raw[0] * sc, raw[1] * sc, raw[2] * sc];
   }
 
   // Sister Interstellar Probes (for Act 6 Panorama: Voyager 2 at 145 AU -48° South, Pioneer 10 at 138 AU, Pioneer 11 at 116 AU, New Horizons at 61 AU)
@@ -2047,11 +2094,13 @@
       posKly: moonKly
     };
 
+    const isV2PovEp = Boolean(window._isV2PovEp);
     const majorMoonMap = {};
     const majorMoons = PLANETARY_MOONS.map(m => {
       const par = solarMap[m.parent];
       const basis = buildMoonPlaneBasis(par.axisWorld, par.toSun, m.incEqDeg);
-      const ang = m.theta0 + (2.0 * Math.PI * localDays) / m.periodDays;
+      const ioShift = (isV2PovEp && m.id === 'io') ? 1.35 : 0.0;
+      const ang = m.theta0 + ioShift + (2.0 * Math.PI * localDays) / m.periodDays;
       const ca = Math.cos(ang), sa = Math.sin(ang);
       const relAU = [
         (basis.u[0] * ca + basis.v[0] * sa) * m.a_AU,
@@ -2134,13 +2183,23 @@
     const huygensSiteKly   = makeSatProbePos('huygens_site', huygensRelSatAU);
     const dragonflyProbeKly = makeSatProbePos('dragonfly_probe', dragonflyRelSatAU);
 
-    // Live 1:1 Voyager 1 Grand Tour & 1-Light-Day Position (driven by window._voyagerProgressOverride, default 1.00 = 173.1446 AU!)
+    // Live 1:1 Voyager 1 & Voyager 2 Grand Tour Positions
     ensureVoyagerRef({ solarMap, majorMoonMap });
+    ensureVoyager2Ref({ solarMap, majorMoonMap });
     const voyProgNow = (typeof window._voyagerProgressOverride === 'number') ? window._voyagerProgressOverride : 1.00;
     const voy1RelSunAU = evalVoyager1HelioAU(voyProgNow);
     const voy1RelSunKly = [voy1RelSunAU[0] * AU_IN_KLY, voy1RelSunAU[1] * AU_IN_KLY, voy1RelSunAU[2] * AU_IN_KLY];
     relSunMap.voyager1_craft = voy1RelSunKly;
     const voyager1CraftKly = [sunKly[0] + voy1RelSunKly[0], sunKly[1] + voy1RelSunKly[1], sunKly[2] + voy1RelSunKly[2]];
+
+    const voy2ProgNow = (typeof window._voyager2ProgressOverride === 'number') ? window._voyager2ProgressOverride : 1.00;
+    const voy2RelSunAU = evalVoyager2HelioAU(voy2ProgNow);
+    const voy2RelSunKly = [voy2RelSunAU[0] * AU_IN_KLY, voy2RelSunAU[1] * AU_IN_KLY, voy2RelSunAU[2] * AU_IN_KLY];
+    relSunMap.voyager2_craft = voy2RelSunKly;
+    const voyager2CraftKly = [sunKly[0] + voy2RelSunKly[0], sunKly[1] + voy2RelSunKly[1], sunKly[2] + voy2RelSunKly[2]];
+
+    const uraEqBasis = buildMoonPlaneBasis(solarMap.uranus.axisWorld, solarMap.uranus.toSun, 0.0);
+    const nepEqBasis = buildMoonPlaneBasis(solarMap.neptune.axisWorld, solarMap.neptune.toSun, 0.0);
 
     // Sister probe endpoints in world kly for Act 6 labels!
     const makeHelioTipKly = (azOff, latDeg, maxR) => {
@@ -2448,8 +2507,15 @@
       change6SynAU,
       emSynBasis,
       uranus: solarMap.uranus.posKly,
+      miranda: majorMoonMap.miranda.posKly,
+      ariel: majorMoonMap.ariel.posKly,
+      titania: majorMoonMap.titania.posKly,
       neptune: solarMap.neptune.posKly,
       triton: majorMoonMap.triton.posKly,
+      voyager2_craft: voyager2CraftKly,
+      voy2RelSunAU,
+      uraEqBasis,
+      nepEqBasis,
       pluto: solarMap.pluto.posKly,
       earthAU: solarMap.earth.relAU,
       relSunMap,
@@ -2812,7 +2878,8 @@
                 // Grazing-angle Fresnel keeps the center of the Heliosphere crystal-clear dark space when viewed from afar,
                 // while ramping up turbulent plasma tendrils when Voyager 1 rams directly through camR ~ 121 AU!
                 float nearWall = exp(-pow((camR - 121.0) / 14.0, 2.0));
-                float fresH = mix(0.06 + 0.94 * pow(1.0 - abs(dot(dirP, rd)), 2.15), 0.32 + 0.68 * tendrils, nearWall);
+                float fresBaseH = max(0.0, 1.0 - abs(dot(dirP, rd)));
+                float fresH = mix(0.06 + 0.94 * pow(fresBaseH, 2.15), 0.32 + 0.68 * tendrils, nearWall);
 
                 // Deep electric violet-magenta ISM compression + fiery solar-amber/crimson 50,000 K plasma ribbons!
                 vec3 mistCol = mix(vec3(0.46, 0.10, 0.96), vec3(1.00, 0.32, 0.06), smoothstep(0.95, 1.04, rNorm) * 0.62 + tendrils * 0.48);
@@ -2848,7 +2915,7 @@
             if (tHit <= 0.0) continue;
             vec3 pHit = roAU + rd * tHit;
             vec3 nrmD = normalize(pHit);
-            float fresnel = pow(1.0 - abs(dot(nrmD, rd)), 4.6);
+            float fresnel = pow(max(0.0, 1.0 - abs(dot(nrmD, rd))), 4.6);
             // Razor-crisp 24k-gold geodesic latitude & longitude wireframe (every 15°), ZERO milky interior fill!
             float lat = asin(clamp(nrmD.y, -1.0, 1.0));
             float lon = atan(nrmD.z, nrmD.x);
@@ -2881,7 +2948,7 @@
           float tW = (-bW - sqW > 0.0) ? (-bW - sqW) : (-bW + sqW);
           if (tW > 0.0) {
             vec3 nrmW = normalize(roAU + rd * tW);
-            float rimW = pow(1.0 - abs(dot(nrmW, rd)), 5.2);
+            float rimW = pow(max(0.0, 1.0 - abs(dot(nrmW, rd))), 5.2);
             float angN = acos(clamp(dot(nrmW, normalize(uHelioNoseDir)), -1.0, 1.0));
             float radarRings = exp(-pow(sin(angN * 24.0 - animPhase * 2.5), 2.0) * 140.0) * exp(-angN * 1.8);
             float dirFocus = 0.22 + 0.88 * pow(max(0.0, dot(nrmW, normalize(uHelioNoseDir))), 2.6);
@@ -3003,6 +3070,53 @@
       const float R_DISK_IN    = 1.5500;
       const float R_DISK_OUT   = 15.200;
       const float B_CRIT_SCHW  = 2.598076;
+
+      // === EP.08 GENERAL-RELATIVISTIC HORIZON-CROSSING & INTERIOR SKY-COLLAPSE (Hamilton & Polhemus Freefall Observer!) ===
+      // Smoothly takes over ONLY when plunging inside rCam < 1.18 Rs around Sgr A* (100% zero effect on rCam >= 1.18 Rs!)
+      if (!isM31Bh && rCam < 1.18) {
+        float blendInt = bh_sstepInv(1.18, 1.06, rCam);
+        vec3 outDir    = normalize(roRs); // Outward radial zenith toward the collapsing external universe!
+        vec3 spinAxI   = normalize(vec3(0.215, 0.971, -0.105));
+        float cosOut   = dot(rd, outDir); // +1 = looking straight up at shrinking external universe, -1 = looking down into Singularity
+        float rSafe    = max(rCam, 0.10);
+        float collapse = clamp((1.12 - rSafe) / 0.98, 0.0, 1.0);
+        // Relativistic sky aperture shrinks cleanly inside our vertical FOV:
+        // At r=1.0 Rs (Event Horizon): ~38° half-angle blazing ring framed by pitch-black horizon abyss!
+        // As r -> 0.11 Rs (Singularity): shrinks to a razor-sharp ~12° electric-blue Einstein ring & tidal ribbon!
+        float cosEdge  = mix(0.74, 0.975, pow(collapse, 0.78));
+        // Final 0.2s extreme tidal shear stretches the dying sky circle into a blazing horizontal blue-white ribbon!
+        float tidalW   = bh_sstepInv(0.38, 0.115, rSafe);
+        float eqShear  = abs(dot(rd, spinAxI));
+        float angDist  = (cosEdge - cosOut) + tidalW * eqShear * 0.22;
+
+        // Blinding gravitationally blueshifted Einstein ring around the collapsing sky aperture!
+        float ringRim  = exp(-bh_sqr(angDist / mix(0.036, 0.014, collapse)));
+        float outerHalo= exp(-bh_sqr(angDist / mix(0.110, 0.045, collapse))) * 0.36;
+        float innerSky = bh_sstepInv(0.015, -0.055, angDist);
+        float phiSky   = atan(dot(rd, normalize(cross(spinAxI, outDir))), dot(rd, spinAxI));
+        float swirlN   = textureLod(uNoise3D, vec3(cos(phiSky) * 2.2, sin(phiSky) * 2.2, uBhPhase * 0.22 + collapse * 2.8), 0.0).r;
+        float plasmaRib = 0.65 + 0.75 * pow(clamp(swirlN * 1.18, 0.0, 1.0), 1.8);
+
+        // Gravitational blueshift: warm golden accretion ring shifts -> white-cyan -> blazing electric blue-violet!
+        vec3 ringBlue  = mix(vec3(1.00, 0.80, 0.46), vec3(0.32, 0.76, 1.00), smoothstep(0.06, 0.52, collapse));
+        ringBlue       = mix(ringBlue, vec3(0.68, 0.88, 1.00), smoothstep(0.52, 0.95, collapse));
+        vec3 rimEmit   = ringBlue * (ringRim * 2.35 + outerHalo) * plasmaRib * uAccretionStrength;
+
+        // Subtle deep-blue warped exterior sky inside the shrinking aperture (pure pitch-black Event Horizon abyss outside!)
+        vec3 skyGlow   = mix(vec3(0.08, 0.22, 0.56), vec3(0.24, 0.54, 0.95), collapse) * innerSky * (0.28 + 0.42 * swirlN);
+        // Singularity tidal flash right at final r < 0.13 Rs
+        float singFlash = bh_sstepInv(0.135, 0.105, rSafe) * 1.85;
+        vec3 intCol    = rimEmit + skyGlow + vec3(0.75, 0.90, 1.00) * singFlash;
+
+        if (blendInt > 0.995) {
+          accum  += trans * intCol;
+          trans   = vec3(innerSky * 0.62);
+          skyMask = innerSky * 0.48;
+          return;
+        }
+        // Smooth transition zone (1.06 < rCam < 1.18): blend cleanly from Kerr geodesic into interior sky-collapse!
+        accum += trans * intCol * blendInt * 0.85;
+      }
 
       vec3 pos = roRs;
       vec3 vel = rd;
@@ -4496,6 +4610,10 @@
         vec3 helioEmit;
         float helioAlpha;
         evalHeliosphereAndLightDay(uCamRelSunAU, rd, uBhPhase, helioEmit, helioAlpha);
+        if (any(isnan(helioEmit)) || any(isinf(helioEmit))) helioEmit = vec3(0.0);
+        if (isnan(helioAlpha) || isinf(helioAlpha)) helioAlpha = 0.0;
+        helioEmit = clamp(helioEmit, vec3(0.0), vec3(12.0));
+        helioAlpha = clamp(helioAlpha, 0.0, 1.0);
         cosmosComposite = cosmosComposite * (1.0 - helioAlpha * 0.72) + helioEmit;
 
         accum += trans * cosmosComposite;
@@ -4515,6 +4633,9 @@
     out vec4 fragColor;
 
     uniform sampler3D uNoise3D;
+    uniform sampler2D uEarthDayTex;
+    uniform sampler2D uEarthNightTex;
+    uniform float uEarthTexReady;
     uniform mat3 uCamBasis;
     uniform float uTanHalfFov;
     uniform float uAspect;
@@ -5424,6 +5545,36 @@
 
         vec3 base = mix(mix(deepOcean, land, isLand), vec3(0.90, 0.93, 0.97), polarIce);
 
+        // === REAL 1:1 NASA BLUE MARBLE 4K WORLD SATELLITE MAP OVERRIDE (when loaded) ===
+        if (uEarthTexReady > 0.5) {
+          vec2 eqUv = vec2(fract((ll.x + 180.0) / 360.0), clamp((90.0 - ll.y) / 180.0, 0.001, 0.999));
+          vec3 bmSrgb = texture(uEarthDayTex, eqUv).rgb;
+          // Crisp bathymetric ocean vs landmass separation directly from NASA Blue Marble Next Generation RGB
+          float bmBlueDom = bmSrgb.b - max(bmSrgb.r * 1.06, bmSrgb.g * 0.98);
+          float bmOcean   = smoothstep(0.025, 0.125, bmBlueDom) * smoothstep(0.46, 0.22, bmSrgb.r);
+          // Distinguish snow/ice (polar caps, Greenland, Antarctica, high Himalayas)
+          float bmSnow    = smoothstep(0.60, 0.80, min(bmSrgb.r, min(bmSrgb.g, bmSrgb.b)));
+          isLand   = clamp(1.0 - bmOcean, 0.0, 1.0);
+          polarIce = clamp(bmSnow * smoothstep(52.0, 68.0, abs(latDeg)), 0.0, 1.0);
+
+          // Convert sRGB NASA Blue Marble -> linear radiance with rich natural DSCOVR EPIC vibrancy
+          vec3 bmLin = pow(max(bmSrgb, vec3(0.001)), vec3(2.15));
+          // Deepen deep-ocean sapphire slightly while keeping turquoise coastal shelves & crisp continent contrast!
+          vec3 bmOceanLin = mix(bmLin * vec3(0.62, 0.78, 1.04), bmLin * vec3(0.85, 0.98, 1.08), smoothstep(0.08, 0.24, bmSrgb.g));
+          vec3 bmLandLin  = bmLin * vec3(1.14, 1.12, 1.06);
+          base = mix(bmOceanLin, bmLandLin, isLand);
+
+          // Real satellite relief shading from Blue Marble luminance gradient (Himalayas, Andes, Rockies, Rift Valley!)
+          vec2 du = vec2(1.0 / 4096.0, 0.0);
+          vec2 dv = vec2(0.0, 1.0 / 2048.0);
+          float lumR = dot(texture(uEarthDayTex, eqUv + du).rgb, vec3(0.3, 0.59, 0.11));
+          float lumL = dot(texture(uEarthDayTex, eqUv - du).rgb, vec3(0.3, 0.59, 0.11));
+          float lumD = dot(texture(uEarthDayTex, eqUv + dv).rgb, vec3(0.3, 0.59, 0.11));
+          float lumU = dot(texture(uEarthDayTex, eqUv - dv).rgb, vec3(0.3, 0.59, 0.11));
+          vec3 bmBumpedN = normalize(nrm - (wTanE * (lumR - lumL) - wTanN * (lumD - lumU)) * (1.85 * isLand * (1.0 - polarIce * 0.7)));
+          landDiff = smoothstep(-0.08, 0.86, dot(bmBumpedN, lightDir)) * max(0.0, dot(bmBumpedN, lightDir) + 0.06) * eclipseShadow;
+        }
+
         // === 1:1 SATELLITE-GRADE MULTI-LAYER METEOROLOGY (DSCOVR EPIC / Himawari-9 / GOES-16) ===
         // Subtropical Hadley high-pressure atmospheric windows keep Sahara, Arabia, Red Sea, Himalayas, India & China coasts crystal-clear!
         float heroCartoWindow = max(
@@ -5509,10 +5660,17 @@
         // VIIRS Nightside Megacity Corridors + 557.7nm Atomic Oxygen Airglow & Polar Aurora!
         float nightMask = sstepInv(0.02, -0.16, ndotl);
         if (nightMask > 0.001) {
-          float cities = evalEarthCityLights(ll, coastField, t3.r, t4.g) * isLand * (1.0 - polarIce * 0.92);
-          // City lights softly diffuse through thin cirrus while dense convective clouds attenuate them
-          vec3 cityHue = mix(vec3(1.00, 0.68, 0.28), vec3(1.00, 0.88, 0.65), clamp(cities - 0.45, 0.0, 1.0));
-          surfCol += cityHue * (cities * nightMask * (1.0 - cloudsCombined * 0.72) * 0.38);
+          if (uEarthTexReady > 0.5) {
+            vec2 eqUvN = vec2(fract((ll.x + 180.0) / 360.0), clamp((90.0 - ll.y) / 180.0, 0.001, 0.999));
+            vec3 nightSrgb = texture(uEarthNightTex, eqUvN).rgb;
+            float cityWarm = smoothstep(0.06, 0.45, nightSrgb.r - nightSrgb.b * 0.55);
+            vec3 nightLin  = mix(vec3(1.00, 0.66, 0.24), vec3(1.00, 0.90, 0.68), cityWarm) * pow(cityWarm, 1.35);
+            surfCol += nightLin * (nightMask * (1.0 - cloudsCombined * 0.68) * 0.65);
+          } else {
+            float cities = evalEarthCityLights(ll, coastField, t3.r, t4.g) * isLand * (1.0 - polarIce * 0.92);
+            vec3 cityHue = mix(vec3(1.00, 0.68, 0.28), vec3(1.00, 0.88, 0.65), clamp(cities - 0.45, 0.0, 1.0));
+            surfCol += cityHue * (cities * nightMask * (1.0 - cloudsCombined * 0.72) * 0.38);
+          }
 
           // High-latitude Geomagnetic Aurora Borealis / Australis (~66°-72° lat)
           float aurOval = exp(-sqr((abs(latDeg) - 67.5) / 3.4));
@@ -6476,7 +6634,7 @@
 
       // Physical Warm Golden "Jupiter-Shine" on all 7 Jovian Moons (Io, Europa, Ganymede, Callisto & Metis/Amalthea/Thebe)!
       vec3 jupShine = vec3(0.0);
-      if (((pType > 12.5 && pType < 16.5) || pType > 22.5) && uPlanetPosRad[4].w > 0.0 && abs(uPlanetMeta[4].w - 7.0) < 0.35) {
+      if (((pType > 12.5 && pType < 16.5) || (pType > 22.5 && pType < 25.5)) && uPlanetPosRad[4].w > 0.0 && abs(uPlanetMeta[4].w - 7.0) < 0.35) {
         vec3 toJup = uPlanetPosRad[4].xyz - hitPos;
         float dJup = max(length(toJup), 1e-4);
         vec3 dirJup = toJup / dJup;
@@ -6499,6 +6657,32 @@
         float subSatDot = max(0.0, dot(nrm, dirSat));
         float satSolid = clamp(2.35 / (dRS * dRS * 0.22 + 1.0), 0.012, 0.19);
         satShine = vec3(1.00, 0.89, 0.66) * (subSatDot * satPhase * satSolid * sstepInv(0.22, -0.26, ndotl));
+      }
+      // Physical Pale Greenish-Cyan "Uranus-Shine" on Uranian Moons (Miranda, Ariel, Titania — slot 6)!
+      vec3 uraShine = vec3(0.0);
+      if ((pType > 30.5 && pType < 33.5) && uPlanetPosRad[6].w > 0.0 && abs(uPlanetMeta[6].w - 9.0) < 0.35) {
+        vec3 toUra = uPlanetPosRad[6].xyz - hitPos;
+        float dUra = max(length(toUra), 1e-4);
+        vec3 dirUra = toUra / dUra;
+        float dRU = max(2.2, dUra / max(uPlanetPosRad[6].w, 1e-4));
+        vec3 uraToSun = normalize(hostPosRel - uPlanetPosRad[6].xyz);
+        float uraPhase = 0.26 + 0.74 * (0.5 + 0.5 * dot(uraToSun, -dirUra));
+        float subUraDot = max(0.0, dot(nrm, dirUra));
+        float uraSolid = clamp(2.10 / (dRU * dRU * 0.24 + 1.0), 0.010, 0.16);
+        uraShine = vec3(0.58, 0.88, 0.90) * (subUraDot * uraPhase * uraSolid * sstepInv(0.22, -0.26, ndotl));
+      }
+      // Physical Pale Cerulean "Neptune-Shine" on Triton (slot 7)!
+      vec3 nepShine = vec3(0.0);
+      if (abs(pType - 19.0) < 0.35 && uPlanetPosRad[7].w > 0.0 && abs(uPlanetMeta[7].w - 10.0) < 0.35) {
+        vec3 toNep = uPlanetPosRad[7].xyz - hitPos;
+        float dNep = max(length(toNep), 1e-4);
+        vec3 dirNep = toNep / dNep;
+        float dRN = max(3.5, dNep / max(uPlanetPosRad[7].w, 1e-4));
+        vec3 nepToSun = normalize(hostPosRel - uPlanetPosRad[7].xyz);
+        float nepPhase = 0.26 + 0.74 * (0.5 + 0.5 * dot(nepToSun, -dirNep));
+        float subNepDot = max(0.0, dot(nrm, dirNep));
+        float nepSolid = clamp(1.95 / (dRN * dRN * 0.22 + 1.0), 0.008, 0.13);
+        nepShine = vec3(0.42, 0.72, 0.92) * (subNepDot * nepPhase * nepSolid * sstepInv(0.22, -0.26, ndotl));
       }
 
       vec3 surfCol = vec3(0.0);
@@ -7158,10 +7342,12 @@
         triAlb = mix(triAlb, vec3(0.82, 0.89, 0.95), blueFrostCollar * 0.52); // Voyager 2 bluish N2 frost margin!
         triAlb = mix(triAlb, vec3(0.20, 0.16, 0.17), allPlumes * 0.86);
 
-        surfCol = triAlb * triDiff * 1.05 * starTint + triAlb * 0.004;
-        // Thin Voyager 2 nitrogen/methane limb haze (0-30 km altitude)
+        surfCol = triAlb * triDiff * 1.05 * starTint + triAlb * nepShine * 1.25 + triAlb * 0.004;
+        // Thin Voyager 2 nitrogen/methane limb haze (0-30 km altitude) + active sunlit 8-km vertical cryogeyser mist over Hili & Mahilani vents!
         float fwdTr = pow(max(dot(viewDir, -lightDir), 0.0), 3.2);
-        atmoCol = vec3(0.56, 0.80, 0.98) * pow(max(1.0 - viewN, 0.0), 3.4) * (0.14 * smoothstep(-0.24, 0.55, ndotl) + 0.24 * fwdTr);
+        float ventMist = (exp(-sqr(length(dHili) / 3.8)) + exp(-sqr(length(dMahi) / 3.4))) * smoothstep(-0.08, 0.35, ndotl);
+        vec3 geyserGlow = mix(vec3(0.42, 0.56, 0.72), vec3(0.86, 0.94, 1.00), 0.45 + 0.55 * t3.r) * ventMist * (0.28 + 0.45 * pow(max(1.0 - viewN, 0.0), 1.6));
+        atmoCol = vec3(0.56, 0.80, 0.98) * pow(max(1.0 - viewN, 0.0), 3.4) * (0.16 * smoothstep(-0.24, 0.55, ndotl) + 0.28 * fwdTr) + geyserGlow;
       } else if (pType < 25.5) {
         // === JOVIAN INNER RING-SHEPHERD MOONS: METIS (pType=23), AMALTHEA (pType=24), THEBE (pType=25) ===
         // Irregular battered triaxial rubble-pile moons coated in deep crimson-red Io sulfur dust + giant craters Pan, Gaea & Zethus!
@@ -7263,7 +7449,7 @@
         mimIce *= (1.0 - herschelBowl * 0.18);
         mimIce = mix(mimIce, vec3(0.92, 0.95, 0.99), clamp(cHerschel.y * 0.78, 0.0, 0.88));
         surfCol = mimIce * mimDiff * 0.94 * starTint + mimIce * satShine * 1.15 + mimIce * 0.004;
-      } else {
+      } else if (pType < 28.5) {
         // === IAPETUS / 土卫八 (pType=28, a=3,560,820 km, R=734.5 km — Yin-Yang Cassini Regio + 20-km Equatorial Mountain Ridge!) ===
         vec2 ll = vec2(wrapDeg(degrees(bodyLon) - 78.0), latDeg);
         // Yin-Yang Two-Tone Dichotomy: coal-black Cassini Regio centered on leading apex vs snow-white trailing hemisphere!
@@ -7287,12 +7473,91 @@
         vec3 darkSoot   = mix(vec3(0.065, 0.048, 0.040), vec3(0.115, 0.082, 0.064), t1.g);
         vec3 iapAlb = mix(brightSnow, darkSoot, darkMask * 0.94);
         surfCol = iapAlb * iapDiff * 1.06 * starTint + iapAlb * satShine * 0.85 + iapAlb * 0.004;
+      } else if (pType < 31.5) {
+        // === MIRANDA / 天卫五 (pType=31, a=129,390 km, R=235.8 km — Voyager 2 1986: 20-km Verona Rupes Cliff & Inverness Chevron!) ===
+        // Aligned to sub-solar sunlit hemisphere at theta0=0.42 rad (+156° shift puts 0° lon dead-center on sunlit face!)
+        vec2 ll = vec2(wrapDeg(degrees(bodyLon) + 156.0), latDeg);
+        // 1) Inverness Corona: Iconic bright white V-shaped "Chevron" tectonic trough on sunlit upper-left face!
+        vec2 chevP = vec2(wrapDeg(ll.x - (-16.0)), ll.y - 10.0);
+        float armA = exp(-sqr((chevP.y - abs(chevP.x) * 0.88 + 7.5) / 3.8)) * sstepInv(28.0, 16.0, abs(chevP.x));
+        float armB = exp(-sqr((chevP.y - abs(chevP.x) * 0.88 - 2.4) / 2.6)) * sstepInv(30.0, 17.0, abs(chevP.x));
+        float chevronBright = clamp(armA * 1.00 + armB * 0.62, 0.0, 1.0);
+        float invernessRing = ellipBlob(ll, vec2(-16.0, 8.0), vec2(32.0, 26.0), 0.14);
+
+        // 2) Elsinore & Arden Coronae: Contrasting dark-grooved concentric racetrack ovals ("Frankenstein Moon" patchwork!)
+        vec2 ardenD = vec2(wrapDeg(ll.x - 36.0) / 30.0, (ll.y - (-10.0)) / 26.0);
+        float ardenR = length(ardenD);
+        float ardenMask = sstepInv(1.12, 0.64, ardenR);
+        float ardenGrooves = (0.5 + 0.5 * cos(ardenR * 38.0 + t2.r * 2.4)) * ardenMask;
+
+        vec2 elsinD = vec2(wrapDeg(ll.x - (-44.0)) / 26.0, (ll.y - (-20.0)) / 22.0);
+        float elsinR = length(elsinD);
+        float elsinMask = sstepInv(1.10, 0.62, elsinR);
+        float elsinGrooves = (0.5 + 0.5 * cos(elsinR * 36.0 - t2.g * 2.2)) * elsinMask;
+
+        // 3) VERONA RUPES (维罗纳断崖): 20-km tall vertical ice fault cliff (8.5% of Miranda's radius — tallest cliff in the Solar System!)
+        // Razor-sharp diagonal fault scarp slashing across sunlit center-right ll.x ~ +14°..+22°, ll.y ~ -36°..+42°!
+        float rupesLine = wrapDeg(ll.x - (14.5 + ll.y * 0.16 + (t2.b - 0.5) * 4.0));
+        float rupesSpan = smoothstep(-44.0, -28.0, ll.y) * sstepInv(48.0, 30.0, ll.y);
+        float rupesStep0 = smoothstep(-2.8, 2.8, rupesLine) * rupesSpan;
+        float rupesWall  = exp(-sqr(rupesLine / 2.8)) * rupesSpan;
+        float rupesStepX = smoothstep(-2.8, 2.8, rupesLine + 1.2) * rupesSpan;
+        float rupesStepY = smoothstep(-2.8, 2.8, rupesLine - 0.18) * smoothstep(-44.0, -28.0, ll.y + 1.2) * sstepInv(48.0, 30.0, ll.y + 1.2);
+
+        // 3D normal perturbation combining heavy ancient craters, Corona racetrack ridges & towering 20-km Verona Rupes cliff face!
+        float grooveH0 = (ardenGrooves + elsinGrooves) * 0.42 + chevronBright * 0.30;
+        float grooveHX = (ardenGrooves * 0.88 + elsinGrooves * 0.92) * 0.42 + chevronBright * 0.24;
+        float h0 = crH0 * (1.0 - 0.65 * max(ardenMask, elsinMask)) + grooveH0 + rupesStep0 * 1.75;
+        float hX = crHX * (1.0 - 0.65 * max(ardenMask, elsinMask)) + grooveHX + rupesStepX * 1.75;
+        float hY = crHY * (1.0 - 0.65 * max(ardenMask, elsinMask)) + grooveH0 + rupesStepY * 1.75;
+        vec3 bumpedN = normalize(nrm - (wTanU * (hX - h0) + wTanV * (hY - h0)) * 3.65);
+
+        float mu0 = max(0.0, dot(bumpedN, lightDir));
+        float muV = max(0.06, dot(bumpedN, viewDir));
+        float mirDiff = ((mu0 / (mu0 + muV + 0.10)) * 0.96 + pow(mu0, 0.88) * 0.52) * smoothstep(-0.07, 0.09, ndotl) * eclipseShadow;
+
+        // Clean icy-slate regolith + stark dark/bright Corona groove contrast + bright fresh water-ice Verona Rupes cliff face & Chevron!
+        vec3 mirIce = mix(vec3(0.46, 0.48, 0.50), vec3(0.66, 0.68, 0.70), t1.r * 0.55 + t2.g * 0.45);
+        mirIce = mix(mirIce, mix(vec3(0.28, 0.30, 0.34), vec3(0.78, 0.81, 0.84), ardenGrooves), ardenMask * 0.86);
+        mirIce = mix(mirIce, mix(vec3(0.32, 0.34, 0.38), vec3(0.76, 0.79, 0.82), elsinGrooves), elsinMask * 0.82);
+        mirIce = mix(mirIce, vec3(0.32, 0.34, 0.38), invernessRing * 0.52);
+        mirIce = mix(mirIce, vec3(0.95, 0.98, 1.00), chevronBright * 0.90);
+        // Fresh exposed bright blue-white ice wall on Verona Rupes scarp + deep 20-km shadow trench at base!
+        mirIce = mix(mirIce, vec3(0.90, 0.96, 1.00), rupesWall * smoothstep(-0.4, 2.0, rupesLine) * 0.82);
+        mirIce *= (1.0 - rupesWall * sstepInv(0.8, -2.2, rupesLine) * 0.62);
+
+        surfCol = mirIce * mirDiff * 0.98 * starTint + mirIce * uraShine * 1.45 + mirIce * 0.004;
+      } else if (pType < 32.5) {
+        // === ARIEL / 天卫一 (pType=32, a=191,020 km, R=578.9 km — Brightest Uranian Moon + Kachina Chasmata Rift Valleys!) ===
+        vec2 chasA = outer_doubleRidge(localN.x * 6.5 + localN.y * 4.2 + t2.r * 0.65, 0.028, 0.014);
+        vec2 chasB = outer_doubleRidge(localN.z * 7.2 - localN.x * 3.8 + t2.g * 0.55, 0.025, 0.013);
+        float h0 = crH0 * 0.72 - (chasA.x + chasB.x) * 0.42;
+        float hX = crHX * 0.72 - (chasA.x + chasB.x) * 0.38;
+        float hY = crHY * 0.72 - (chasA.x + chasB.x) * 0.46;
+        vec3 bumpedN = normalize(nrm - (wTanU * (hX - h0) + wTanV * (hY - h0)) * 2.85);
+        float ariDiff = smoothstep(-0.07, 0.86, dot(bumpedN, lightDir)) * max(0.0, dot(bumpedN, lightDir) + 0.07) * eclipseShadow;
+        vec3 ariAlb = mix(vec3(0.60, 0.63, 0.66), vec3(0.84, 0.87, 0.90), t1.g * 0.55 + t2.b * 0.45);
+        ariAlb = mix(ariAlb, vec3(0.92, 0.95, 0.98), clamp((chasA.y + chasB.y) * 0.55, 0.0, 0.75));
+        surfCol = ariAlb * ariDiff * 1.02 * starTint + ariAlb * uraShine * 1.25 + ariAlb * 0.004;
+      } else {
+        // === TITANIA / 天卫三 (pType=33, a=435,910 km, R=788.4 km — Largest Uranian Moon + 1,500-km Messina Chasmata Canyon!) ===
+        vec2 ll = vec2(wrapDeg(degrees(bodyLon) - 25.0), latDeg);
+        float messina = exp(-sqr(wrapDeg(ll.x - (10.0 + ll.y * 0.35)) / 3.4)) * smoothstep(-52.0, -28.0, ll.y) * sstepInv(45.0, 22.0, ll.y);
+        vec2 cGert = evalNamedCrater(ll, vec2(-22.0, -16.0), 14.5, 0.75, 0.35, 0.0); // 326-km Gertrude Basin!
+        float h0 = crH0 * 0.92 - messina * 0.65 + cGert.x * 0.58;
+        float hX = crHX * 0.92 - messina * 0.52 + evalNamedCrater(vec2(wrapDeg(ll.x + 0.9), ll.y), vec2(-22.0, -16.0), 14.5, 0.75, 0.35, 0.0).x * 0.58;
+        float hY = crHY * 0.92 - messina * 0.65 + evalNamedCrater(vec2(ll.x, clamp(ll.y + 0.9, -89.2, 89.2)), vec2(-22.0, -16.0), 14.5, 0.75, 0.35, 0.0).x * 0.58;
+        vec3 bumpedN = normalize(nrm - (wTanU * (hX - h0) + wTanV * (hY - h0)) * 2.95);
+        float titDiff = smoothstep(-0.07, 0.86, dot(bumpedN, lightDir)) * max(0.0, dot(bumpedN, lightDir) + 0.07) * eclipseShadow;
+        vec3 titAlb = mix(vec3(0.48, 0.46, 0.45), vec3(0.68, 0.66, 0.64), t1.r * 0.55 + t2.b * 0.45);
+        titAlb = mix(titAlb, vec3(0.84, 0.86, 0.88), clamp(messina * 0.55 + cGert.y * 0.62, 0.0, 0.82));
+        surfCol = titAlb * titDiff * 0.98 * starTint + titAlb * uraShine * 1.10 + titAlb * 0.004;
       }
       return surfCol + atmoCol;
     }
 
     bool isMoonOrDwarfPt(float pt) {
-      return (pt > 10.5 && pt < 19.5) || (pt > 22.5 && pt < 28.5);
+      return (pt > 10.5 && pt < 19.5) || (pt > 22.5 && pt < 28.5) || (pt > 30.5 && pt < 33.5);
     }
 
     void main() {
@@ -7448,43 +7713,57 @@
           res = vec2(eHalo + eCore, 0.92);
         }
       } else if (pType > 8.5 && pType < 9.5) {
-        if (rNorm >= 1.46 && rNorm <= 2.06) {
-          float rZeta = smoothstep(1.48, 1.54, rNorm) * sstepInv(1.635, 1.605, rNorm) * 0.014;
-          float r654 = (exp(-sqr((rNorm - 1.637) / 0.0038)) +
-                        exp(-sqr((rNorm - 1.652) / 0.0038)) +
-                        exp(-sqr((rNorm - 1.666) / 0.0040))) * 0.13;
-          float rAlpha = exp(-sqr((rNorm - (1.750 - 0.0014 * cos(azim + 0.5))) / 0.0042)) * 0.18;
-          float rBeta  = exp(-sqr((rNorm - (1.786 - 0.0009 * cos(azim - 0.8))) / 0.0042)) * 0.17;
-          float rEta    = exp(-sqr((rNorm - 1.846) / 0.0044)) * 0.15;
-          float rGamma  = exp(-sqr((rNorm - 1.863) / 0.0034)) * 0.22;
-          float rDelta  = exp(-sqr((rNorm - 1.890) / 0.0042)) * 0.21 +
-                          smoothstep(1.874, 1.886, rNorm) * sstepInv(1.891, 1.888, rNorm) * 0.03;
-          float rLambda = exp(-sqr((rNorm - 1.957) / 0.0045)) * 0.035;
+        // 1:1 13-Component Uranian Ring System (Voyager 2 + HST + JWST):
+        // Inner dark organic-carbon rings (Zeta, 6, 5, 4, Alpha, Beta, Eta, Gamma, Delta, Lambda, 4.8:1 eccentric Epsilon at 51,149 km = 2.0012 R_U)
+        // PLUS outer dusty reddish Nu ring (67,300 km = 2.633 R_U) & faint icy-blue Mu ring (97,700 km = 3.822 R_U)!
+        if (rNorm >= 1.46 && rNorm <= 3.94) {
+          float rZeta = smoothstep(1.48, 1.54, rNorm) * sstepInv(1.635, 1.605, rNorm) * 0.015;
+          float r654 = (exp(-sqr((rNorm - 1.637) / 0.0036)) +
+                        exp(-sqr((rNorm - 1.652) / 0.0036)) +
+                        exp(-sqr((rNorm - 1.666) / 0.0038))) * 0.14;
+          float rAlpha = exp(-sqr((rNorm - (1.750 - 0.0014 * cos(azim + 0.5))) / 0.0040)) * 0.19;
+          float rBeta  = exp(-sqr((rNorm - (1.786 - 0.0009 * cos(azim - 0.8))) / 0.0040)) * 0.18;
+          float rEta    = exp(-sqr((rNorm - 1.846) / 0.0042)) * 0.16;
+          float rGamma  = exp(-sqr((rNorm - 1.863) / 0.0032)) * 0.24;
+          float rDelta  = exp(-sqr((rNorm - 1.890) / 0.0040)) * 0.23 +
+                          smoothstep(1.874, 1.886, rNorm) * sstepInv(1.891, 1.888, rNorm) * 0.032;
+          float rLambda = exp(-sqr((rNorm - 1.957) / 0.0044)) * 0.038;
+          // Epsilon Ring (51,149 km = 2.0012 R_U): Voyager 2 confirmed 20-km periapsis to 96-km apoapsis (~4.8:1 width ratio!)
           float epsCos   = cos(azim);
-          float epsCent  = 2.001 - 0.0158 * epsCos;
-          float epsWidth = 0.0085 - 0.0042 * epsCos;
-          float epsTau   = 0.36 + 0.16 * epsCos;
-          float rEps     = exp(-sqr((rNorm - epsCent) / max(0.0035, epsWidth))) * epsTau;
+          float epsCent  = 2.0012 - 0.0159 * epsCos;
+          float epsWidth = 0.0094 - 0.0061 * epsCos;
+          float epsTau   = 0.40 + 0.18 * epsCos;
+          float rEps     = exp(-sqr((rNorm - epsCent) / max(0.0028, epsWidth))) * epsTau;
+          // Outer Dusty Rings (HST/JWST): Nu (2.633 R_U, reddish dust) & Mu (3.822 R_U, icy blue Mab-fed torus!)
+          float rNu = exp(-sqr((rNorm - 2.633) / 0.048)) * 0.013;
+          float rMu = exp(-sqr((rNorm - 3.822) / 0.088)) * 0.014;
 
-          float dustSheet = smoothstep(1.63, 1.67, rNorm) * sstepInv(2.02, 1.99, rNorm) * 0.015;
-          float tauU = rZeta + r654 + rAlpha + rBeta + rEta + rGamma + rDelta + rLambda + rEps + dustSheet;
-          float shadeU = clamp(0.46 + 0.24 * (rEps / max(0.02, tauU)), 0.0, 1.0);
+          float dustSheet = smoothstep(1.63, 1.67, rNorm) * sstepInv(2.02, 1.99, rNorm) * 0.016;
+          float tauU = rZeta + r654 + rAlpha + rBeta + rEta + rGamma + rDelta + rLambda + rEps + rNu + rMu + dustSheet;
+          // Encode ring tint in shadeU: 0.15=Nu reddish dust, 0.45..0.75=inner dark/Eps icy, 0.96=Mu icy-blue ring!
+          float shadeU = clamp(0.46 + 0.28 * (rEps / max(0.02, tauU)), 0.0, 0.78);
+          if (rNorm > 2.25 && rNorm < 3.10) shadeU = 0.12;
+          else if (rNorm >= 3.10) shadeU = 0.96;
           res = vec2(tauU, shadeU);
         }
       } else if (pType > 9.5 && pType < 10.5) {
+        // 1:1 5-Ring + 5-Arc Neptunian Ring System (Voyager 2 1989):
+        // Galle (1.69 R_N), Le Verrier (2.148 R_N = 53,200 km), Lassell, Arago (2.310 R_N),
+        // and Adams (2.541 R_N = 62,933 km) with ALL 5 NASA gravitational arcs: Courage, Liberté, Égalité 1 & 2, Fraternité!
         if (rNorm >= 1.63 && rNorm <= 2.61) {
-          float galle     = smoothstep(1.65, 1.685, rNorm) * sstepInv(1.77, 1.735, rNorm) * 0.013;
-          float leVerrier = exp(-sqr((rNorm - 2.148) / 0.0052)) * 0.072;
-          float lassell   = smoothstep(2.148, 2.165, rNorm) * sstepInv(2.395, 2.365, rNorm) * 0.010;
-          float arago     = exp(-sqr((rNorm - 2.310) / 0.0055)) * 0.024;
+          float galle     = smoothstep(1.65, 1.685, rNorm) * sstepInv(1.77, 1.735, rNorm) * 0.015;
+          float leVerrier = exp(-sqr((rNorm - 2.1483) / 0.0052)) * 0.086;
+          float lassell   = smoothstep(2.148, 2.165, rNorm) * sstepInv(2.395, 2.365, rNorm) * 0.011;
+          float arago     = exp(-sqr((rNorm - 2.310) / 0.0055)) * 0.028;
           float azDeg = degrees(azim);
-          float arcCourage    = exp(-sqr(wrapDeg(azDeg - 13.0) / 2.8)) * 0.55;
-          float arcLiberte    = exp(-sqr(wrapDeg(azDeg - 23.5) / 3.4)) * 0.85;
-          float arcEgalite    = exp(-sqr(wrapDeg(azDeg - 34.5) / 4.2)) * 0.92;
-          float arcFraternite = exp(-sqr(wrapDeg(azDeg - 47.5) / 5.8)) * 1.00;
-          float arcClumps = clamp(arcCourage + arcLiberte + arcEgalite + arcFraternite, 0.0, 1.15);
-          float adams = exp(-sqr((rNorm - 2.541) / 0.0058)) * (0.042 + 0.185 * arcClumps);
-          res = vec2(galle + leVerrier + lassell + arago + adams, clamp(0.42 + 0.42 * arcClumps, 0.0, 1.0));
+          float arcCourage    = exp(-sqr(wrapDeg(azDeg - 13.0) / 2.4)) * 0.58;
+          float arcLiberte    = exp(-sqr(wrapDeg(azDeg - 23.2) / 3.2)) * 0.88;
+          float arcEgalite1   = exp(-sqr(wrapDeg(azDeg - 32.0) / 2.2)) * 0.84;
+          float arcEgalite2   = exp(-sqr(wrapDeg(azDeg - 36.6) / 2.4)) * 0.94;
+          float arcFraternite = exp(-sqr(wrapDeg(azDeg - 47.8) / 5.4)) * 1.05;
+          float arcClumps = clamp(arcCourage + arcLiberte + arcEgalite1 + arcEgalite2 + arcFraternite, 0.0, 1.25);
+          float adams = exp(-sqr((rNorm - 2.5413) / 0.0056)) * (0.048 + 0.215 * arcClumps);
+          res = vec2(galle + leVerrier + lassell + arago + adams, clamp(0.42 + 0.45 * arcClumps, 0.0, 1.0));
         }
       } else if (pType > 6.5 && pType < 7.5) {
         // 1:1 4-Component Jovian Dust Ring System (Galileo / Juno / JWST NIRCam):
@@ -8031,38 +8310,42 @@
 
       } else if (pType < 9.5) {
         // === URANUS (19.22 AU, R_eq=25,559 km, f=0.02293 — Irwin et al. 2024 MNRAS Recalibrated Pale Greenish-Cyan) ===
-        float band = textureLod(uNoise3D, vec3(sinLat * 5.8, cos(bodyLon) * 0.18, 0.7), 0.0).g;
-        float zFine = 0.5 + 0.5 * cos(latRad * 14.0 + band * 0.8);
-        // Irwin et al. (2024): true pale greenish-cyan globe + bright 43°N collar + milky methane-haze summer polar hood!
+        float band = textureLod(uNoise3D, vec3(sinLat * 6.2, cos(bodyLon) * 0.18, 0.7), 0.0).g;
+        float zFine = 0.5 + 0.5 * cos(latRad * 16.0 + band * 0.85);
+        // Irwin et al. (2024): true pale greenish-cyan globe + bright summer polar hood & 43° collar (north & subtle 1986 southern solstice collar!)
         float polarHood    = smoothstep(35.0, 62.0, latDeg);
         float brightCollar = exp(-sqr((latDeg - 43.0) / 6.8));
-        float winterTint   = sstepInv(-12.0, -52.0, latDeg);
+        float southSolHood = sstepInv(-42.0, -72.0, latDeg) * 0.52 + exp(-sqr((latDeg - (-45.0)) / 5.5)) * 0.34;
+        float winterTint   = exp(-sqr((latDeg - (-16.0)) / 18.0));
 
-        vec3 uraCyan = mix(vec3(0.55, 0.82, 0.86), vec3(0.63, 0.87, 0.90), band * 0.65 + zFine * 0.35);
-        uraCyan = mix(uraCyan, vec3(0.48, 0.77, 0.84), winterTint * 0.28);
-        uraCyan = mix(uraCyan, vec3(0.77, 0.91, 0.93), brightCollar * 0.52);
-        uraCyan = mix(uraCyan, vec3(0.84, 0.93, 0.94), polarHood * 0.72);
+        vec3 uraCyan = mix(vec3(0.54, 0.81, 0.85), vec3(0.64, 0.87, 0.90), band * 0.62 + zFine * 0.38);
+        uraCyan = mix(uraCyan, vec3(0.48, 0.77, 0.84), winterTint * 0.24);
+        uraCyan = mix(uraCyan, vec3(0.77, 0.91, 0.93), brightCollar * 0.54);
+        uraCyan = mix(uraCyan, vec3(0.84, 0.93, 0.94), clamp(polarHood * 0.72 + southSolHood * 0.48, 0.0, 0.86));
 
-        // Discrete high-altitude methane-ice convective cloud speck along polar hood margin (HST / JWST NIRCam)
+        // Discrete high-altitude methane-ice convective cloud speck along polar hood margin (Voyager 2 / HST / JWST NIRCam)
         float dStormLon = atan(sin(bodyLon - 0.54), cos(bodyLon - 0.54));
         float uraStorm = exp(-sqr(dStormLon / 0.095)) * exp(-sqr((latDeg - 35.5) / 2.2)) * (0.65 + 0.35 * t3.r);
         uraCyan = mix(uraCyan, vec3(0.95, 0.99, 1.00), uraStorm * 0.62);
 
         float gasLimb = 0.64 + 0.36 * pow(max(viewN, 0.0), 0.52);
-        surfCol = uraCyan * (diff * ringShadowTrans * gasLimb * 0.94) * starTint + uraCyan * 0.004;
-        atmoCol = vec3(0.60, 0.90, 0.94) * pow(max(1.0 - viewN, 0.0), 3.2) * smoothstep(-0.24, 0.55, ndotl) * 0.22;
+        surfCol = uraCyan * (diff * ringShadowTrans * gasLimb * 0.95) * starTint + uraCyan * 0.004;
+        atmoCol = vec3(0.60, 0.90, 0.94) * pow(max(1.0 - viewN, 0.0), 3.1) * smoothstep(-0.24, 0.55, ndotl) * 0.25;
 
       } else if (pType < 10.5) {
-        // === NEPTUNE (30.11 AU, R_eq=24,764 km, f=0.01708 — Irwin et al. 2024 MNRAS Pale Cerulean-Azure, GDS & Scooter) ===
-        float zBand = 0.5 + 0.5 * cos(latRad * 11.5 + t1.r * 0.9);
+        // === NEPTUNE (30.11 AU, R_eq=24,764 km, f=0.01708 — Irwin et al. 2024 MNRAS Pale Cerulean-Azure, GDS, Scooter & 2,100 km/h Polar Skim!) ===
+        float shearN = textureLod(uNoise3D, vec3(cos(bodyLon) * 1.4, sinLat * 8.5, sin(bodyLon) * 1.4 + 0.31), 0.0).r;
+        float zBand = 0.5 + 0.5 * cos(latRad * 13.5 + t1.r * 0.95 + shearN * 0.55);
         // Irwin et al. (2024): subtly richer azure-cerulean than Uranus due to thinner stagnant haze (NOT artificial indigo!)
-        vec3 nepCyan = mix(vec3(0.37, 0.67, 0.87), vec3(0.50, 0.78, 0.92), zBand * 0.68 + t2.g * 0.32);
+        vec3 nepCyan = mix(vec3(0.36, 0.66, 0.87), vec3(0.51, 0.79, 0.93), zBand * 0.66 + t2.g * 0.34);
 
-        // Darker southern aerosol-depleted methane band (45°S - 65°S) + brighter South Polar Vortex collar (~71°S)
+        // Darker southern aerosol-depleted methane band (45°S - 65°S) + bright South Polar Vortex (~71°S) + North Polar Skim Jet Bands (60°N - 85°N)!
         float southDarkBand  = exp(-sqr((latDeg - (-54.0)) / 9.2));
         float southPolarSpot = exp(-sqr((latDeg - (-71.5)) / 5.5));
-        nepCyan = mix(nepCyan, vec3(0.27, 0.53, 0.78), southDarkBand * 0.64);
+        float northPolarJet  = exp(-sqr((latDeg - 66.0) / 8.5)) * (0.55 + 0.45 * cos(latDeg * 1.4 + shearN * 2.4));
+        nepCyan = mix(nepCyan, vec3(0.26, 0.52, 0.78), southDarkBand * 0.64);
         nepCyan = mix(nepCyan, vec3(0.60, 0.83, 0.94), southPolarSpot * 0.42);
+        nepCyan = mix(nepCyan, vec3(0.28, 0.58, 0.82), northPolarJet * 0.44);
 
         // Great Dark Spot (20°S, sunlit hero longitude bodyLon = -0.24 rad) with subtle internal anticyclonic swirl
         float dLon = atan(sin(bodyLon - (-0.24)), cos(bodyLon - (-0.24)));
@@ -8072,35 +8355,37 @@
         if (gdsR < 1.45) {
           vec2 gdsSwirl = rot2D(gdsRel, 2.2 * exp(-gdsR * gdsR));
           float gdsTex = textureLod(uNoise3D, vec3(gdsSwirl * 2.1, 0.44), 0.0).g;
-          vec3 gdsDeep = mix(vec3(0.19, 0.40, 0.68), vec3(0.26, 0.49, 0.76), gdsTex);
-          nepCyan = mix(nepCyan, gdsDeep, sstepInv(1.10, 0.30, gdsR) * 0.85);
+          vec3 gdsDeep = mix(vec3(0.18, 0.39, 0.67), vec3(0.26, 0.49, 0.76), gdsTex);
+          nepCyan = mix(nepCyan, gdsDeep, sstepInv(1.10, 0.30, gdsR) * 0.86);
         }
 
         // Small Dark Spot / DS2 ("Wizard's Eye", 54°S, bodyLon = +0.10 rad) with bright white upwelling eye core
         float dLon2 = atan(sin(bodyLon - 0.10), cos(bodyLon - 0.10));
         float dLat2 = latRad - (-0.942);
         float sdsR = sqrt(sqr(dLon2 / 0.108) + sqr(dLat2 / 0.054));
-        nepCyan = mix(nepCyan, vec3(0.19, 0.39, 0.67), sstepInv(1.10, 0.34, sdsR) * 0.78);
+        nepCyan = mix(nepCyan, vec3(0.18, 0.38, 0.66), sstepInv(1.10, 0.34, sdsR) * 0.78);
         nepCyan = mix(nepCyan, vec3(0.95, 0.98, 1.00), sstepInv(0.42, 0.08, sdsR) * 0.86);
 
-        // Orographic white methane-ice companion cloud over GDS + "Scooter" (42°S) + zonal cirrus streaks with cloud shadows!
+        // Orographic white methane-ice companion cloud over GDS + "Scooter" (42°S) + 2,100 km/h zonal cirrus streaks with REAL 50-km elevation shadows!
         float companion = exp(-sqr((gdsR - 0.92) / 0.20)) * smoothstep(-0.03, 0.08, dLat) * (0.75 + 0.25 * t3.g);
         float dScootLon = atan(sin(bodyLon + 0.06), cos(bodyLon + 0.06));
         float scooter   = exp(-sqr(dScootLon / 0.075)) * exp(-sqr((latDeg - (-42.0)) / 2.4)) *
                           (0.75 + 0.25 * cos((latDeg + 42.0) * 1.8));
-        float cirrusBandLat = exp(-sqr((latDeg - 26.5) / 4.5)) + exp(-sqr((latDeg - (-29.0)) / 5.0)) + exp(-sqr((latDeg - (-46.5)) / 4.0));
-        float nepCirAng   = bodyLon * 2.0 + animT * 0.01;
-        float streakField = smoothstep(0.70, 0.88, textureLod(uNoise3D, vec3(cos(nepCirAng) * 1.15, sinLat * 5.8 + t1.a * 0.30, sin(nepCirAng) * 1.15 + 0.25), 0.0).r) *
-                            clamp(0.35 + 0.85 * cirrusBandLat, 0.0, 1.0);
-        float cirrus = clamp(companion * 0.92 + scooter * 0.94 + streakField * 0.56 * sstepInv(84.0, 64.0, abs(latDeg)), 0.0, 1.0);
-        // Subtle dark under-cloud shadow offset slightly equatorward on lower H2S deck (Voyager 2 cloud-height relief!)
-        float cirrusShadow = exp(-sqr((gdsR - 0.84) / 0.20)) * smoothstep(0.00, 0.09, dLat) * 0.16;
+        float cirrusBandLat = exp(-sqr((latDeg - 26.5) / 4.5)) + exp(-sqr((latDeg - 52.0) / 5.5)) + exp(-sqr((latDeg - (-29.0)) / 5.0)) + exp(-sqr((latDeg - (-46.5)) / 4.0));
+        float nepCirAng   = bodyLon * 2.2 + animT * 0.015;
+        float streakField = smoothstep(0.67, 0.86, textureLod(uNoise3D, vec3(cos(nepCirAng) * 1.25, sinLat * 6.4 + t1.a * 0.32, sin(nepCirAng) * 1.25 + 0.25), 0.0).r) *
+                            clamp(0.38 + 0.88 * cirrusBandLat, 0.0, 1.0);
+        // Offset shadow sample slightly along terminator to replicate Voyager 2's iconic 50-100 km high-altitude cirrus deck shadows!
+        float streakShadow = smoothstep(0.69, 0.87, textureLod(uNoise3D, vec3(cos(nepCirAng - 0.035) * 1.25, (sinLat - 0.016) * 6.4 + t1.a * 0.32, sin(nepCirAng - 0.035) * 1.25 + 0.25), 0.0).r) *
+                             clamp(0.38 + 0.88 * cirrusBandLat, 0.0, 1.0) * 0.26;
+        float cirrus = clamp(companion * 0.94 + scooter * 0.95 + streakField * 0.66 * sstepInv(84.0, 62.0, abs(latDeg)), 0.0, 1.0);
+        float cirrusShadow = clamp(exp(-sqr((gdsR - 0.84) / 0.20)) * smoothstep(0.00, 0.09, dLat) * 0.20 + streakShadow * (1.0 - cirrus * 0.85), 0.0, 0.32);
         nepCyan *= (1.0 - cirrusShadow);
-        nepCyan = mix(nepCyan, vec3(0.95, 0.98, 1.00), cirrus * 0.88);
+        nepCyan = mix(nepCyan, vec3(0.96, 0.99, 1.00), cirrus * 0.90);
 
         float gasLimb = 0.64 + 0.36 * pow(max(viewN, 0.0), 0.54);
         surfCol = nepCyan * (diff * ringShadowTrans * gasLimb * 0.98) * starTint + nepCyan * 0.004;
-        atmoCol = vec3(0.46, 0.76, 0.96) * pow(max(1.0 - viewN, 0.0), 3.1) * smoothstep(-0.24, 0.55, ndotl) * 0.26;
+        atmoCol = vec3(0.46, 0.76, 0.96) * pow(max(1.0 - viewN, 0.0), 3.0) * smoothstep(-0.24, 0.55, ndotl) * 0.28;
       } else if (pType < 22.0) {
         // === PA-99-N2 b (First Extragalactic Planet Candidate in Andromeda M31 — Ingrosso et al. 2009: 6.34 M_Jup Super-Jupiter!) ===
         // Massive 6.34 M_Jup gravito-thermal interior (~1,150 K deep glowing rifts) + Ultramarine-Cobalt Sulfide/Silicate Zonal Jets!
@@ -8176,7 +8461,7 @@
     }
 
     bool hasPlanetAtmosphere(float pType) {
-      bool airless = (abs(pType - 1.0) < 0.3) || (abs(pType - 4.0) < 0.3) || (abs(pType - 11.0) < 0.3) || (pType > 12.5 && pType < 17.5) || (pType > 22.5 && pType < 28.5);
+      bool airless = (abs(pType - 1.0) < 0.3) || (abs(pType - 4.0) < 0.3) || (abs(pType - 11.0) < 0.3) || (pType > 12.5 && pType < 17.5) || (pType > 22.5 && pType < 28.5) || (pType > 30.5 && pType < 33.5);
       return !airless;
     }
 
@@ -8221,7 +8506,8 @@
       else if (pType < 18.5) cm = vec4(1.00, 0.72, 0.34, 0.72);
       else if (pType > 19.5 && pType < 21.5) cm = vec4(0.56, 0.76, 1.00, 1.45);
       else if (pType > 22.5 && pType < 25.5) cm = vec4(0.94, 0.42, 0.32, 0.42);
-      else if (pType > 25.5) cm = vec4(0.90, 0.94, 0.98, 0.52);
+      else if (pType > 25.5 && pType < 28.5) cm = vec4(0.90, 0.94, 0.98, 0.52);
+      else if (pType > 30.5 && pType < 33.5) cm = vec4(0.76, 0.84, 0.88, 0.50);
       return cm;
     }
 
@@ -8229,7 +8515,8 @@
       int s = -1;
       if (abs(pType - 11.0) < 0.3) s = 2;
       else if ((pType > 12.5 && pType < 16.5) || (pType > 22.5 && pType < 25.5)) s = 4;
-      else if ((pType > 16.5 && pType < 18.5) || pType > 25.5) s = 5;
+      else if ((pType > 16.5 && pType < 18.5) || (pType > 25.5 && pType < 28.5)) s = 5;
+      else if (pType > 30.5 && pType < 33.5) s = 6;
       else if (pType > 18.5 && pType < 19.5) s = 7;
       return s;
     }
@@ -8405,7 +8692,7 @@
             float tRing = dot(c, ringN) / denom;
             if (tRing > 0.0 && tRing < bestTRing) {
               float rNorm = length(rd * tRing - c) / rad;
-              float maxRNorm = (pType > 7.5 && pType < 8.5) ? 4.78 : 3.145;
+              float maxRNorm = (pType > 7.5 && pType < 8.5) ? 4.78 : ((pType > 8.5 && pType < 9.5) ? 3.95 : 3.145);
               if (rNorm >= 1.105 && rNorm <= maxRNorm) {
                 bestTRing = tRing;
                 ringSlot = j;
@@ -8475,7 +8762,9 @@
               ? vec3(0.50, 0.79, 1.00)
               : mix(vec3(0.42, 0.39, 0.35), vec3(0.92, 0.85, 0.70), prof.y);
           } else if (pType > 8.5 && pType < 9.5) {
-            ringAlbedo = mix(vec3(0.42, 0.36, 0.34), vec3(0.58, 0.65, 0.70), smoothstep(0.18, 0.42, prof.y));
+            if (prof.y < 0.22) ringAlbedo = vec3(0.68, 0.48, 0.42);       // Reddish dusty Nu ring (67,300 km)
+            else if (prof.y > 0.88) ringAlbedo = vec3(0.46, 0.76, 0.96);  // Icy-blue Mu ring (97,700 km)
+            else ringAlbedo = mix(vec3(0.42, 0.36, 0.34), vec3(0.62, 0.68, 0.74), smoothstep(0.42, 0.74, prof.y));
           } else if (pType > 19.5 && pType < 21.5) {
             ringAlbedo = mix(vec3(0.56, 0.46, 0.38), vec3(0.84, 0.88, 0.96), prof.y);
           } else if (pType > 9.5) {
@@ -10998,7 +11287,7 @@
 
   function getMinDistKly(anchorId) {
     switch (anchorId) {
-      case 'sgra':            return 2.25 * SGRA_RS_KLY;
+      case 'sgra':            return 0.10 * SGRA_RS_KLY;
       case 'm31_bh':          return 2.25 * M31_RS_KLY;
       case 'alphacen':        return 2.5 * RSUN_IN_KLY;
       case 'lmc':             return 0.25;
@@ -11042,9 +11331,13 @@
       case 'iapetus':   return 0.0020 * RSUN_IN_KLY;
       case 'cassini_probe': return 0.0020 * RSUN_IN_KLY;
       case 'queqiao_l2':    return 0.0008 * RSUN_IN_KLY;
-      case 'uranus':    return 0.082 * RSUN_IN_KLY;
-      case 'neptune':   return 0.068 * RSUN_IN_KLY;
+      case 'uranus':    return 0.055 * RSUN_IN_KLY;
+      case 'miranda':   return 0.00055 * RSUN_IN_KLY;
+      case 'ariel':     return 0.0012 * RSUN_IN_KLY;
+      case 'titania':   return 0.0016 * RSUN_IN_KLY;
+      case 'neptune':   return 0.039 * RSUN_IN_KLY;
       case 'triton':    return 0.0038 * RSUN_IN_KLY;
+      case 'voyager2_craft': return 1.0 * CRAFT_UNIT_KLY;
       case 'pluto':     return 0.0033 * RSUN_IN_KLY;
       case 'alphacen':  return 2.20 * RSUN_IN_KLY;
       default:          return 1.5e-12;
@@ -11936,8 +12229,11 @@
     { key: 'venus',       name: '金星 Venus',             sub: '0.723 AU · 破晓号 Y 波硫酸云',    getPos: e => e.venus,    color: '#fef08a', minKly: 0.42 * RSUN_IN_KLY, maxKly: 1.5e-5, hideNearKly: 0.42 * RSUN_IN_KLY, radiusKly: 0.009 * RSUN_IN_KLY },
     { key: 'mars',        name: '火星 Mars',              sub: '1.524 AU · 奥林匹斯山与水手谷',   getPos: e => e.mars,     color: '#fb923c', minKly: 0.32 * RSUN_IN_KLY, maxKly: 1.6e-5, hideNearKly: 0.32 * RSUN_IN_KLY, radiusKly: 0.005 * RSUN_IN_KLY },
     { key: 'mercury',     name: '水星 Mercury',           sub: '0.387 AU · 卡洛里盆地与辐射坑',   getPos: e => e.mercury,  color: '#cbd5e1', minKly: 0.25 * RSUN_IN_KLY, maxKly: 1.2e-5, hideNearKly: 0.25 * RSUN_IN_KLY, radiusKly: 0.004 * RSUN_IN_KLY },
-    { key: 'uranus',      name: '天王星 Uranus',          sub: '19.22 AU · 2024真彩 · 97.8°九环',getPos: e => e.uranus,   color: '#67e8f9', minKly: 2.0 * RSUN_IN_KLY,  maxKly: 2.5e-5, hideNearKly: 2.0 * RSUN_IN_KLY,  radiusKly: 0.08 * RSUN_IN_KLY },
-    { key: 'neptune',     name: '海王星 Neptune',         sub: '30.11 AU · 2024真彩 · 大暗斑',    getPos: e => e.neptune,  color: '#60a5fa', minKly: 1.6 * RSUN_IN_KLY,  maxKly: 2.8e-5, hideNearKly: 1.6 * RSUN_IN_KLY,  radiusKly: 0.04 * RSUN_IN_KLY },
+    { key: 'uranus',      name: '天王星 Uranus',          sub: '19.22 AU · 2024真彩 · 97.77°十三环', getPos: e => e.uranus,   color: '#67e8f9', minKly: 2.0 * RSUN_IN_KLY,  maxKly: 2.5e-5, hideNearKly: 2.0 * RSUN_IN_KLY,  radiusKly: 0.08 * RSUN_IN_KLY },
+    { key: 'miranda',     name: '天卫五 Miranda',         sub: '距天王星 12.9万 km · 20km维罗纳断崖', getPos: e => e.miranda,  color: '#a5f3fc', minKly: 0.04 * RSUN_IN_KLY, maxKly: 4.0e-7, hideNearKly: 0.04 * RSUN_IN_KLY, radiusKly: 0.0004 * RSUN_IN_KLY },
+    { key: 'ariel',       name: '天卫一 Ariel',           sub: '距天王星 19.1万 km · 卡奇纳裂谷',     getPos: e => e.ariel,    color: '#bae6fd', minKly: 0.06 * RSUN_IN_KLY, maxKly: 5.0e-7, hideNearKly: 0.06 * RSUN_IN_KLY, radiusKly: 0.0009 * RSUN_IN_KLY },
+    { key: 'titania',     name: '天卫三 Titania',         sub: '距天王星 43.6万 km · 梅西纳大峡谷',   getPos: e => e.titania,  color: '#cbd5e1', minKly: 0.08 * RSUN_IN_KLY, maxKly: 7.0e-7, hideNearKly: 0.08 * RSUN_IN_KLY, radiusKly: 0.0012 * RSUN_IN_KLY },
+    { key: 'neptune',     name: '海王星 Neptune',         sub: '30.11 AU · 2024真彩 · 亚当斯五环弧',  getPos: e => e.neptune,  color: '#60a5fa', minKly: 1.6 * RSUN_IN_KLY,  maxKly: 2.8e-5, hideNearKly: 1.6 * RSUN_IN_KLY,  radiusKly: 0.04 * RSUN_IN_KLY },
     { key: 'triton',      name: '海卫一 Triton',          sub: '距海王星 35.5万 km · 逆行氮冰冠', getPos: e => e.triton,   color: '#f9a8d4', minKly: 0.14 * RSUN_IN_KLY, maxKly: 8.0e-7, hideNearKly: 0.14 * RSUN_IN_KLY, radiusKly: 0.002 * RSUN_IN_KLY },
     { key: 'pluto',       name: '冥王星 Pluto',           sub: '39.48 AU · 斯普特尼克冰川之心',   getPos: e => e.pluto,    color: '#fdba74', minKly: 0.14 * RSUN_IN_KLY, maxKly: 3.2e-5, hideNearKly: 0.14 * RSUN_IN_KLY, radiusKly: 0.002 * RSUN_IN_KLY },
     { key: 'scluster',    name: '恒星 S2 (银心 S 星团)',   sub: 'a=1,018 AU · 周期 16.05 年',    getPos: e => e.s2,       color: '#38bdf8', minKly: 1e-8,               maxKly: 0.08,   hideNearKly: 25.0 * RSUN_IN_KLY, radiusKly: 7.0 * RSUN_IN_KLY },
@@ -14005,7 +14301,8 @@
     NGC147_BASE_KLY[0], NGC147_BASE_KLY[1], NGC147_BASE_KLY[2], 5.2
   ]);
   const LOCAL_UNIFORM_NAMES = [
-    'uNoise3D', 'uCamBasis', 'uTanHalfFov', 'uAspect', 'uStarAnimTime', 'uHdrScale',
+    'uNoise3D', 'uEarthDayTex', 'uEarthNightTex', 'uEarthTexReady',
+    'uCamBasis', 'uTanHalfFov', 'uAspect', 'uStarAnimTime', 'uHdrScale',
     'uStarPosRad', 'uStarMeta', 'uPlanetPosRad', 'uPlanetMeta', 'uPlanetAxis', 'uPlanetFlat', 'uPlanetHostTemp'
   ];
   const localPasses = [
@@ -14014,6 +14311,47 @@
     { prog: progLocalMoons,   u: getUniforms(progLocalMoons,   LOCAL_UNIFORM_NAMES) },
     { prog: progLocalGiants,  u: getUniforms(progLocalGiants,  LOCAL_UNIFORM_NAMES) }
   ];
+
+  // === REAL NASA BLUE MARBLE & BLACK MARBLE EQUIRECTANGULAR WORLD MAP TEXTURES ===
+  function createDummy2DTex(r, g, b) {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([r, g, b, 255]));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return tex;
+  }
+  const earthDayTex   = createDummy2DTex(20, 60, 140);
+  const earthNightTex = createDummy2DTex(0, 0, 0);
+  let earthTexReadyFlag = 0.0;
+  function loadEarth2DTex(tex, url) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        resolve(true);
+      };
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
+  }
+  const earthTexReadyPromise = Promise.all([
+    loadEarth2DTex(earthDayTex, 'assets/earth_bluemarble_4k.jpg'),
+    loadEarth2DTex(earthNightTex, 'assets/earth_night_2k.jpg')
+  ]).then(([dayOk]) => {
+    if (dayOk) earthTexReadyFlag = 1.0;
+    return dayOk;
+  });
   const uOrb = getUniforms(progOrbit, ['uRotProj', 'uParentRelCamAU', 'uOrbitColor', 'uHdrScale']);
   const uTraj = getUniforms(progTraj, [
     'uRotProj', 'uFrameRot', 'uOriginRelCamAU', 'uStartColor', 'uEndColor',
@@ -14594,12 +14932,13 @@
       let pSpeed = 1.0;
       let pProbeEmphasis = 1.0;
 
-      // Reset EP.05 Voyager-specific globals by default so EP.00-EP.04 remain 100% untouched!
+      // Reset EP.05 & EP.06 Voyager-specific globals by default so EP.00-EP.04 remain 100% untouched!
       window._helioUniforms     = [0.0, 0.0, 0.0, 0.0];
       window._voyagerTrajBoost  = 0.0;
       window._voyagerDrawLimit  = 1.0;
       window._sisterProbesAlpha = 0.0;
       window._voyagerCraftState = { tumbleRad: 0.0, thruster: 0.0, rtg: 0.65, camEye: 0.0, radio: 0.0 };
+      window._vpovTelemetry     = null;
 
       // Helper to position camera with millimeter precision in Voyager 1's local meter-frame (X=Golden Record, Y=Scan Platform, Z=3.7m Dish->Earth)!
       const evalVoyagerCraftShot = (lookLocalM, camLocalM, tumbleOverride = 0.0) => {
@@ -14664,6 +15003,28 @@
           cl * (ca * sb.u[0] + sa * sb.v[0]) + sl * sb.n[0],
           cl * (ca * sb.u[1] + sa * sb.v[1]) + sl * sb.n[1],
           cl * (ca * sb.u[2] + sa * sb.v[2]) + sl * sb.n[2]
+        ]);
+        return { yaw: Math.atan2(vd[2], vd[0]), pitch: Math.asin(Math.max(-0.985, Math.min(0.985, vd[1]))) };
+      };
+      const evalUraAngles = (eqAz, latRad) => {
+        const ub = eph.uraEqBasis;
+        const cl = Math.cos(latRad), sl = Math.sin(latRad);
+        const ca = Math.cos(eqAz),   sa = Math.sin(eqAz);
+        const vd = normalize3([
+          cl * (ca * ub.u[0] + sa * ub.v[0]) + sl * ub.n[0],
+          cl * (ca * ub.u[1] + sa * ub.v[1]) + sl * ub.n[1],
+          cl * (ca * ub.u[2] + sa * ub.v[2]) + sl * ub.n[2]
+        ]);
+        return { yaw: Math.atan2(vd[2], vd[0]), pitch: Math.asin(Math.max(-0.985, Math.min(0.985, vd[1]))) };
+      };
+      const evalNepAngles = (eqAz, latRad) => {
+        const nb = eph.nepEqBasis;
+        const cl = Math.cos(latRad), sl = Math.sin(latRad);
+        const ca = Math.cos(eqAz),   sa = Math.sin(eqAz);
+        const vd = normalize3([
+          cl * (ca * nb.u[0] + sa * nb.v[0]) + sl * nb.n[0],
+          cl * (ca * nb.u[1] + sa * nb.v[1]) + sl * nb.n[1],
+          cl * (ca * nb.u[2] + sa * nb.v[2]) + sl * nb.n[2]
         ]);
         return { yaw: Math.atan2(vd[2], vd[0]), pitch: Math.asin(Math.max(-0.985, Math.min(0.985, vd[1]))) };
       };
@@ -16517,6 +16878,1075 @@
           break;
         }
 
+        // === EPISODE 06: VOYAGER 1 SEAMLESS ONBOARD FIRST-PERSON POV (1977 -> 2026) — 1:1 MEGALOPHOBIA FLYBY! ===
+        case 'vpov_01_earth_moon_departure': {
+          // 1977.09.05 -> 1977.09.18: Start low over sunlit Earth (19,500 km, 38°), pull back continuously so Moon glides into frame,
+          // then seamlessly accelerate outward into the interplanetary corridor toward Jupiter!
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          const eAng = computePlanetHeroAngles(eph, 'earth');
+          const dNowKm = Math.exp(lerpNum(Math.log(19500.0), Math.log(3200000.0), smoothstepJS(0.05, 0.92, u)));
+          const angDeg = (2.0 * Math.asin(Math.min(0.9999, 6378.1 / dNowKm)) * 180.0) / Math.PI;
+          anchorId = 'earth';
+          anchorLabel = '1977.09 机载第一视角 · 回眸地球与月球首次同框';
+          customPoleUp = eph.solarMap.earth.axisWorld;
+          dist = dNowKm * KM_KLY;
+          const emVec = normalize3([eph.moon[0] - eph.earth[0], eph.moon[1] - eph.earth[1], eph.moon[2] - eph.earth[2]]);
+          const moonSepW = smoothstepJS(0.32, 0.72, u) * (1.0 - smoothstepJS(0.84, 1.0, u));
+          offset = [
+            emVec[0] * 145000.0 * KM_KLY * moonSepW,
+            emVec[1] * 145000.0 * KM_KLY * moonSepW,
+            emVec[2] * 145000.0 * KM_KLY * moonSepW
+          ];
+          yaw = eAng.yaw + 0.36 * smoothstepJS(0.0, 0.88, u);
+          pitch = eAng.pitch + 0.10 * Math.sin(Math.PI * u);
+          fov = lerpNum(46.0, 48.0, u);
+          warpManual = smoothstepJS(0.76, 1.0, u) * 0.85;
+          const dayNum = Math.min(18, 5 + Math.floor(u * 14));
+          window._vpovTelemetry = {
+            dateStr: `1977.09.${String(dayNum).padStart(2, '0')}`,
+            targetName: '地球 Earth (地月回眸)',
+            distKm: dNowKm,
+            angDeg,
+            mode: 'OPTICAL',
+            shutterFade: 0.0
+          };
+          break;
+        }
+
+        case 'vpov_02_jupiter_looming': {
+          // 1979.01 -> 1979.03.05: SEAMLESS FLIGHT FROM EARTH -> JUPITER PINPOINT -> EXTREME MEGALOPHOBIA CLOUDTOP SKIM!
+          //  - u < 0.20: Seamless interplanetary hop from Earth departure (3.2M km) -> Jupiter approach corridor (14M km pinpoint 0.58°)
+          //  - u = 0.20..0.68: Relentless looming approach 14M km (0.58°) -> 349,000 km NASA Perijove (23.6°)
+          //  - u = 0.68..1.00: EXTREME MEGALOPHOBIA LOW-ALTITUDE SKIM (349,000 km -> 132,000 km = 1.85 R_J, 65.5° GIANT CLOUD WALL!)
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          const grsAz = eph.solarMap.jupiter.spinPhase - 0.22;
+          if (u < 0.20) {
+            const w = u / 0.20;
+            const hop = evalInterstellarHop(
+              eph,
+              'earth',   [0, 0, 0], 3200000.0 * KM_KLY,  '地月深空',
+              'jupiter', [0, 0, 0], 12500000.0 * KM_KLY, '1979.01 前方亮起淡黄星点 · 木星',
+              2.6 * AU_IN_KLY, w, 0.96
+            );
+            anchorId = hop.anchorId;
+            anchorLabel = hop.anchorLabel;
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = hop.dist;
+            const jA0 = evalJupAngles(grsAz + 0.48, 0.16);
+            yaw = jA0.yaw;
+            pitch = jA0.pitch;
+            fov = lerpNum(48.0, 44.0, w);
+            warpManual = Math.sin(Math.PI * w) * 0.92;
+            const dShowKm = lerpNum(18000000.0, 12500000.0, w);
+            window._vpovTelemetry = { dateStr: '1979.01.08', targetName: '木星 Jupiter (远距逼近)', distKm: dShowKm, angDeg: (2.0 * Math.asin(71492.0 / dShowKm) * 180.0) / Math.PI, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else {
+            const w = (u - 0.20) / 0.80;
+            const dNowKm = w < 0.56
+              ? Math.exp(lerpNum(Math.log(12500000.0), Math.log(349000.0), smoothstepJS(0.0, 1.0, w / 0.56)))
+              : Math.exp(lerpNum(Math.log(349000.0), Math.log(132000.0), smoothstepJS(0.0, 1.0, (w - 0.56) / 0.44)));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 71492.0 / dNowKm)) * 180.0) / Math.PI;
+            const skimW = smoothstepJS(0.54, 1.0, w);
+            anchorId = 'jupiter';
+            anchorLabel = skimW > 0.25
+              ? '1979.03.05 极低空贴飞木星巨兽云顶 · 大红斑与辐射带扑面压来！'
+              : '1979.03 木星近木点 · 1:1 真实角直径暴涨压迫';
+            customPoleUp = eph.solarMap.jupiter.axisWorld;
+            dist = dNowKm * KM_KLY;
+            // Shift look offset slightly toward Great Red Spot southern limb during ultra-close skim so Jupiter's massive curved horizon fills 75% of screen!
+            const jAx = eph.solarMap.jupiter.axisWorld;
+            offset = [
+              -jAx[0] * 14500.0 * KM_KLY * skimW,
+              -jAx[1] * 14500.0 * KM_KLY * skimW,
+              -jAx[2] * 14500.0 * KM_KLY * skimW
+            ];
+            const jAng = evalJupAngles(lerpNum(grsAz + 0.48, grsAz - 0.22, w), lerpNum(0.16, -0.16, w));
+            yaw = jAng.yaw;
+            pitch = jAng.pitch;
+            fov = lerpNum(44.0, 56.0, skimW);
+            roll = 0.11 * skimW;
+            pExposure = 1.04;
+            warpManual = skimW * 0.28;
+            const jDay = Math.floor(lerpNum(10, 64, w));
+            const jDate = jDay <= 31 ? `1979.01.${String(jDay).padStart(2, '0')}`
+              : (jDay <= 59 ? `1979.02.${String(jDay - 31).padStart(2, '0')}` : `1979.03.0${jDay - 59}`);
+            window._vpovTelemetry = { dateStr: jDate, targetName: '木星 Jupiter (贴飞云顶)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          }
+          break;
+        }
+
+        case 'vpov_03_galilean_moons_rush': {
+          // 1979.03.05 -> 1979.03.06: SEAMLESS HOP-TO-HOP GALILEAN MOONS FLYBY!
+          //  - u < 0.46: Whip straight off Jupiter cloudtops (132,000 km) -> Io 15,500 km active volcanic close-pass (giant Jupiter looming behind!)
+          //  - 0.46..0.74: Seamless hop -> Ganymede 26,000 km dramatic grooved-terrain close-pass!
+          //  - 0.74..1.00: Seamless hop -> Callisto 24,000 km Valhalla multi-ring crater close-pass!
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          if (u < 0.46) {
+            const w = u / 0.46;
+            const hop = evalInterstellarHop(
+              eph,
+              'jupiter', [0, 0, 0], 132000.0 * KM_KLY, '离开木星云顶',
+              'io',      [0, 0, 0], 125000.0 * KM_KLY, '木卫一 Io 逼近',
+              260000.0 * KM_KLY, w, 0.34
+            );
+            const diveW = smoothstepJS(0.34, 1.0, w);
+            const dNowKm = w < 0.34 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(125000.0), Math.log(15500.0), diveW));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 1821.6 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '1979.03.05 贴飞木卫一 Io · 硫磺活火山与巨大木星同框！';
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = w < 0.34 ? hop.dist : dNowKm * KM_KLY;
+            const mA = evalMoonSunlitAngles('io', lerpNum(-0.55, 0.35, diveW), lerpNum(0.16, -0.06, diveW));
+            yaw = mA.yaw;
+            pitch = mA.pitch;
+            fov = lerpNum(54.0, 38.0, diveW);
+            warpManual = (1.0 - smoothstepJS(0.0, 0.34, w)) * 0.55;
+            window._vpovTelemetry = { dateStr: '1979.03.05', targetName: '木卫一 Io (活火山)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else if (u < 0.74) {
+            const w = (u - 0.46) / 0.28;
+            const hop = evalInterstellarHop(
+              eph,
+              'io',       [0, 0, 0], 15500.0 * KM_KLY,  '离开木卫一',
+              'ganymede', [0, 0, 0], 180000.0 * KM_KLY, '木卫三 Ganymede',
+              520000.0 * KM_KLY, w, 0.38
+            );
+            const diveW = smoothstepJS(0.38, 1.0, w);
+            const dNowKm = w < 0.38 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(180000.0), Math.log(24000.0), diveW));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 2634.1 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '1979.03.06 掠过太阳系最大卫星木卫三 · 古老冰岩沟槽';
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = w < 0.38 ? hop.dist : dNowKm * KM_KLY;
+            const mA = evalMoonSunlitAngles('ganymede', lerpNum(-0.45, 0.35, diveW), lerpNum(0.12, -0.08, diveW));
+            yaw = mA.yaw;
+            pitch = mA.pitch;
+            fov = lerpNum(44.0, 34.0, diveW);
+            warpManual = (1.0 - smoothstepJS(0.0, 0.38, w)) * 0.62;
+            window._vpovTelemetry = { dateStr: '1979.03.06', targetName: '木卫三 Ganymede', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else {
+            const w = (u - 0.74) / 0.26;
+            const hop = evalInterstellarHop(
+              eph,
+              'ganymede', [0, 0, 0], 24000.0 * KM_KLY,  '离开木卫三',
+              'callisto', [0, 0, 0], 170000.0 * KM_KLY, '木卫四 Callisto',
+              780000.0 * KM_KLY, w, 0.38
+            );
+            const diveW = smoothstepJS(0.38, 1.0, w);
+            const dNowKm = w < 0.38 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(170000.0), Math.log(22000.0), diveW));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 2410.3 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '1979.03.06 掠过木卫四 Callisto · 瓦尔哈拉多环撞击盆地';
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = w < 0.38 ? hop.dist : dNowKm * KM_KLY;
+            const mA = evalMoonSunlitAngles('callisto', lerpNum(-0.42, 0.34, diveW), lerpNum(0.16, -0.05, diveW));
+            yaw = mA.yaw;
+            pitch = mA.pitch;
+            fov = lerpNum(44.0, 34.0, diveW);
+            warpManual = (1.0 - smoothstepJS(0.0, 0.38, w)) * 0.62;
+            window._vpovTelemetry = { dateStr: '1979.03.06', targetName: '木卫四 Callisto', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          }
+          pExposure = 1.05;
+          break;
+        }
+
+        case 'vpov_04_saturn_rings_loom': {
+          // 1980.08 -> 1980.11.12: SEAMLESS FLIGHT FROM CALLISTO -> SATURN PINPOINT -> EXTREME MEGALOPHOBIA RING-SKIM!
+          //  - u < 0.18: Seamless interplanetary cruise from Callisto -> Saturn 14M km pinpoint (0.49°)
+          //  - 0.18..0.74: Relentless looming approach 14M km -> 184,300 km (38.2°) -> 114,000 km GRAZING RING-SKIM (63.8° GLOBE + 115° RINGS!)
+          //  - 0.74..0.88: Seamless hop -> Mimas 2,400 km Death Star Herschel Crater close-up!
+          //  - 0.88..1.00: Seamless hop -> Enceladus 2,900 km snow-white ice globe close-up!
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          if (u < 0.18) {
+            const w = u / 0.18;
+            const hop = evalInterstellarHop(
+              eph,
+              'callisto', [0, 0, 0], 22000.0 * KM_KLY,   '离开木星系统',
+              'saturn',   [0, 0, 0], 13500000.0 * KM_KLY,'1980.09 抵达土星光环帝国',
+              4.6 * AU_IN_KLY, w, 0.96
+            );
+            anchorId = hop.anchorId;
+            anchorLabel = hop.anchorLabel;
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = hop.dist;
+            const sA0 = evalSatAngles(0.68, 0.30);
+            yaw = sA0.yaw;
+            pitch = sA0.pitch;
+            fov = lerpNum(48.0, 44.0, w);
+            warpManual = Math.sin(Math.PI * w) * 0.94;
+            const dShowKm = lerpNum(18000000.0, 13500000.0, w);
+            window._vpovTelemetry = { dateStr: '1980.09.04', targetName: '土星 Saturn (远距逼近)', distKm: dShowKm, angDeg: (2.0 * Math.asin(60268.0 / dShowKm) * 180.0) / Math.PI, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else if (u < 0.74) {
+            const w = (u - 0.18) / 0.56;
+            const dNowKm = w < 0.58
+              ? Math.exp(lerpNum(Math.log(13500000.0), Math.log(184300.0), smoothstepJS(0.0, 1.0, w / 0.58)))
+              : Math.exp(lerpNum(Math.log(184300.0), Math.log(114000.0), smoothstepJS(0.0, 1.0, (w - 0.58) / 0.42)));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 60268.0 / dNowKm)) * 180.0) / Math.PI;
+            const skimW = smoothstepJS(0.55, 1.0, w);
+            anchorId = 'saturn';
+            anchorLabel = skimW > 0.25
+              ? '1980.11.12 极低空擦过土星光环平面 · 万丈冰环与巨星压满天幕！'
+              : '1980.11.12 土星近土点 · 1:1 真实角直径暴涨 88.4 倍';
+            customPoleUp = eph.solarMap.saturn.axisWorld;
+            dist = dNowKm * KM_KLY;
+            const sAng = evalSatAngles(lerpNum(0.68, -0.18, w), lerpNum(0.30, 0.11, w));
+            yaw = sAng.yaw;
+            pitch = sAng.pitch;
+            fov = lerpNum(44.0, 58.0, skimW);
+            roll = -0.13 * skimW;
+            warpManual = skimW * 0.26;
+            const sDay = Math.floor(lerpNum(5, 82, w));
+            const sDate = sDay <= 30 ? `1980.09.${String(sDay).padStart(2, '0')}`
+              : (sDay <= 61 ? `1980.10.${String(sDay - 30).padStart(2, '0')}` : `1980.11.${String(Math.min(12, sDay - 61)).padStart(2, '0')}`);
+            window._vpovTelemetry = { dateStr: sDate, targetName: '土星 Saturn (贴环掠过)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else if (u < 0.88) {
+            const w = (u - 0.74) / 0.14;
+            const hop = evalInterstellarHop(
+              eph,
+              'saturn', [0, 0, 0], 114000.0 * KM_KLY, '离开土星光环',
+              'mimas',  [0, 0, 0], 14000.0 * KM_KLY,  '土卫一 Mimas (死星坑)',
+              140000.0 * KM_KLY, w, 0.42
+            );
+            const diveW = smoothstepJS(0.42, 1.0, w);
+            const dNowKm = w < 0.42 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(14000.0), Math.log(2400.0), diveW));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 198.2 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '1980.11.12 掠过死星土卫一 Mimas · 赫歇尔巨坑';
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = w < 0.42 ? hop.dist : dNowKm * KM_KLY;
+            const mA = evalMoonSunlitAngles('mimas', lerpNum(-0.45, 0.25, diveW), 0.14);
+            yaw = mA.yaw;
+            pitch = mA.pitch;
+            fov = lerpNum(48.0, 38.0, diveW);
+            warpManual = (1.0 - smoothstepJS(0.0, 0.42, w)) * 0.55;
+            window._vpovTelemetry = { dateStr: '1980.11.12', targetName: '土卫一 Mimas (死星坑)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else {
+            const w = (u - 0.88) / 0.12;
+            const hop = evalInterstellarHop(
+              eph,
+              'mimas',     [0, 0, 0], 2400.0 * KM_KLY,  '离开土卫一',
+              'enceladus', [0, 0, 0], 16000.0 * KM_KLY, '土卫二 Enceladus',
+              110000.0 * KM_KLY, w, 0.42
+            );
+            const diveW = smoothstepJS(0.42, 1.0, w);
+            const dNowKm = w < 0.42 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(16000.0), Math.log(2900.0), diveW));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 252.1 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '1980.11.12 掠过纯白雪球土卫二 Enceladus';
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = w < 0.42 ? hop.dist : dNowKm * KM_KLY;
+            const mA = evalMoonSunlitAngles('enceladus', lerpNum(-0.38, 0.25, diveW), -0.15);
+            yaw = mA.yaw;
+            pitch = mA.pitch;
+            fov = lerpNum(46.0, 38.0, diveW);
+            warpManual = (1.0 - smoothstepJS(0.0, 0.42, w)) * 0.55;
+            window._vpovTelemetry = { dateStr: '1980.11.12', targetName: '土卫二 Enceladus', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          }
+          pExposure = 1.05;
+          break;
+        }
+
+        case 'vpov_05_titan_plunge_bend': {
+          // 1980.11.12 05:46 UTC: SEAMLESS HOP FROM ENCELADUS -> TITAN 480,000 km -> 5,800 km EXTREME PLUNGE (52.7°!)
+          // -> SEAMLESS +35° NORTHWARD CLIMB LOOKING BACK AS SATURN'S RINGS FALL AWAY BELOW!
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          if (u < 0.70) {
+            const w = u / 0.70;
+            const hop = evalInterstellarHop(
+              eph,
+              'enceladus', [0, 0, 0], 2900.0 * KM_KLY,   '离开土卫二',
+              'titan',     [0, 0, 0], 450000.0 * KM_KLY, '土卫六 Titan 逼近',
+              680000.0 * KM_KLY, w, 0.18
+            );
+            const diveW = smoothstepJS(0.18, 1.0, w);
+            const dNowKm = w < 0.18 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(450000.0), Math.log(5800.0), Math.pow(diveW, 0.90)));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 2574.7 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '1980.11.12 土卫六极低空贴飞 · 暴涨 103 倍 (橙色甲烷云与青蓝霾层)';
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = w < 0.18 ? hop.dist : dNowKm * KM_KLY;
+            const mA = evalMoonSunlitAngles('titan', lerpNum(-0.52, 0.42, diveW), lerpNum(0.14, -0.06, diveW));
+            yaw = mA.yaw;
+            pitch = mA.pitch;
+            fov = lerpNum(44.0, 58.0, smoothstepJS(0.55, 1.0, diveW));
+            roll = 0.08 * smoothstepJS(0.65, 1.0, diveW);
+            pExposure = 1.06;
+            warpManual = (1.0 - smoothstepJS(0.0, 0.18, w)) * 0.55 + smoothstepJS(0.75, 1.0, diveW) * 0.35;
+            window._vpovTelemetry = { dateStr: '1980.11.12', targetName: '土卫六 Titan (橙色甲烷霾)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else {
+            const w = (u - 0.70) / 0.30;
+            const hop = evalInterstellarHop(
+              eph,
+              'titan',  [0, 0, 0], 5800.0 * KM_KLY,   '离开土卫六引力井',
+              'saturn', [0, 0, 0], 420000.0 * KM_KLY, '回眸土星光环',
+              620000.0 * KM_KLY, w, 0.28
+            );
+            const pullW = smoothstepJS(0.28, 1.0, w);
+            const dNowKm = w < 0.28 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(420000.0), Math.log(7500000.0), pullW));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 60268.0 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '向北猛折 +35.0° 刺破黄道面 · 回眸土星光环坠入脚下深渊';
+            offset = hop.offset;
+            customPoleUp = eph.solarMap.saturn.axisWorld;
+            dist = w < 0.28 ? hop.dist : dNowKm * KM_KLY;
+            const sAng = evalSatAngles(lerpNum(1.25, 1.95, pullW), lerpNum(0.45, 0.72, pullW));
+            yaw = sAng.yaw;
+            pitch = sAng.pitch;
+            fov = lerpNum(54.0, 48.0, pullW);
+            pExposure = 1.04;
+            warpManual = smoothstepJS(0.35, 1.0, w) * 0.58;
+            window._vpovTelemetry = { dateStr: '1980.11.16', targetName: '土星回眸 (+35°破界北上)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          }
+          break;
+        }
+
+        case 'vpov_06_pale_blue_shutdown': {
+          // 1990.02.14: Seamless flight from Saturn departure out to 40.5 AU (60.59亿 km) Final Lookback at 0.12-pixel Earth + Optical Shutter Power-Off!
+          pProbeEmphasis = 0.0;
+          const fromEarthToVoy = normalize3([
+            eph.voyager1_craft[0] - eph.earth[0],
+            eph.voyager1_craft[1] - eph.earth[1],
+            eph.voyager1_craft[2] - eph.earth[2]
+          ]);
+          const dEV_Kly = Math.hypot(
+            eph.voyager1_craft[0] - eph.earth[0],
+            eph.voyager1_craft[1] - eph.earth[1],
+            eph.voyager1_craft[2] - eph.earth[2]
+          );
+          const dEarthKm = dEV_Kly * KM_PER_KLY;
+          const angDeg = (2.0 * Math.asin(Math.min(0.9999, 6378.1 / dEarthKm)) * 180.0) / Math.PI;
+          const hop = evalInterstellarHop(
+            eph,
+            'saturn', [0, 0, 0], 7500000.0 * (RSUN_IN_KLY / RSUN_KM), '驶离土星',
+            'earth',  [0, 0, 0], dEV_Kly * 0.96,                       '1990.02.14 回眸《暗淡蓝点》',
+            dEV_Kly * 1.05, u, 0.16
+          );
+          anchorId = hop.anchorId;
+          anchorLabel = '1990.02.14 · 60.5 亿公里回眸《暗淡蓝点》 · 光学相机永久关闭';
+          offset = hop.offset;
+          dist = u < 0.16 ? hop.dist : dEV_Kly * lerpNum(0.96, 1.04, (u - 0.16) / 0.84);
+          yaw = Math.atan2(fromEarthToVoy[2], fromEarthToVoy[0]) + 0.03 * (u - 0.5);
+          pitch = Math.asin(Math.max(-0.95, Math.min(0.95, fromEarthToVoy[1])));
+          fov = lerpNum(48.0, 36.0, smoothstepJS(0.15, 0.65, u));
+          warpManual = (1.0 - smoothstepJS(0.0, 0.16, u)) * 0.72;
+          const shut = smoothstepJS(0.76, 0.94, u);
+          pExposure = lerpNum(1.04, 0.12, shut);
+          window._vpovTelemetry = {
+            dateStr: '1990.02.14',
+            targetName: shut > 0.5 ? '光学相机已永久关闭 (盲飞)' : '地球 Earth (0.12 像素)',
+            distKm: dEarthKm,
+            angDeg,
+            mode: shut > 0.5 ? 'BLIND' : 'OPTICAL',
+            shutterFade: shut
+          };
+          break;
+        }
+
+        case 'vpov_07_heliopause_lightday_pov': {
+          // 2012.08.25 -> 2026.11.18: Forward Blind Plasma/Cosmic-Ray Sensor POV through 121 AU Heliopause -> 173.145 AU (1 Light-Day)!
+          pProbeEmphasis = 0.0;
+          const nose = (VOY1_REF && VOY1_REF.escDir) ? VOY1_REF.escDir : [0.0, 0.82, 0.57];
+          const inWall = Math.sin(Math.PI * Math.min(1.0, u / 0.52));
+          const cleared = smoothstepJS(0.42, 0.62, u);
+          const nearDome = smoothstepJS(0.62, 0.95, u);
+          window._helioUniforms = [lerpNum(2.25, 0.35, cleared), 1.45 * nearDome, 0.0, 0.0];
+
+          anchorId = 'voyager1_craft';
+          anchorLabel = cleared < 0.45
+            ? '2012.08.25 第一视角盲飞 · 迎面撞穿五万度日球层顶迷雾墙！'
+            : '2026.11.18 跨越 259.02 亿公里“一光天” · 永生驶向十万光年银河！';
+          const shake = 0.018 * inWall;
+          dist = 1.8 * CRAFT_UNIT_KLY;
+          const vf = normalize3([-nose[0] + shake * Math.sin(clampedT * 13.0), -nose[1] + shake * Math.cos(clampedT * 11.0), -nose[2]]);
+          yaw = Math.atan2(vf[2], vf[0]) + 0.08 * Math.sin(Math.PI * u);
+          pitch = Math.asin(Math.max(-0.92, Math.min(0.92, vf[1])));
+          fov = lerpNum(50.0, 58.0, cleared);
+          pNebula = lerpNum(1.25, 1.72, cleared);
+          pDust = lerpNum(1.00, 1.18, cleared);
+          pExposure = lerpNum(1.12, 1.06, cleared);
+          warpManual = 0.65 * inWall + 0.32 * cleared;
+          const dEarthKm = Math.hypot(
+            eph.voy1RelSunAU[0] - eph.solarMap.earth.relAU[0],
+            eph.voy1RelSunAU[1] - eph.solarMap.earth.relAU[1],
+            eph.voy1RelSunAU[2] - eph.solarMap.earth.relAU[2]
+          ) * AU_KM;
+          const yrNow = u < 0.55 ? '2012.08.25' : (u < 0.80 ? '2026.11.18' : '2026.11.18 · 1.00 光天');
+          window._vpovTelemetry = {
+            dateStr: yrNow,
+            targetName: cleared < 0.45 ? '日球层顶 50,000K 等离子体火墙' : '星际空间 · 跨越一光天边界',
+            distKm: dEarthKm,
+            angDeg: 0.0,
+            mode: 'PLASMA',
+            shutterFade: 0.0
+          };
+          break;
+        }
+
+        // === EPISODE 07: VOYAGER 2 GRAND TOUR 1:1 SEAMLESS FIRST-PERSON POV (1977 -> 2026) ===
+        case 'v2pov_01_launch_grand_tour': {
+          // 1977.08.20 (16 days BEFORE Voyager 1!): Earth departure -> interplanetary acceleration toward Four-Giant Alignment!
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          const eAng = computePlanetHeroAngles(eph, 'earth');
+          const dNowKm = Math.exp(lerpNum(Math.log(17500.0), Math.log(3200000.0), smoothstepJS(0.06, 0.94, u)));
+          const angDeg = (2.0 * Math.asin(Math.min(0.9999, 6378.1 / dNowKm)) * 180.0) / Math.PI;
+          anchorId = 'earth';
+          anchorLabel = '1977.08.20 旅行者2号抢先启航 · 176年一遇四星连珠窗口';
+          customPoleUp = eph.solarMap.earth.axisWorld;
+          dist = dNowKm * KM_KLY;
+          yaw = eAng.yaw - 0.18 + 0.44 * smoothstepJS(0.0, 0.90, u);
+          pitch = eAng.pitch + 0.08 * Math.sin(Math.PI * u);
+          fov = lerpNum(46.0, 48.0, u);
+          warpManual = smoothstepJS(0.74, 1.0, u) * 0.85;
+          const dayNum = Math.min(31, 20 + Math.floor(u * 12));
+          window._vpovTelemetry = {
+            dateStr: `1977.08.${String(dayNum).padStart(2, '0')}`,
+            targetName: '地球 Earth (旅行者2号抢先启航)',
+            distKm: dNowKm,
+            angDeg,
+            mode: 'OPTICAL',
+            shutterFade: 0.0
+          };
+          break;
+        }
+
+        case 'v2pov_02_jupiter_europa': {
+          // 1979.07.09: Seamless hop -> Jupiter looming (14M km -> 721,670 km NASA Perijove -> 175,000 km dramatic GRS view)
+          // -> Whip directly onto Europa (205,720 km -> 13,500 km hero skim unveiling global crimson ocean-ice cracks!)
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          const grsAz = eph.solarMap.jupiter.spinPhase - 0.22;
+          if (u < 0.16) {
+            const w = u / 0.16;
+            const hop = evalInterstellarHop(
+              eph,
+              'earth',   [0, 0, 0], 3200000.0 * KM_KLY,  '驶离地月系统',
+              'jupiter', [0, 0, 0], 13000000.0 * KM_KLY, '1979.06 木星迎面浮现',
+              2.6 * AU_IN_KLY, w, 0.96
+            );
+            anchorId = hop.anchorId;
+            anchorLabel = hop.anchorLabel;
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = hop.dist;
+            const jA0 = evalJupAngles(grsAz + 0.52, 0.18);
+            yaw = jA0.yaw;
+            pitch = jA0.pitch;
+            fov = lerpNum(48.0, 44.0, w);
+            warpManual = Math.sin(Math.PI * w) * 0.92;
+            const dShowKm = lerpNum(18000000.0, 13000000.0, w);
+            window._vpovTelemetry = { dateStr: '1979.06.12', targetName: '木星 Jupiter (远距逼近)', distKm: dShowKm, angDeg: (2.0 * Math.asin(71492.0 / dShowKm) * 180.0) / Math.PI, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else if (u < 0.56) {
+            const w = (u - 0.16) / 0.40;
+            const dNowKm = w < 0.62
+              ? Math.exp(lerpNum(Math.log(13000000.0), Math.log(721670.0), smoothstepJS(0.0, 1.0, w / 0.62)))
+              : Math.exp(lerpNum(Math.log(721670.0), Math.log(195000.0), smoothstepJS(0.0, 1.0, (w - 0.62) / 0.38)));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 71492.0 / dNowKm)) * 180.0) / Math.PI;
+            const skimW = smoothstepJS(0.55, 1.0, w);
+            anchorId = 'jupiter';
+            anchorLabel = '1979.07.09 木星近木点 72.1万km · 大红斑与引力弹弓加速';
+            customPoleUp = eph.solarMap.jupiter.axisWorld;
+            dist = dNowKm * KM_KLY;
+            const jAng = evalJupAngles(lerpNum(grsAz + 0.52, grsAz - 0.16, w), lerpNum(0.18, -0.10, w));
+            yaw = jAng.yaw;
+            pitch = jAng.pitch;
+            fov = lerpNum(44.0, 52.0, skimW);
+            roll = 0.08 * skimW;
+            pExposure = 1.04;
+            window._vpovTelemetry = { dateStr: '1979.07.09', targetName: '木星 Jupiter (近木点)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else {
+            const w = (u - 0.56) / 0.44;
+            const hop = evalInterstellarHop(
+              eph,
+              'jupiter', [0, 0, 0], 195000.0 * KM_KLY, '离开木星云顶',
+              'europa',  [0, 0, 0], 205720.0 * KM_KLY, '1979.07.09 木卫二 Europa',
+              420000.0 * KM_KLY, w, 0.28
+            );
+            const diveW = smoothstepJS(0.28, 1.0, w);
+            const dNowKm = w < 0.28 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(205720.0), Math.log(8200.0), Math.pow(diveW, 0.88)));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 1560.8 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '1979.07.09 首揭木卫二 Europa · 暗红冰裂纹与全球冰下海洋';
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = w < 0.28 ? hop.dist : dNowKm * KM_KLY;
+            const mA = evalMoonSunlitAngles('europa', lerpNum(-0.48, 0.44, diveW), lerpNum(0.16, -0.12, diveW));
+            yaw = mA.yaw;
+            pitch = mA.pitch;
+            fov = lerpNum(46.0, 36.0, diveW);
+            pExposure = 1.05;
+            warpManual = (1.0 - smoothstepJS(0.0, 0.28, w)) * 0.58;
+            window._vpovTelemetry = { dateStr: '1979.07.09', targetName: '木卫二 Europa (冰下海洋)', distKm: dNowKm, angDeg, mode: diveW > 0.4 ? 'TELEPHOTO' : 'OPTICAL', shutterFade: 0.0 };
+          }
+          break;
+        }
+
+        case 'v2pov_03_saturn_gring_enceladus': {
+          // 1981.08.26: Seamless hop from Europa -> Saturn 14M km -> 161,000 km NASA Perikrone (grazing G-ring plane!)
+          // -> Whip directly onto snow-white Enceladus (87,010 km -> 2,400 km close-up!)
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          if (u < 0.16) {
+            const w = u / 0.16;
+            const hop = evalInterstellarHop(
+              eph,
+              'europa', [0, 0, 0], 8200.0 * KM_KLY,     '离开木星系统',
+              'saturn', [0, 0, 0], 13500000.0 * KM_KLY, '1981.07 抵达土星光环帝国',
+              4.6 * AU_IN_KLY, w, 0.96
+            );
+            anchorId = hop.anchorId;
+            anchorLabel = hop.anchorLabel;
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = hop.dist;
+            const sA0 = evalSatAngles(0.76, 0.28);
+            yaw = sA0.yaw;
+            pitch = sA0.pitch;
+            fov = lerpNum(48.0, 44.0, w);
+            warpManual = Math.sin(Math.PI * w) * 0.94;
+            const dShowKm = lerpNum(18000000.0, 13500000.0, w);
+            window._vpovTelemetry = { dateStr: '1981.07.18', targetName: '土星 Saturn (远距逼近)', distKm: dShowKm, angDeg: (2.0 * Math.asin(60268.0 / dShowKm) * 180.0) / Math.PI, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else if (u < 0.72) {
+            const w = (u - 0.16) / 0.56;
+            const dNowKm = w < 0.62
+              ? Math.exp(lerpNum(Math.log(13500000.0), Math.log(161000.0), smoothstepJS(0.0, 1.0, w / 0.62)))
+              : Math.exp(lerpNum(Math.log(161000.0), Math.log(118000.0), smoothstepJS(0.0, 1.0, (w - 0.62) / 0.38)));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 60268.0 / dNowKm)) * 180.0) / Math.PI;
+            const skimW = smoothstepJS(0.55, 1.0, w);
+            anchorId = 'saturn';
+            anchorLabel = '1981.08.26 土星近土点 16.1万km · 穿行G环微尘平面！';
+            customPoleUp = eph.solarMap.saturn.axisWorld;
+            dist = dNowKm * KM_KLY;
+            // Dip right across ring plane (latRad 0.28 -> 0.025!) to feel crossing the razor-thin G-ring!
+            const sAng = evalSatAngles(lerpNum(0.76, -0.22, w), lerpNum(0.28, 0.032, w));
+            yaw = sAng.yaw;
+            pitch = sAng.pitch;
+            fov = lerpNum(44.0, 56.0, skimW);
+            roll = -0.12 * skimW;
+            warpManual = skimW * 0.26;
+            window._vpovTelemetry = { dateStr: '1981.08.26', targetName: '土星 Saturn (穿越G环)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else {
+            const w = (u - 0.72) / 0.28;
+            const hop = evalInterstellarHop(
+              eph,
+              'saturn',    [0, 0, 0], 118000.0 * KM_KLY, '离开土星G环',
+              'enceladus', [0, 0, 0], 87010.0 * KM_KLY,  '土卫二 Enceladus',
+              190000.0 * KM_KLY, w, 0.34
+            );
+            const diveW = smoothstepJS(0.34, 1.0, w);
+            const dNowKm = w < 0.34 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(87010.0), Math.log(2200.0), diveW));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 252.1 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '1981.08.26 掠过纯白冰雪世界土卫二 · 引力转向飞赴冰巨星无人区';
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = w < 0.34 ? hop.dist : dNowKm * KM_KLY;
+            const mA = evalMoonSunlitAngles('enceladus', lerpNum(-0.42, 0.36, diveW), lerpNum(0.10, -0.14, diveW));
+            yaw = mA.yaw;
+            pitch = mA.pitch;
+            fov = lerpNum(46.0, 36.0, diveW);
+            warpManual = (1.0 - smoothstepJS(0.0, 0.34, w)) * 0.56;
+            window._vpovTelemetry = { dateStr: '1981.08.26', targetName: '土卫二 Enceladus', distKm: dNowKm, angDeg, mode: diveW > 0.45 ? 'TELEPHOTO' : 'OPTICAL', shutterFade: 0.0 };
+          }
+          pExposure = 1.05;
+          break;
+        }
+
+        case 'v2pov_04_uranus_sideways_bullseye': {
+          // 1986.01.24 (ONLY spacecraft in human history to visit Uranus!):
+          // Seamless 14亿 km cruise -> pale greenish-cyan pinpoint blooms 1:1 into 97.77° sideways-rolling Uranus & 13 vertical bullseye rings!
+          // 12M km (0.24°) -> 107,000 km NASA Closest Approach (27.6°) -> 56,000 km bullseye ring-plunge (54.3°)!
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          if (u < 0.18) {
+            const w = u / 0.18;
+            const hop = evalInterstellarHop(
+              eph,
+              'enceladus', [0, 0, 0], 2200.0 * KM_KLY,     '离开土星引力井',
+              'uranus',    [0, 0, 0], 11500000.0 * KM_KLY, '1986.01 人类首次抵达天王星',
+              9.8 * AU_IN_KLY, w, 0.96
+            );
+            anchorId = hop.anchorId;
+            anchorLabel = hop.anchorLabel;
+            offset = hop.offset;
+            customPoleUp = ECL_Z_BASE; // Keep Ecliptic Up so Uranus's 97.77° sideways spin/ring bullseye stands VERTICALLY right before our eyes!
+            dist = hop.dist;
+            const uA0 = evalUraAngles(0.32, 0.68);
+            yaw = uA0.yaw;
+            pitch = uA0.pitch;
+            fov = lerpNum(48.0, 44.0, w);
+            warpManual = Math.sin(Math.PI * w) * 0.95;
+            const dShowKm = lerpNum(16000000.0, 11500000.0, w);
+            window._vpovTelemetry = { dateStr: '1985.12.28', targetName: '天王星 Uranus (首次造访)', distKm: dShowKm, angDeg: (2.0 * Math.asin(25559.0 / dShowKm) * 180.0) / Math.PI, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else {
+            const w = (u - 0.18) / 0.82;
+            const dNowKm = w < 0.62
+              ? Math.exp(lerpNum(Math.log(11500000.0), Math.log(107000.0), smoothstepJS(0.0, 1.0, w / 0.62)))
+              : Math.exp(lerpNum(Math.log(107000.0), Math.log(56000.0), smoothstepJS(0.0, 1.0, (w - 0.62) / 0.38)));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 25559.0 / dNowKm)) * 180.0) / Math.PI;
+            const bullW = smoothstepJS(0.55, 1.0, w);
+            anchorId = 'uranus';
+            anchorLabel = bullW > 0.25
+              ? '1986.01.24 穿心97.77°侧躺十三道暗环 · 艾普西隆主环与真彩冰巨星！'
+              : '1986.01.24 人类唯一一次造访天王星 · 1:1 真实角直径暴涨 107 倍';
+            customPoleUp = ECL_Z_BASE; // Ecliptic-up reference makes Uranus's 97.77° sideways axial tilt unmistakably vertical!
+            dist = dNowKm * KM_KLY;
+            // Sweep from tilted ring-bullseye view (+0.68 rad) across the dramatic vertical 13-ring silhouette (+0.96 -> +0.42 rad)!
+            const uLat = w < 0.55 ? lerpNum(0.68, 0.98, w / 0.55) : lerpNum(0.98, 0.46, (w - 0.55) / 0.45);
+            const uAng = evalUraAngles(lerpNum(0.32, -0.45, w), uLat);
+            yaw = uAng.yaw;
+            pitch = uAng.pitch;
+            fov = lerpNum(44.0, 56.0, bullW);
+            roll = 0.08 * Math.sin(Math.PI * w);
+            pExposure = 1.08;
+            warpManual = bullW * 0.22;
+            const uDay = Math.min(24, 1 + Math.floor(w * 24));
+            window._vpovTelemetry = { dateStr: `1986.01.${String(uDay).padStart(2, '0')}`, targetName: '天王星 Uranus (97.77°侧躺靶心)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          }
+          break;
+        }
+
+        case 'v2pov_05_miranda_verona_cliff': {
+          // 1986.01.24 (1.5h before Uranus CA): Seamless whip from Uranus ring bullseye -> Miranda 29,000 km NASA flyby
+          // -> Ultra-crisp telephoto plunge (1,080 km) unveiling Inverness Chevron & 20-km Verona Rupes (tallest cliff in Solar System!)
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          const hop = evalInterstellarHop(
+            eph,
+            'uranus',  [0, 0, 0], 56000.0 * KM_KLY,  '天王星十三道环',
+            'miranda', [0, 0, 0], 29000.0 * KM_KLY,  '1986.01.24 天卫五 Miranda',
+            125000.0 * KM_KLY, u, 0.22
+          );
+          const diveW = smoothstepJS(0.22, 1.0, u);
+          const dNowKm = u < 0.22
+            ? (hop.dist / KM_KLY)
+            : Math.exp(lerpNum(Math.log(29000.0), Math.log(1020.0), Math.pow(diveW, 0.86)));
+          const angDeg = (2.0 * Math.asin(Math.min(0.9999, 235.8 / dNowKm)) * 180.0) / Math.PI;
+          anchorId = hop.anchorId;
+          anchorLabel = diveW > 0.55
+            ? '1986.01.24 维罗纳断崖 20km 太阳系最高悬崖 · 自由落体12分钟！'
+            : '1986.01.24 贴飞天卫五 Miranda 2.9万km · 缝合冰原与亮白V形裂谷';
+          offset = hop.offset;
+          customPoleUp = hop.poleUp;
+          dist = u < 0.22 ? hop.dist : dNowKm * KM_KLY;
+          // Angle onto sunlit Inverness Chevron (-10°lon) & razor-sharp 20-km Verona Rupes cliff (+16°lon) with raking grazing sunlight!
+          const mA = evalMoonSunlitAngles('miranda', lerpNum(-0.55, 0.42, diveW), lerpNum(0.18, -0.14, diveW));
+          yaw = mA.yaw;
+          pitch = mA.pitch;
+          fov = lerpNum(46.0, 34.0, diveW);
+          roll = -0.07 * Math.sin(Math.PI * diveW);
+          pExposure = 1.08;
+          warpManual = (1.0 - smoothstepJS(0.0, 0.22, u)) * 0.62;
+          window._vpovTelemetry = {
+            dateStr: '1986.01.24',
+            targetName: diveW > 0.55 ? '天卫五 Miranda (20km维罗纳断崖)' : '天卫五 Miranda (近飞2.9万km)',
+            distKm: dNowKm,
+            angDeg,
+            mode: diveW > 0.35 ? 'TELEPHOTO' : 'OPTICAL',
+            shutterFade: 0.0
+          };
+          break;
+        }
+
+        case 'v2pov_06_neptune_4951km_skim': {
+          // 1989.08.25 (ULTIMATE MEGALOPHOBIA CLIMAX — ONLY spacecraft to visit Neptune!):
+          //  - u < 0.16: Seamless 16亿 km interplanetary cruise Miranda -> Neptune 14M km pinpoint (0.20°)
+          //  - 0.16..0.60: Relentless looming 14M km -> 115,000 km (24.9°) showing Irwin 2024 pale azure, GDS, Scooter, 2100km/h cirrus & Adams 5-arc rings!
+          //  - 0.60..1.00: EXTREME 1:1 NASA NORTH-POLAR CLOUDTOP SKIM down to 29,240 km from center = 4,951 km ABOVE CLOUD TOPS (115.7° HORIZON WALL!)
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          if (u < 0.16) {
+            const w = u / 0.16;
+            const hop = evalInterstellarHop(
+              eph,
+              'miranda', [0, 0, 0], 1020.0 * KM_KLY,     '离开天王星系统',
+              'neptune', [0, 0, 0], 13500000.0 * KM_KLY, '1989.08 人类首次抵达海王星',
+              11.2 * AU_IN_KLY, w, 0.96
+            );
+            anchorId = hop.anchorId;
+            anchorLabel = hop.anchorLabel;
+            offset = hop.offset;
+            customPoleUp = eph.solarMap.neptune.axisWorld;
+            dist = hop.dist;
+            const nA0 = evalNepAngles(0.42, -0.18);
+            yaw = nA0.yaw;
+            pitch = nA0.pitch;
+            fov = lerpNum(48.0, 44.0, w);
+            warpManual = Math.sin(Math.PI * w) * 0.96;
+            const dShowKm = lerpNum(18000000.0, 13500000.0, w);
+            window._vpovTelemetry = { dateStr: '1989.08.02', targetName: '海王星 Neptune (45亿km首次造访)', distKm: dShowKm, angDeg: (2.0 * Math.asin(24764.0 / dShowKm) * 180.0) / Math.PI, mode: 'OPTICAL', shutterFade: 0.0 };
+          } else {
+            const w = (u - 0.16) / 0.84;
+            const dNowKm = w < 0.56
+              ? Math.exp(lerpNum(Math.log(13500000.0), Math.log(112000.0), smoothstepJS(0.0, 1.0, w / 0.56)))
+              : Math.exp(lerpNum(Math.log(112000.0), Math.log(29240.0), smoothstepJS(0.0, 1.0, (w - 0.56) / 0.44)));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 24764.0 / dNowKm)) * 180.0) / Math.PI;
+            const skimW = smoothstepJS(0.54, 1.0, w);
+            anchorId = 'neptune';
+            anchorLabel = skimW > 0.25
+              ? '1989.08.25 极低空 4,951km 擦过海王星北极云顶 · 115° 巨物蓝墙压满天幕！'
+              : '1989.08.25 海王星 2024真彩 · 2100km/h 大暗斑风暴与亚当斯五环弧';
+            customPoleUp = eph.solarMap.neptune.axisWorld;
+            dist = dNowKm * KM_KLY;
+            // Shift camera target tangentially over sunlit Northern limb during the 4,951-km skim so blazing sunlit cerulean clouds & azure limb fill 78% of the screen!
+            const nAx = eph.solarMap.neptune.axisWorld;
+            offset = [
+              nAx[0] * 10200.0 * KM_KLY * skimW,
+              nAx[1] * 10200.0 * KM_KLY * skimW,
+              nAx[2] * 10200.0 * KM_KLY * skimW
+            ];
+            // Stay firmly on sunlit cerulean dayside (eqAz 0.42 -> 0.08, latRad -0.22 -> +0.26) while plunging down to exact 29,240 km (4,951 km above clouds)!
+            const nAng = evalNepAngles(lerpNum(0.42, 0.06, w), lerpNum(-0.22, 0.28, smoothstepJS(0.46, 1.0, w)));
+            yaw = nAng.yaw;
+            pitch = nAng.pitch;
+            fov = lerpNum(44.0, 60.0, skimW);
+            roll = 0.13 * skimW;
+            pExposure = 1.12;
+            warpManual = skimW * 0.34;
+            const nDay = Math.min(25, 3 + Math.floor(w * 23));
+            window._vpovTelemetry = {
+              dateStr: `1989.08.${String(nDay).padStart(2, '0')}`,
+              targetName: skimW > 0.45 ? '海王星北极云顶 (距云顶仅 4,951 km!)' : '海王星 Neptune (大暗斑与亚当斯环)',
+              distKm: dNowKm,
+              angDeg,
+              mode: 'OPTICAL',
+              shutterFade: 0.0
+            };
+          }
+          break;
+        }
+
+        case 'v2pov_07_triton_geysers_south_plunge': {
+          // 1989.08.25 09:10 UTC (5h after Neptune CA): Seamless plunge off Neptune's North Pole -> Triton 39,800 km NASA flyby
+          // -> Hero close-pass (5,200 km) revealing pink N2 ice cap, cantaloupe terrain & 8-km vertical dark nitrogen cryogeysers!
+          // -> Then -48.0° SOUTHWARD plunge looking back as Neptune's backlit crescent falls away above us!
+          const KM_KLY = RSUN_IN_KLY / RSUN_KM;
+          pProbeEmphasis = 0.0;
+          if (u < 0.72) {
+            const w = u / 0.72;
+            const hop = evalInterstellarHop(
+              eph,
+              'neptune', [0, 0, 0], 29240.0 * KM_KLY,  '离开海王星北极云顶',
+              'triton',  [0, 0, 0], 180000.0 * KM_KLY, '1989.08.25 海卫一 Triton',
+              260000.0 * KM_KLY, w, 0.22
+            );
+            const diveW = smoothstepJS(0.22, 1.0, w);
+            const dNowKm = w < 0.22
+              ? (hop.dist / KM_KLY)
+              : Math.exp(lerpNum(Math.log(180000.0), Math.log(4900.0), Math.pow(diveW, 0.88)));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 1353.4 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '1989.08.25 贴飞海卫一 Triton · 逆行捕获冰世界与8km氮气黑冰泉！';
+            offset = hop.offset;
+            customPoleUp = hop.poleUp;
+            dist = w < 0.22 ? hop.dist : dNowKm * KM_KLY;
+            const mA = evalMoonSunlitAngles('triton', lerpNum(-0.46, 0.45, diveW), lerpNum(-0.18, -0.44, diveW));
+            yaw = mA.yaw;
+            pitch = mA.pitch;
+            fov = lerpNum(48.0, 36.0, diveW);
+            pExposure = 1.08;
+            warpManual = (1.0 - smoothstepJS(0.0, 0.22, w)) * 0.56;
+            window._vpovTelemetry = { dateStr: '1989.08.25', targetName: '海卫一 Triton (-235℃ 氮气黑冰泉)', distKm: dNowKm, angDeg, mode: diveW > 0.45 ? 'TELEPHOTO' : 'OPTICAL', shutterFade: 0.0 };
+          } else {
+            const w = (u - 0.72) / 0.28;
+            const hop = evalInterstellarHop(
+              eph,
+              'triton',  [0, 0, 0], 4900.0 * KM_KLY,   '告别海卫一',
+              'neptune', [0, 0, 0], 260000.0 * KM_KLY, '回眸海王星新月 (-48°向南俯冲)',
+              360000.0 * KM_KLY, w, 0.28
+            );
+            const pullW = smoothstepJS(0.28, 1.0, w);
+            const dNowKm = w < 0.28 ? (hop.dist / KM_KLY) : Math.exp(lerpNum(Math.log(260000.0), Math.log(6500000.0), pullW));
+            const angDeg = (2.0 * Math.asin(Math.min(0.9999, 24764.0 / dNowKm)) * 180.0) / Math.PI;
+            anchorId = hop.anchorId;
+            anchorLabel = '向南猛折 -48.0° 坠出黄道面 · 人类告别太阳系最后两颗冰巨星';
+            offset = hop.offset;
+            customPoleUp = eph.solarMap.neptune.axisWorld;
+            dist = w < 0.28 ? hop.dist : dNowKm * KM_KLY;
+            // Dramatic crescent lookback as Voyager 2 plunges -48° south beneath Neptune!
+            const nAng = evalNepAngles(lerpNum(1.65, 2.35, pullW), lerpNum(-0.48, -0.78, pullW));
+            yaw = nAng.yaw;
+            pitch = nAng.pitch;
+            fov = lerpNum(54.0, 48.0, pullW);
+            pExposure = 1.06;
+            warpManual = smoothstepJS(0.32, 1.0, w) * 0.62;
+            window._vpovTelemetry = { dateStr: '1989.08.28', targetName: '海王星回眸 (-48°南向逃逸)', distKm: dNowKm, angDeg, mode: 'OPTICAL', shutterFade: 0.0 };
+          }
+          break;
+        }
+
+        case 'v2pov_08_heliopause_sirius_2026': {
+          // 2018.11.05 (119.0 AU = 178亿 km) -> 2026.11 (144.5 AU = 216.2亿 km, 15.26 km/s, 20h01m light-time):
+          // Forward live PLS Plasma Sensor POV breaking through the 50,000 K Heliopause shock wall into the Southern Milky Way toward Ross 248 & Sirius!
+          pProbeEmphasis = 0.0;
+          const nose2 = (VOY2_REF && VOY2_REF.escDir2) ? VOY2_REF.escDir2 : [0.22, -0.74, 0.63];
+          const inWall = Math.sin(Math.PI * Math.min(1.0, u / 0.50));
+          const cleared = smoothstepJS(0.40, 0.60, u);
+          window._helioUniforms = [lerpNum(2.25, 0.30, cleared), 0.0, 0.0, 0.0];
+
+          anchorId = 'voyager2_craft';
+          anchorLabel = cleared < 0.45
+            ? '2018.11.05 119 AU 日球层顶 · 等离子体仪亲手实测 50,000K 激波火墙！'
+            : '2026.11 距地球 216.2 亿km (144.5 AU) · 向南 -48° 永赴天狼星！';
+          const shake = 0.016 * inWall;
+          dist = 1.8 * CRAFT_UNIT_KLY;
+          const vf = normalize3([-nose2[0] + shake * Math.sin(clampedT * 13.0), -nose2[1] + shake * Math.cos(clampedT * 11.0), -nose2[2]]);
+          yaw = Math.atan2(vf[2], vf[0]) + 0.08 * Math.sin(Math.PI * u);
+          pitch = Math.asin(Math.max(-0.92, Math.min(0.92, vf[1])));
+          fov = lerpNum(50.0, 58.0, cleared);
+          pNebula = lerpNum(1.25, 1.78, cleared);
+          pDust = lerpNum(1.00, 1.20, cleared);
+          pExposure = lerpNum(1.12, 1.06, cleared);
+          warpManual = 0.64 * inWall + 0.30 * cleared;
+          const dEarthKm = Math.hypot(
+            eph.voy2RelSunAU[0] - eph.solarMap.earth.relAU[0],
+            eph.voy2RelSunAU[1] - eph.solarMap.earth.relAU[1],
+            eph.voy2RelSunAU[2] - eph.solarMap.earth.relAU[2]
+          ) * AU_KM;
+          const yrNow = u < 0.52 ? '2018.11.05' : '2026.11 · 144.5 AU';
+          window._vpovTelemetry = {
+            dateStr: yrNow,
+            targetName: cleared < 0.45 ? '日球层顶 119 AU (PLS实时测得5万K)' : '南向星际空间 · 15.26 km/s 奔向天狼星',
+            distKm: dEarthKm,
+            angDeg: 0.0,
+            mode: 'PLASMA',
+            shutterFade: 0.0
+          };
+          break;
+        }
+
+        // === EPISODE 08: FALLING INTO SAGITTARIUS A* BLACK HOLE — 1:1 GENERAL RELATIVITY FIRST-PERSON DIVE! ===
+        case 'bhpov_01_milkyway_dive': {
+          // 26,673 ly -> 4.2 kly: Sweeping plunge across the Milky Way's spiral arms & dark dust rift toward the Galactic Core!
+          anchorId = 'sgra';
+          anchorLabel = '银河系中心方向 · 距银心黑洞 26,673 光年';
+          dist = logLerp(64.0, 4.2, smoothstepJS(0.05, 0.96, u));
+          yaw = lerpNum(0.42, 1.58, u);
+          pitch = lerpNum(0.56, 0.06, smoothstepJS(0.0, 0.72, u));
+          fov = lerpNum(50.0, 56.0, Math.sin(Math.PI * u));
+          roll = 0.07 * Math.sin(Math.PI * u);
+          warpManual = smoothstepJS(0.18, 0.88, u) * 0.86;
+          pNebula = 1.25;
+          window._bhpovTelemetry = {
+            stage: '银心俯冲',
+            rRs: dist / SGRA_RS_KLY,
+            distLy: dist * 1000.0,
+            betaC: 0.0,
+            timeDil: 1.0,
+            tidalG: 0.0,
+            countdownS: -1.0,
+            alertLevel: 0
+          };
+          break;
+        }
+
+        case 'bhpov_02_s2_slingshot': {
+          // 4.2 kly -> 1,180 AU -> 340 AU: Entering the Nuclear S-Star Cluster — Blue Star S2 whipped to 7,650 km/s (2.55% c)!
+          anchorId = 'sgra';
+          anchorLabel = '银心 S 星团 · 恒星 S2 狂飙 7,650 km/s (2.55% 光速)';
+          dist = u < 0.36
+            ? logLerp(4.2, 1180.0 * AU_IN_KLY, smoothstepJS(0.0, 0.36, u))
+            : logLerp(1180.0 * AU_IN_KLY, 320.0 * AU_IN_KLY, smoothstepJS(0.36, 1.0, u));
+          yaw = lerpNum(1.58, 2.65, u);
+          pitch = lerpNum(0.06, 0.38, smoothstepJS(0.0, 0.45, u));
+          fov = 52.0;
+          pSpeed = 1.0 + 4.0 * smoothstepJS(0.22, 0.88, u);
+          warpManual = (1.0 - smoothstepJS(0.0, 0.36, u)) * 0.76;
+          window._bhpovTelemetry = {
+            stage: 'S星团近心点',
+            rRs: dist / SGRA_RS_KLY,
+            distLy: dist * 1000.0,
+            betaC: 0.0255 * smoothstepJS(0.30, 0.95, u),
+            timeDil: 1.0003,
+            tidalG: 0.0,
+            countdownS: -1.0,
+            alertLevel: 0
+          };
+          break;
+        }
+
+        case 'bhpov_03_gargantua_reveal': {
+          // 320 AU -> 26 Rs -> 11.2 Rs: Sgr A* erupts into colossal Kerr Gargantua — Double-arched lensed disk & Doppler beaming!
+          anchorId = 'sgra';
+          anchorLabel = '人马座 A* (430万倍太阳质量) · 相对论双拱吸积盘与多普勒聚束';
+          const rRsNow = u < 0.34
+            ? Math.exp(lerpNum(Math.log(320.0 * AU_IN_KLY / SGRA_RS_KLY), Math.log(26.0), smoothstepJS(0.0, 0.34, u)))
+            : Math.exp(lerpNum(Math.log(26.0), Math.log(11.2), smoothstepJS(0.34, 1.0, u)));
+          dist = rRsNow * SGRA_RS_KLY;
+          yaw = lerpAngle(2.65, 0.42, smoothstepJS(0.0, 0.34, u)) + 0.42 * smoothstepJS(0.34, 1.0, u);
+          pitch = lerpNum(0.38, -0.095, smoothstepJS(0.0, 0.36, u)) + 0.05 * Math.sin(Math.PI * u);
+          fov = lerpNum(52.0, 42.0, smoothstepJS(0.0, 0.38, u));
+          pAccretion = 1.25 + 0.25 * smoothstepJS(0.34, 1.0, u);
+          warpManual = (1.0 - smoothstepJS(0.0, 0.34, u)) * 0.80;
+          const beta3 = Math.sqrt(Math.min(0.99, 1.0 / Math.max(1.01, rRsNow)));
+          const dil3  = 1.0 / Math.sqrt(Math.max(0.01, 1.0 - 1.0 / Math.max(1.01, rRsNow)));
+          window._bhpovTelemetry = {
+            stage: '吸积盘远景',
+            rRs: rRsNow,
+            distLy: 0.0,
+            betaC: beta3,
+            timeDil: dil3,
+            tidalG: 0.000114 / Math.pow(Math.max(0.1, rRsNow), 3.0),
+            countdownS: -1.0,
+            alertLevel: 0
+          };
+          break;
+        }
+
+        case 'bhpov_04_isco_time_dilation': {
+          // 11.2 Rs -> 3.00 Rs (ISCO = 3,807万 km): Spiraling down to the last stable orbit in the universe!
+          anchorId = 'sgra';
+          anchorLabel = '抵达最内稳定轨道 ISCO (3.0 Rs · 3,807万km) · 坠速57.7%光速';
+          const rRsNow = Math.exp(lerpNum(Math.log(11.2), Math.log(3.00), smoothstepJS(0.0, 1.0, u)));
+          dist = rRsNow * SGRA_RS_KLY;
+          yaw = 0.84 + 0.95 * u;
+          pitch = lerpNum(-0.095, -0.14, u);
+          fov = lerpNum(42.0, 52.0, u);
+          roll = 0.09 * Math.sin(Math.PI * u);
+          pAccretion = 1.48 + 0.22 * Math.sin(Math.PI * u);
+          pSpeed = 1.6;
+          warpManual = 0.18 + 0.22 * u;
+          const beta4 = Math.sqrt(1.0 / rRsNow);
+          const dil4  = 1.0 / Math.sqrt(Math.max(0.001, 1.0 - 1.0 / rRsNow));
+          window._bhpovTelemetry = {
+            stage: '最内稳定轨道 ISCO',
+            rRs: rRsNow,
+            distLy: 0.0,
+            betaC: beta4,
+            timeDil: dil4,
+            tidalG: 0.000114 / Math.pow(rRsNow, 3.0),
+            countdownS: -1.0,
+            alertLevel: 1
+          };
+          break;
+        }
+
+        case 'bhpov_05_photon_sphere': {
+          // Visual dive 7.6 Rs -> 3.6 Rs pitched up so the colossal black abyss swallows the lower HALF of the screen
+          // while the blazing double-arched Photon Ring & accretion plasma wrap dramatically across the center-upper sky!
+          anchorId = 'sgra';
+          anchorLabel = '穿过光子球层 (1.5 Rs · 1,903万km) · 坠速81.6%光速 · 黑暗吞噬半天';
+          const rRsVis = Math.exp(lerpNum(Math.log(7.6), Math.log(3.65), smoothstepJS(0.0, 1.0, u)));
+          const rRsHud = Math.exp(lerpNum(Math.log(3.00), Math.log(1.48), smoothstepJS(0.0, 1.0, u)));
+          dist = rRsVis * SGRA_RS_KLY;
+          yaw = 1.79 + 0.72 * u;
+          pitch = lerpNum(-0.14, -0.06, u);
+          offset = [0.0, lerpNum(0.35, 1.85, smoothstepJS(0.0, 1.0, u)) * SGRA_RS_KLY, 0.0];
+          fov = lerpNum(52.0, 68.0, u);
+          roll = -0.10 * smoothstepJS(0.15, 1.0, u);
+          pAccretion = 1.72;
+          pSpeed = 2.0;
+          warpManual = 0.42 + 0.24 * u;
+          const beta5 = Math.sqrt(1.0 / rRsHud);
+          const dil5  = 1.0 / Math.sqrt(Math.max(0.001, 1.0 - 1.0 / rRsHud));
+          window._bhpovTelemetry = {
+            stage: '光子球层 (1.5 Rs)',
+            rRs: rRsHud,
+            distLy: 0.0,
+            betaC: beta5,
+            timeDil: dil5,
+            tidalG: 0.000114 / Math.pow(rRsHud, 3.0),
+            countdownS: -1.0,
+            alertLevel: 2
+          };
+          break;
+        }
+
+        case 'bhpov_06_event_horizon_cross': {
+          // 1.48 Rs -> 0.92 Rs: CROSSING THE EVENT HORIZON (1.0 Rs = 1,269万 km)!
+          anchorId = 'sgra';
+          anchorLabel = '跨越事件视界 (1.0 Rs · 1,269万km) · 潮汐力仅0.00011g · 星空蓝移坍缩！';
+          const rRsNow = lerpNum(1.48, 0.92, smoothstepJS(0.0, 1.0, u));
+          const baseYaw = 2.51 + 0.35 * u;
+          const basePitch = lerpNum(-0.06, 0.14, smoothstepJS(0.0, 1.0, u));
+          const outX = Math.cos(basePitch) * Math.cos(baseYaw);
+          const outY = Math.sin(basePitch);
+          const outZ = Math.cos(basePitch) * Math.sin(baseYaw);
+          if (u < 0.48) {
+            const w = u / 0.48;
+            dist = lerpNum(3.65, 2.55, w) * SGRA_RS_KLY;
+            yaw = baseYaw;
+            pitch = basePitch;
+            offset = [0.0, lerpNum(1.85, 2.20, w) * SGRA_RS_KLY, 0.0];
+          } else {
+            const w = smoothstepJS(0.48, 1.0, u);
+            const rInt = lerpNum(1.06, 0.90, w);
+            const lookDist = 1.50 * rInt * SGRA_RS_KLY;
+            offset = [outX * (rInt * 2.50 * SGRA_RS_KLY), outY * (rInt * 2.50 * SGRA_RS_KLY), outZ * (rInt * 2.50 * SGRA_RS_KLY)];
+            dist = lookDist;
+            yaw = baseYaw + Math.PI;
+            pitch = -basePitch;
+          }
+          fov = lerpNum(66.0, 74.0, u);
+          roll = -0.11 * (1.0 - u * 0.5);
+          pAccretion = 1.78;
+          pSpeed = 2.2;
+          warpManual = 0.65 * (1.0 - smoothstepJS(0.55, 0.95, u) * 0.45);
+          const beta6 = Math.sqrt(Math.min(1.04, 1.0 / Math.max(0.90, rRsNow)));
+          const dil6  = rRsNow > 1.0005 ? (1.0 / Math.sqrt(1.0 - 1.0 / rRsNow)) : 999.9;
+          const cd6   = rRsNow < 1.0 ? (28.22 * Math.pow(Math.max(0.0, rRsNow), 1.5)) : -1.0;
+          window._bhpovTelemetry = {
+            stage: rRsNow <= 1.0 ? '已穿过事件视界 (< 1.0 Rs)' : '逼近事件视界 (1.0 Rs)',
+            rRs: rRsNow,
+            distLy: 0.0,
+            betaC: beta6,
+            timeDil: dil6,
+            tidalG: 0.000114 / Math.pow(Math.max(0.1, rRsNow), 3.0),
+            countdownS: cd6,
+            alertLevel: 3
+          };
+          break;
+        }
+
+        case 'bhpov_07_interior_28s_singularity': {
+          // 0.92 Rs -> 0.11 Rs: INSIDE THE EVENT HORIZON — Exact 28.2s Proper-Time Countdown to the Singularity!
+          // Camera positioned at exact rRsNow * outDir, looking straight outward (+outDir) at the collapsing electric-blue Einstein ring!
+          anchorId = 'sgra';
+          anchorLabel = '事件视界内部 · 时空互换 · 距奇点最终倒计时 28.2 秒';
+          const fallP = smoothstepJS(0.0, 0.86, u);
+          const tauRemainFrac = Math.max(0.042, 1.0 - fallP * 0.958);
+          const rRsNow = Math.max(0.11, 0.92 * Math.pow(tauRemainFrac, 2.0 / 3.0));
+          const baseYaw = 2.86 + 0.18 * u;
+          const basePitch = 0.14 + 0.05 * Math.sin(Math.PI * u);
+          const outX = Math.cos(basePitch) * Math.cos(baseYaw);
+          const outY = Math.sin(basePitch);
+          const outZ = Math.cos(basePitch) * Math.sin(baseYaw);
+          // Exact position = rRsNow * outDir; targetWorld = 2.5 * rRsNow * outDir -> camera looks straight out along +outDir!
+          offset = [outX * (rRsNow * 2.50 * SGRA_RS_KLY), outY * (rRsNow * 2.50 * SGRA_RS_KLY), outZ * (rRsNow * 2.50 * SGRA_RS_KLY)];
+          dist = 1.50 * rRsNow * SGRA_RS_KLY;
+          yaw = baseYaw + Math.PI;
+          pitch = -basePitch;
+          fov = lerpNum(74.0, 62.0, fallP);
+          roll = 0.08 * Math.sin(clampedT * 1.2) * smoothstepJS(0.5, 0.9, u);
+          pAccretion = 1.88;
+          pSpeed = 2.4;
+          pExposure = lerpNum(1.08, 0.28, smoothstepJS(0.86, 1.0, u));
+          warpManual = 0.42 * (1.0 - smoothstepJS(0.82, 0.98, u));
+          const cd7 = 28.22 * Math.pow(Math.max(0.0, rRsNow), 1.5);
+          window._bhpovTelemetry = {
+            stage: '事件视界内部 · 奇点倒计时',
+            rRs: rRsNow,
+            distLy: 0.0,
+            betaC: Math.sqrt(1.0 / Math.max(0.11, rRsNow)),
+            timeDil: 999.9,
+            tidalG: 0.000114 / Math.pow(Math.max(0.015, rRsNow), 3.0),
+            countdownS: cd7,
+            alertLevel: 3
+          };
+          break;
+        }
+
         // === EPISODE 00: 10-Act First-Person Tour on Upgraded 1:1 Ray-Traced Oblate Solar System Engine ===
         case 'solar_01_sun':
         case 'solar_sun_ignite': {
@@ -17155,7 +18585,9 @@
         }
       }
 
-      window._enableVoyagerCraftSDF = (!ep || ep.id !== 'ep05_voyager1_lightday' || anchorId === 'voyager1_craft');
+      window._enableVoyagerCraftSDF = (ep && (ep.id === 'ep06_voyager1_pov' || ep.id === 'ep07_voyager2_pov'))
+        ? false
+        : (!ep || ep.id !== 'ep05_voyager1_lightday' || anchorId === 'voyager1_craft');
       cam.warp = null;
       cam.earthriseMode = earthriseLocal;
       cam.customPoleUp = customPoleUp;
@@ -17300,13 +18732,16 @@
         if (!allowDistantLookback && cam.distKly < 6.5 * RSUN_IN_KLY && L.dKly > 0.05 * AU_IN_KLY) continue; // Hide unrelated background planets!
         if (seg && seg.scene === 'mw_06_milkyway_panorama' && L.dKly > 92.0) continue; // Hide background LMC/SMC/extragalactic labels behind Milky Way spiral!
         if (seg && seg.scene === 'voy_07_eternal_wanderer' && nowT > 356.0 && L.dKly > 92.0) continue;
-        if (ep && ep.id === 'ep05_voyager1_lightday') {
-          if (cam.anchorId === 'voyager1_craft' && cam.distKly < 15.0 * CRAFT_UNIT_KLY) continue;
+        if (ep && (ep.id === 'ep05_voyager1_lightday' || ep.id === 'ep06_voyager1_pov' || ep.id === 'ep07_voyager2_pov')) {
+          if ((cam.anchorId === 'voyager1_craft' || cam.anchorId === 'voyager2_craft') && cam.distKly < 15.0 * CRAFT_UNIT_KLY) continue;
           if (seg && seg.scene !== 'voy_06_lightday_dome' && (L.name.includes('旅行者2号') || L.name.includes('先驱者') || L.name.includes('新视野号') || L.name.includes('黄金穹顶'))) continue;
-          // Hide post-1980 modern probes & tiny clutter moons during Voyager 1's historic 1977-2026 journey!
+          // Hide post-1980 modern probes & tiny clutter moons during Voyager's historic 1977-2026 journey!
           if (/朱诺|欧罗巴快船|伽利略|卡西尼|惠更斯|蜻蜓|阿波罗|嫦娥|阿尔忒弥斯/.test(L.name)) continue;
-          if (cam.anchorId !== 'titan' && /土卫|木卫|海卫|天卫|火卫/.test(L.name)) continue;
-          if (seg && seg.scene === 'voy_04_pale_blue_blind' && /地球|金星|水星|火星/.test(L.name)) continue;
+          if (ep.id === 'ep05_voyager1_lightday' && cam.anchorId !== 'titan' && /土卫|木卫|海卫|天卫|火卫/.test(L.name)) continue;
+          if ((ep.id === 'ep06_voyager1_pov' || ep.id === 'ep07_voyager2_pov') && /土卫十八|土卫八|木卫五|木卫十四|木卫十六/.test(L.name)) continue;
+          if (ep.id === 'ep06_voyager1_pov' && (seg.scene === 'vpov_06_pale_blue_shutdown' || (seg.scene === 'vpov_05_titan_plunge_bend' && cam.anchorId === 'saturn')) && /土卫|木卫/.test(L.name)) continue;
+          if (ep.id === 'ep07_voyager2_pov' && (seg.scene === 'v2pov_06_neptune_4951km_skim' || seg.scene === 'v2pov_07_triton_geysers_south_plunge') && /天卫|土卫|木卫/.test(L.name)) continue;
+          if (seg && (seg.scene === 'voy_04_pale_blue_blind' || seg.scene === 'vpov_06_pale_blue_shutdown') && /地球|金星|水星|火星/.test(L.name)) continue;
         }
         const dotX = L.sx * kx;
         const dotY = L.sy * ky;
@@ -17645,10 +19080,12 @@
         ctx2d.textAlign = 'left';
         ctx2d.fillText(statusTxt, bx + 16 * s, by + 28 * s);
         ctx2d.restore();
-      } else if (seg.scene === 'voy_04_pale_blue_blind' && nowT >= 179.2 && nowT <= 199.4) {
-        // EP.05 Act 4: Authentic 1990.02.14 Voyager 1 Scattered Sunbeam + 0.12-Pixel "Pale Blue Dot" Reticle!
+      } else if ((seg.scene === 'voy_04_pale_blue_blind' && nowT >= 179.2 && nowT <= 199.4) || (seg.scene === 'vpov_06_pale_blue_shutdown' && (nowT - seg.t0) >= 6.0 && (nowT - seg.t0) / Math.max(1, seg.t1 - seg.t0) < 0.78)) {
+        // Authentic 1990.02.14 Voyager 1 Scattered Sunbeam + 0.12-Pixel "Pale Blue Dot" Reticle!
         const ePt = projWorldToHud(latestEph.earth);
-        const fadeP = smoothstepJS(179.2, 181.2, nowT) * (1.0 - smoothstepJS(198.2, 199.4, nowT));
+        const fadeP = seg.scene === 'vpov_06_pale_blue_shutdown'
+          ? (smoothstepJS(seg.t0 + 6.0, seg.t0 + 8.5, nowT) * (1.0 - smoothstepJS(seg.t0 + (seg.t1 - seg.t0) * 0.72, seg.t0 + (seg.t1 - seg.t0) * 0.78, nowT)))
+          : (smoothstepJS(179.2, 181.2, nowT) * (1.0 - smoothstepJS(198.2, 199.4, nowT)));
         if (ePt && fadeP > 0.01) {
           const ex = ePt[0], ey = ePt[1];
           ctx2d.save();
@@ -17788,8 +19225,468 @@
       ctx2d.strokeStyle = 'rgba(0, 0, 0, 0.88)';
       ctx2d.textAlign = 'left';
 
+      const isVoyPovEp = (ep && (ep.id === 'ep06_voyager1_pov' || ep.id === 'ep07_voyager2_pov') && window._vpovTelemetry);
+      const isBhPovEp  = (ep && ep.id === 'ep08_sgra_dive_pov' && window._bhpovTelemetry);
       const isVoyEp = (ep && ep.id === 'ep05_voyager1_lightday' && latestEph && latestEph.voy1RelSunAU && nowT < 342.0);
-      if (isVoyEp) {
+      if (isBhPovEp) {
+        const bt = window._bhpovTelemetry;
+        // Subtle GR optical corner brackets (cyan -> amber at ISCO -> crimson inside Photon Sphere / Event Horizon!)
+        ctx2d.save();
+        ctx2d.strokeStyle = bt.alertLevel >= 3 ? 'rgba(248, 113, 113, 0.36)' : (bt.alertLevel >= 2 ? 'rgba(251, 191, 36, 0.32)' : 'rgba(125, 211, 252, 0.24)');
+        ctx2d.lineWidth = 2.0 * s;
+        const mX = 48 * s, mTop = 278 * s, mBot = 1315 * s, br = 26 * s;
+        ctx2d.beginPath();
+        ctx2d.moveTo(mX, mTop + br); ctx2d.lineTo(mX, mTop); ctx2d.lineTo(mX + br, mTop);
+        ctx2d.moveTo(rw - mX - br, mTop); ctx2d.lineTo(rw - mX, mTop); ctx2d.lineTo(rw - mX, mTop + br);
+        ctx2d.moveTo(mX, mBot - br); ctx2d.lineTo(mX, mBot); ctx2d.lineTo(mX + br, mBot);
+        ctx2d.moveTo(rw - mX - br, mBot); ctx2d.lineTo(rw - mX, mBot); ctx2d.lineTo(rw - mX, mBot - br);
+        ctx2d.stroke();
+        ctx2d.restore();
+
+        let headLine;
+        if (bt.countdownS >= 0.0) {
+          headLine = `⚠️ ${bt.stage} · T-${bt.countdownS.toFixed(1)}s`;
+        } else if (bt.distLy > 0.01) {
+          headLine = `🕳️ 广义相对论坠落视角 · 距银心 ${bt.distLy >= 1000 ? (bt.distLy / 1000).toFixed(2) + ' 万光年' : bt.distLy.toFixed(1) + ' 光年'}`;
+        } else {
+          headLine = `🕳️ ${bt.stage} · 距奇点 ${bt.rRs.toFixed(2)} Rs (${(bt.rRs * 1269).toFixed(0)} 万km)`;
+        }
+        ctx2d.font = `800 ${Math.round(25.0 * s)}px ${fontSans}`;
+        ctx2d.lineWidth = 5.0 * s;
+        ctx2d.strokeText(headLine, textStartX, infoBaseY);
+        ctx2d.fillStyle = bt.alertLevel >= 3 ? '#f87171' : (bt.alertLevel >= 1 ? '#fbbf24' : '#38bdf8');
+        ctx2d.fillText(headLine, textStartX, infoBaseY);
+
+        let subLine;
+        if (bt.distLy > 0.01) {
+          const vStr = bt.betaC > 0.001 ? `恒星S2公转 ${(bt.betaC * 100).toFixed(2)}% 光速` : '人马座 A* · 430万倍太阳质量';
+          subLine = `${vStr}  ·  史瓦西半径 Rs = 1,269万km`;
+        } else {
+          const betaStr = bt.rRs <= 1.0 ? '越过光速边界 (视界内)' : `坠速 ${(bt.betaC * 100).toFixed(1)}% c`;
+          const dilStr  = bt.timeDil >= 100.0 ? '时间膨胀 → ∞' : `时间膨胀 ${bt.timeDil.toFixed(2)}×`;
+          const tidStr  = bt.tidalG < 0.01 ? `${bt.tidalG.toFixed(5)} g` : (bt.tidalG < 10.0 ? `${bt.tidalG.toFixed(2)} g` : `${Math.round(bt.tidalG)} g`);
+          subLine = `${betaStr}  ·  ${dilStr}  ·  潮汐力 ${tidStr}`;
+        }
+        ctx2d.font = `600 ${Math.round(18.5 * s)}px ${fontMono}`;
+        ctx2d.lineWidth = 3.8 * s;
+        ctx2d.strokeText(subLine, textStartX, infoBaseY + 32 * s);
+        ctx2d.fillStyle = '#e2e8f0';
+        ctx2d.fillText(subLine, textStartX, infoBaseY + 32 * s);
+      } else if (isVoyPovEp) {
+        const vt = window._vpovTelemetry;
+        // Subtle NASA ISS Optical Viewfinder Corner Brackets & Optional Optical Shutter Blackout!
+        if (vt.shutterFade > 0.01) {
+          ctx2d.save();
+          ctx2d.fillStyle = `rgba(0, 0, 0, ${(vt.shutterFade * 0.94).toFixed(3)})`;
+          ctx2d.fillRect(0, 0, rw, rh);
+          if (vt.shutterFade > 0.35) {
+            ctx2d.globalAlpha = smoothstepJS(0.35, 0.75, vt.shutterFade);
+            ctx2d.font = `700 ${Math.round(23 * s)}px ${fontMono}`;
+            ctx2d.fillStyle = '#f87171';
+            ctx2d.textAlign = 'center';
+            ctx2d.fillText('■ ISS OPTICAL CAMERA POWER OFF · 1990.02.14 04:48 UTC', rw * 0.5, rh * 0.46);
+            ctx2d.font = `600 ${Math.round(19 * s)}px ${fontSans}`;
+            ctx2d.fillStyle = '#94a3b8';
+            ctx2d.fillText('光学摄像机已永久断电 · 切换为深空粒子与磁场盲飞模式', rw * 0.5, rh * 0.46 + 38 * s);
+          }
+          ctx2d.restore();
+        } else {
+          // Subtle non-intrusive ISS camera corner frame brackets
+          ctx2d.save();
+          ctx2d.strokeStyle = vt.mode === 'PLASMA' ? 'rgba(192, 132, 252, 0.30)' : 'rgba(125, 211, 252, 0.24)';
+          ctx2d.lineWidth = 2.0 * s;
+          const mX = 48 * s, mTop = 278 * s, mBot = 1315 * s, br = 26 * s;
+          ctx2d.beginPath();
+          ctx2d.moveTo(mX, mTop + br); ctx2d.lineTo(mX, mTop); ctx2d.lineTo(mX + br, mTop);
+          ctx2d.moveTo(rw - mX - br, mTop); ctx2d.lineTo(rw - mX, mTop); ctx2d.lineTo(rw - mX, mTop + br);
+          ctx2d.moveTo(mX, mBot - br); ctx2d.lineTo(mX, mBot); ctx2d.lineTo(mX + br, mBot);
+          ctx2d.moveTo(rw - mX - br, mBot); ctx2d.lineTo(rw - mX, mBot); ctx2d.lineTo(rw - mX, mBot - br);
+          ctx2d.stroke();
+          ctx2d.restore();
+        }
+
+        const modeIcon = vt.mode === 'PLASMA' ? '📡 盲飞传感视角' : (vt.mode === 'TELEPHOTO' ? '🔭 窄角长焦第一视角' : '🎥 机载第一视角');
+        const headLine = `${modeIcon} · ${vt.dateStr}`;
+        ctx2d.font = `800 ${Math.round(25.5 * s)}px ${fontSans}`;
+        ctx2d.lineWidth = 5.0 * s;
+        ctx2d.strokeText(headLine, textStartX, infoBaseY);
+        ctx2d.fillStyle = vt.mode === 'PLASMA' ? '#fbbf24' : '#38bdf8';
+        ctx2d.fillText(headLine, textStartX, infoBaseY);
+
+        let distStr;
+        if (vt.distKm >= 1e8) distStr = `${(vt.distKm / 1e8).toFixed(2)} 亿km`;
+        else if (vt.distKm >= 1e5) distStr = `${(vt.distKm / 1e4).toFixed(1)} 万km`;
+        else distStr = `${Math.round(vt.distKm).toLocaleString('en-US')} km`;
+
+        const angStr = vt.angDeg >= 0.01
+          ? `  ·  1:1视张角 ${vt.angDeg >= 1.0 ? vt.angDeg.toFixed(2) : vt.angDeg.toFixed(3)}°`
+          : (vt.mode === 'PLASMA' ? `  ·  光信号 ${(vt.distKm / 299792.458 / 3600).toFixed(1)}h` : '  ·  0.12 像素');
+        const subLine = `${vt.targetName} · 距质心 ${distStr}${angStr}`;
+        ctx2d.font = `600 ${Math.round(18.5 * s)}px ${fontMono}`;
+        ctx2d.lineWidth = 3.8 * s;
+        ctx2d.strokeText(subLine, textStartX, infoBaseY + 32 * s);
+        ctx2d.fillStyle = '#e2e8f0';
+        ctx2d.fillText(subLine, textStartX, infoBaseY + 32 * s);
+
+        // EP.07 Act 8: Cinema-Grade 3D Ecliptic Dual-Voyager (+35° North vs -48° South) Trajectory Schematic!
+        if (ep && ep.id === 'ep07_voyager2_pov' && seg && seg.scene === 'v2pov_08_heliopause_sirius_2026') {
+          const u8 = Math.max(0.0, Math.min(1.0, (nowT - seg.t0) / Math.max(0.1, seg.t1 - seg.t0)));
+          const fadeIn = smoothstepJS(0.02, 0.11, u8);
+          const fadeOut = 1.0 - smoothstepJS(0.96, 1.00, u8) * 0.25;
+          const diagAlpha = fadeIn * fadeOut;
+          if (diagAlpha > 0.01) {
+            ctx2d.save();
+            ctx2d.globalAlpha = diagAlpha;
+
+            // Glassmorphic panel container (safely between top HUD y=280 and bottom subtitles y=1320!)
+            const px = 52 * s, py = 326 * s, pw = 976 * s, ph = 918 * s;
+            ctx2d.fillStyle = 'rgba(5, 11, 24, 0.62)';
+            ctx2d.strokeStyle = 'rgba(125, 211, 252, 0.34)';
+            ctx2d.lineWidth = 1.8 * s;
+            ctx2d.beginPath();
+            ctx2d.roundRect(px, py, pw, ph, 20 * s);
+            ctx2d.fill();
+            ctx2d.stroke();
+
+            // Panel Header
+            ctx2d.shadowColor = 'rgba(0,0,0,0.9)';
+            ctx2d.shadowBlur = 8 * s;
+            ctx2d.font = `800 ${Math.round(23 * s)}px ${fontSans}`;
+            ctx2d.fillStyle = '#e0f2fe';
+            ctx2d.textAlign = 'left';
+            ctx2d.fillText('🗺️ 旅行者1号 / 2号 南北分道飞行轨迹示意图', px + 26 * s, py + 42 * s);
+            ctx2d.font = `600 ${Math.round(16 * s)}px ${fontMono}`;
+            ctx2d.fillStyle = '#94a3b8';
+            ctx2d.textAlign = 'right';
+            ctx2d.fillText('NASA/JPL 实测黄道倾角 (+35°N / -48°S)', px + pw - 26 * s, py + 41 * s);
+
+            // Subtle header divider
+            ctx2d.strokeStyle = 'rgba(148, 163, 184, 0.22)';
+            ctx2d.lineWidth = 1.0 * s;
+            ctx2d.beginPath();
+            ctx2d.moveTo(px + 22 * s, py + 58 * s);
+            ctx2d.lineTo(px + pw - 22 * s, py + 58 * s);
+            ctx2d.stroke();
+
+            // Coordinate origin: Sun on left-center so both +35° North & -48° South trajectories fan out dramatically rightward!
+            const sunX = px + 185 * s;
+            const sunY = py + 418 * s;
+
+            // 1) Ecliptic Plane Disc (3D perspective ellipses for Jupiter, Saturn, Uranus, Neptune)
+            const eclOrbits = [
+              { rx: 46,  ry: 15, col: 'rgba(251, 191, 36, 0.35)', name: '木星',  ang: -0.35 },
+              { rx: 84,  ry: 27, col: 'rgba(253, 224, 132, 0.42)', name: '土星',  ang: -0.18 },
+              { rx: 128, ry: 41, col: 'rgba(103, 232, 249, 0.45)', name: '天王星', ang:  0.14 },
+              { rx: 174, ry: 56, col: 'rgba(96, 165, 250, 0.52)',  name: '海王星', ang:  0.22 },
+            ];
+            // Soft translucent ecliptic plane fill
+            const eclGrad = ctx2d.createRadialGradient(sunX, sunY, 10 * s, sunX, sunY, 220 * s);
+            eclGrad.addColorStop(0, 'rgba(56, 189, 248, 0.14)');
+            eclGrad.addColorStop(0.75, 'rgba(56, 189, 248, 0.05)');
+            eclGrad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+            ctx2d.fillStyle = eclGrad;
+            ctx2d.beginPath();
+            ctx2d.ellipse(sunX, sunY, 218 * s, 70 * s, 0, 0, Math.PI * 2);
+            ctx2d.fill();
+
+            // Horizontal Ecliptic Plane Reference Axis (0°)
+            ctx2d.save();
+            ctx2d.setLineDash([7 * s, 6 * s]);
+            ctx2d.strokeStyle = 'rgba(148, 163, 184, 0.50)';
+            ctx2d.lineWidth = 1.6 * s;
+            ctx2d.beginPath();
+            ctx2d.moveTo(px + 26 * s, sunY);
+            ctx2d.lineTo(px + pw - 26 * s, sunY);
+            ctx2d.stroke();
+            ctx2d.restore();
+
+            ctx2d.font = `700 ${Math.round(16 * s)}px ${fontSans}`;
+            ctx2d.fillStyle = 'rgba(203, 213, 225, 0.85)';
+            ctx2d.textAlign = 'right';
+            ctx2d.fillText('黄道面 (0° 基准)', px + pw - 28 * s, sunY - 10 * s);
+
+            // Draw planetary orbits
+            eclOrbits.forEach(ob => {
+              ctx2d.strokeStyle = ob.col;
+              ctx2d.lineWidth = 1.4 * s;
+              ctx2d.beginPath();
+              ctx2d.ellipse(sunX, sunY, ob.rx * s, ob.ry * s, 0, 0, Math.PI * 2);
+              ctx2d.stroke();
+            });
+
+            // Glowing Sun at center
+            const sunGlow = ctx2d.createRadialGradient(sunX, sunY, 2 * s, sunX, sunY, 22 * s);
+            sunGlow.addColorStop(0, '#fffbeb');
+            sunGlow.addColorStop(0.35, '#fbbf24');
+            sunGlow.addColorStop(1, 'rgba(251, 191, 36, 0)');
+            ctx2d.fillStyle = sunGlow;
+            ctx2d.beginPath();
+            ctx2d.arc(sunX, sunY, 22 * s, 0, Math.PI * 2);
+            ctx2d.fill();
+            ctx2d.font = `700 ${Math.round(15 * s)}px ${fontSans}`;
+            ctx2d.fillStyle = '#fde68a';
+            ctx2d.textAlign = 'center';
+            ctx2d.fillText('太阳', sunX, sunY + 26 * s);
+
+            // 2) Heliopause Plasma Shock Boundary Arc (~119-121 AU)
+            const hpR = 472 * s;
+            const hpPulse = 0.55 + 0.45 * Math.sin(Math.PI * Math.min(1.0, Math.max(0.0, (u8 - 0.18) / 0.36)));
+            ctx2d.save();
+            ctx2d.strokeStyle = `rgba(192, 132, 252, ${(0.34 + 0.36 * hpPulse).toFixed(3)})`;
+            ctx2d.lineWidth = (4.5 + 3.5 * hpPulse) * s;
+            ctx2d.beginPath();
+            ctx2d.arc(sunX, sunY, hpR, -0.82, 0.96);
+            ctx2d.stroke();
+            ctx2d.strokeStyle = `rgba(251, 191, 36, ${(0.38 + 0.38 * hpPulse).toFixed(3)})`;
+            ctx2d.lineWidth = 1.8 * s;
+            ctx2d.setLineDash([8 * s, 5 * s]);
+            ctx2d.beginPath();
+            ctx2d.arc(sunX, sunY, hpR, -0.82, 0.96);
+            ctx2d.stroke();
+            ctx2d.restore();
+
+            ctx2d.font = `700 ${Math.round(15.5 * s)}px ${fontSans}`;
+            ctx2d.fillStyle = '#d8b4fe';
+            ctx2d.textAlign = 'center';
+            ctx2d.fillText('日球层顶火墙', sunX + hpR * Math.cos(0.10) + 12 * s, sunY + hpR * Math.sin(0.10) - 8 * s);
+            ctx2d.font = `600 ${Math.round(13.5 * s)}px ${fontMono}`;
+            ctx2d.fillStyle = '#c4b5fd';
+            ctx2d.fillText('119–121 AU (50,000K)', sunX + hpR * Math.cos(0.10) + 12 * s, sunY + hpR * Math.sin(0.10) + 12 * s);
+
+            // Helper to trace animated polyline cleanly
+            const drawAnimPath = (pts, frac, color, widthPx, glowCol) => {
+              if (frac <= 0.001 || pts.length < 2) return pts[0];
+              const segLens = [];
+              let totalL = 0;
+              for (let i = 1; i < pts.length; i++) {
+                const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+                segLens.push(l);
+                totalL += l;
+              }
+              const targetL = totalL * Math.min(1.0, frac);
+              let acc = 0, tip = pts[0];
+              ctx2d.save();
+              ctx2d.strokeStyle = color;
+              ctx2d.lineWidth = widthPx;
+              ctx2d.lineCap = 'round';
+              ctx2d.lineJoin = 'round';
+              ctx2d.shadowColor = glowCol;
+              ctx2d.shadowBlur = 14 * s;
+              ctx2d.beginPath();
+              ctx2d.moveTo(pts[0][0], pts[0][1]);
+              for (let i = 1; i < pts.length; i++) {
+                const l = segLens[i - 1];
+                if (acc + l <= targetL) {
+                  ctx2d.lineTo(pts[i][0], pts[i][1]);
+                  tip = pts[i];
+                  acc += l;
+                } else {
+                  const r = (targetL - acc) / Math.max(1e-5, l);
+                  tip = [lerpNum(pts[i - 1][0], pts[i][0], r), lerpNum(pts[i - 1][1], pts[i][1], r)];
+                  ctx2d.lineTo(tip[0], tip[1]);
+                  break;
+                }
+              }
+              ctx2d.stroke();
+              ctx2d.restore();
+              return tip;
+            };
+
+            // 3) VOYAGER 1 TRAJECTORY (+35.0° NORTH — AMBER GOLD #fbbf24)
+            const v1SatX = sunX + 84 * s, v1SatY = sunY - 4 * s;
+            const ang1 = (35.0 * Math.PI) / 180.0;
+            const v1Len = 535 * s; // 173.1 AU (cleanly past 121 AU Heliopause arc in open right-upper sky!)
+            const v1EndX = v1SatX + Math.cos(ang1) * v1Len;
+            const v1EndY = v1SatY - Math.sin(ang1) * v1Len;
+            const v1Pts = [
+              [sunX, sunY],
+              [sunX + 46 * s, sunY - 2 * s], // Jupiter
+              [v1SatX, v1SatY],              // Saturn/Titan 1980 (+35° northward bend!)
+              [v1SatX + Math.cos(ang1) * 395 * s, v1SatY - Math.sin(ang1) * 395 * s], // 121 AU Heliopause 2012
+              [v1EndX, v1EndY]               // 173.1 AU 2026 (1 Light-Day!)
+            ];
+            const v1Prog = smoothstepJS(0.04, 0.56, u8);
+            const v1Tip = drawAnimPath(v1Pts, v1Prog, '#fbbf24', 4.0 * s, 'rgba(251, 191, 36, 0.85)');
+
+            // +35° North Angle Arc
+            if (v1Prog > 0.22) {
+              ctx2d.save();
+              ctx2d.strokeStyle = 'rgba(251, 191, 36, 0.80)';
+              ctx2d.lineWidth = 2.0 * s;
+              ctx2d.beginPath();
+              ctx2d.arc(v1SatX, v1SatY, 56 * s, -ang1, 0);
+              ctx2d.stroke();
+              ctx2d.font = `800 ${Math.round(17 * s)}px ${fontMono}`;
+              ctx2d.fillStyle = '#fde047';
+              ctx2d.textAlign = 'left';
+              ctx2d.fillText('+35° 向北', v1SatX + 62 * s, v1SatY - 14 * s);
+              ctx2d.restore();
+            }
+
+            // Voyager 1 glowing beacon & callout card
+            ctx2d.save();
+            ctx2d.fillStyle = '#fef08a';
+            ctx2d.shadowColor = '#fbbf24';
+            ctx2d.shadowBlur = 16 * s;
+            ctx2d.beginPath();
+            ctx2d.arc(v1Tip[0], v1Tip[1], 6.5 * s, 0, Math.PI * 2);
+            ctx2d.fill();
+            ctx2d.restore();
+
+            if (v1Prog > 0.35) {
+              const bx1 = px + 26 * s, by1 = py + 82 * s, bw1 = 486 * s, bh1 = 98 * s;
+              ctx2d.save();
+              ctx2d.globalAlpha = diagAlpha * smoothstepJS(0.35, 0.55, v1Prog);
+              ctx2d.fillStyle = 'rgba(28, 20, 6, 0.82)';
+              ctx2d.strokeStyle = 'rgba(251, 191, 36, 0.72)';
+              ctx2d.lineWidth = 1.6 * s;
+              ctx2d.beginPath();
+              ctx2d.roundRect(bx1, by1, bw1, bh1, 12 * s);
+              ctx2d.fill();
+              ctx2d.stroke();
+              ctx2d.textAlign = 'left';
+              ctx2d.font = `800 ${Math.round(19 * s)}px ${fontSans}`;
+              ctx2d.fillStyle = '#fde047';
+              ctx2d.fillText('🚀 旅行者1号 Voyager 1（向北 +35°）', bx1 + 16 * s, by1 + 31 * s);
+              ctx2d.font = `600 ${Math.round(15 * s)}px ${fontMono}`;
+              ctx2d.fillStyle = '#fef3c7';
+              ctx2d.fillText('1980土卫六折向 · 2012破121AU日球层顶', bx1 + 16 * s, by1 + 57 * s);
+              ctx2d.fillStyle = '#fbbf24';
+              ctx2d.fillText('2026: 173.1 AU (259亿km · 1.00光天)', bx1 + 16 * s, by1 + 80 * s);
+              ctx2d.restore();
+            }
+
+            // 4) VOYAGER 2 TRAJECTORY (-48.0° SOUTH — ELECTRIC CYAN #38bdf8)
+            const v2NepX = sunX + 174 * s, v2NepY = sunY + 4 * s;
+            const ang2 = (48.0 * Math.PI) / 180.0;
+            const v2Len = 430 * s; // 144.5 AU (216.2亿 km)
+            const v2EndX = v2NepX + Math.cos(ang2) * v2Len;
+            const v2EndY = v2NepY + Math.sin(ang2) * v2Len;
+            const v2HpX  = v2NepX + Math.cos(ang2) * 320 * s;
+            const v2HpY  = v2NepY + Math.sin(ang2) * 320 * s;
+            const v2Pts = [
+              [sunX, sunY],
+              [sunX + 46 * s, sunY + 3 * s],  // Jupiter 1979
+              [sunX + 84 * s, sunY + 5 * s],  // Saturn 1981
+              [sunX + 128 * s, sunY + 5 * s], // Uranus 1986
+              [v2NepX, v2NepY],               // Neptune/Triton 1989 (-48° southward plunge!)
+              [v2HpX, v2HpY],                 // 119 AU Heliopause 2018.11.05
+              [v2EndX, v2EndY]                // 144.5 AU 2026 (216.2亿 km)
+            ];
+            const v2Prog = smoothstepJS(0.06, 0.72, u8);
+            const v2Tip = drawAnimPath(v2Pts, v2Prog, '#38bdf8', 4.6 * s, 'rgba(56, 189, 248, 0.92)');
+
+            // Planet encounter nodes along Voyager 2's Grand Tour
+            const v2Nodes = [
+              { x: sunX + 46 * s,  y: sunY + 3 * s,  c: '#fdba74', lbl: '木' },
+              { x: sunX + 84 * s,  y: sunY + 5 * s,  c: '#fde047', lbl: '土' },
+              { x: sunX + 128 * s, y: sunY + 5 * s,  c: '#67e8f9', lbl: '天' },
+              { x: v2NepX,         y: v2NepY,        c: '#60a5fa', lbl: '海' },
+            ];
+            v2Nodes.forEach(nd => {
+              ctx2d.fillStyle = nd.c;
+              ctx2d.beginPath();
+              ctx2d.arc(nd.x, nd.y, 4.4 * s, 0, Math.PI * 2);
+              ctx2d.fill();
+              ctx2d.font = `700 ${Math.round(13.5 * s)}px ${fontSans}`;
+              ctx2d.fillStyle = nd.c;
+              ctx2d.textAlign = 'center';
+              ctx2d.fillText(nd.lbl, nd.x, nd.y + 21 * s);
+            });
+
+            // -48° South Angle Arc
+            if (v2Prog > 0.30) {
+              ctx2d.save();
+              ctx2d.strokeStyle = 'rgba(56, 189, 248, 0.90)';
+              ctx2d.lineWidth = 2.2 * s;
+              ctx2d.beginPath();
+              ctx2d.arc(v2NepX, v2NepY, 58 * s, 0, ang2);
+              ctx2d.stroke();
+              ctx2d.font = `800 ${Math.round(18 * s)}px ${fontMono}`;
+              ctx2d.fillStyle = '#38bdf8';
+              ctx2d.textAlign = 'left';
+              ctx2d.fillText('-48° 向南', v2NepX + 64 * s, v2NepY + 34 * s);
+              ctx2d.restore();
+            }
+
+            // Future dashed vector toward Ross 248 & Sirius
+            if (v2Prog > 0.78) {
+              const futW = smoothstepJS(0.78, 1.0, v2Prog);
+              const futX = v2EndX + Math.cos(ang2) * 110 * s * futW;
+              const futY = v2EndY + Math.sin(ang2) * 110 * s * futW;
+              ctx2d.save();
+              ctx2d.setLineDash([6 * s, 6 * s]);
+              ctx2d.strokeStyle = 'rgba(125, 211, 252, 0.78)';
+              ctx2d.lineWidth = 2.4 * s;
+              ctx2d.beginPath();
+              ctx2d.moveTo(v2EndX, v2EndY);
+              ctx2d.lineTo(futX, futY);
+              ctx2d.stroke();
+              ctx2d.restore();
+              if (futW > 0.4) {
+                ctx2d.font = `700 ${Math.round(15.5 * s)}px ${fontSans}`;
+                ctx2d.fillStyle = '#bae6fd';
+                ctx2d.textAlign = 'left';
+                ctx2d.fillText('✦ 罗斯248 (4万年) → 天狼星 (29.6万年)', futX - 85 * s, futY + 24 * s);
+              }
+            }
+
+            // Voyager 2 pulsing beacon
+            ctx2d.save();
+            const pulseR = (8.0 + 4.0 * Math.sin(nowT * 5.0)) * s;
+            ctx2d.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+            ctx2d.lineWidth = 2.0 * s;
+            ctx2d.beginPath();
+            ctx2d.arc(v2Tip[0], v2Tip[1], pulseR, 0, Math.PI * 2);
+            ctx2d.stroke();
+            ctx2d.fillStyle = '#e0f2fe';
+            ctx2d.shadowColor = '#38bdf8';
+            ctx2d.shadowBlur = 18 * s;
+            ctx2d.beginPath();
+            ctx2d.arc(v2Tip[0], v2Tip[1], 6.8 * s, 0, Math.PI * 2);
+            ctx2d.fill();
+            ctx2d.restore();
+
+            // Voyager 2 callout card (bottom-left inside panel, zero overlap with trajectory!)
+            if (v2Prog > 0.35) {
+              const bx2 = px + 26 * s, by2 = py + 662 * s, bw2 = 496 * s, bh2 = 122 * s;
+              ctx2d.save();
+              ctx2d.globalAlpha = diagAlpha * smoothstepJS(0.35, 0.55, v2Prog);
+              ctx2d.fillStyle = 'rgba(6, 22, 42, 0.86)';
+              ctx2d.strokeStyle = 'rgba(56, 189, 248, 0.82)';
+              ctx2d.lineWidth = 1.8 * s;
+              ctx2d.beginPath();
+              ctx2d.roundRect(bx2, by2, bw2, bh2, 12 * s);
+              ctx2d.fill();
+              ctx2d.stroke();
+              ctx2d.textAlign = 'left';
+              ctx2d.font = `800 ${Math.round(19.5 * s)}px ${fontSans}`;
+              ctx2d.fillStyle = '#38bdf8';
+              ctx2d.fillText('🛰️ 旅行者2号 Voyager 2（向南 -48°）', bx2 + 16 * s, by2 + 32 * s);
+              ctx2d.font = `600 ${Math.round(15 * s)}px ${fontMono}`;
+              ctx2d.fillStyle = '#e0f2fe';
+              ctx2d.fillText('木→土→天→海全满贯 · 2018实测119AU火墙', bx2 + 16 * s, by2 + 60 * s);
+              ctx2d.fillStyle = '#7dd3fc';
+              ctx2d.fillText('2026: 144.5 AU (216.2亿km · 光行时20h)', bx2 + 16 * s, by2 + 84 * s);
+              ctx2d.fillStyle = '#94a3b8';
+              ctx2d.fillText('当前航速 15.26 km/s · 奔向天狼星', bx2 + 16 * s, by2 + 106 * s);
+              ctx2d.restore();
+            }
+
+            // Bottom summary bar inside panel
+            ctx2d.fillStyle = 'rgba(15, 23, 42, 0.72)';
+            ctx2d.beginPath();
+            ctx2d.roundRect(px + 24 * s, py + ph - 52 * s, pw - 48 * s, 36 * s, 10 * s);
+            ctx2d.fill();
+            ctx2d.font = `700 ${Math.round(16.5 * s)}px ${fontSans}`;
+            ctx2d.fillStyle = '#e2e8f0';
+            ctx2d.textAlign = 'center';
+            ctx2d.fillText('一北 (+35°) 一南 (-48°) · 两艘孤勇者航向夹角 83°，永远背道而驰奔向银河深处', px + pw * 0.5, py + ph - 28 * s);
+
+            ctx2d.restore();
+          }
+        }
+      } else if (isVoyEp) {
         // EP.05 Dedicated Light-Time & Distance Telemetry HUD!
         const eRel = latestEph.solarMap.earth.relAU;
         const vRel = latestEph.voy1RelSunAU;
@@ -18383,8 +20280,39 @@
           vProg = vU < 0.33 ? 1.002 : lerpNum(1.002, 1.18, (vU - 0.33) / 0.67);
         }
         window._voyagerProgressOverride = vProg;
+      } else if (ep && ep.id === 'ep06_voyager1_pov' && ep.segments && ep.segments.length > 0) {
+        chosenDays = 0.0;
+        let vIdx = ep.segments.length - 1;
+        for (let i = 0; i < ep.segments.length; i++) {
+          if (epT < ep.segments[i].t1 || i === ep.segments.length - 1) { vIdx = i; break; }
+        }
+        const vSeg = ep.segments[vIdx];
+        const vU = Math.max(0.0, Math.min(1.0, (epT - vSeg.t0) / Math.max(0.1, vSeg.t1 - vSeg.t0)));
+        let vProg = 0.005;
+        if (vSeg.scene === 'vpov_01_earth_moon_departure') vProg = lerpNum(0.0002, 0.015, vU);
+        else if (vSeg.scene === 'vpov_02_jupiter_looming') vProg = lerpNum(0.12, 0.16, vU);
+        else if (vSeg.scene === 'vpov_03_galilean_moons_rush') vProg = 0.165;
+        else if (vSeg.scene === 'vpov_04_saturn_rings_loom') vProg = lerpNum(0.24, 0.28, vU);
+        else if (vSeg.scene === 'vpov_05_titan_plunge_bend') vProg = lerpNum(0.28, 0.34, vU);
+        else if (vSeg.scene === 'vpov_06_pale_blue_shutdown') vProg = 0.520;
+        else vProg = lerpNum(0.785, 1.000, smoothstepJS(0.0, 0.78, vU));
+        window._voyagerProgressOverride = vProg;
+      } else if (ep && ep.id === 'ep07_voyager2_pov' && ep.segments && ep.segments.length > 0) {
+        window._isV2PovEp = true;
+        chosenDays = 0.0;
+        let vIdx = ep.segments.length - 1;
+        for (let i = 0; i < ep.segments.length; i++) {
+          if (epT < ep.segments[i].t1 || i === ep.segments.length - 1) { vIdx = i; break; }
+        }
+        const vSeg = ep.segments[vIdx];
+        const vU = Math.max(0.0, Math.min(1.0, (epT - vSeg.t0) / Math.max(0.1, vSeg.t1 - vSeg.t0)));
+        window._voyager2ProgressOverride = (vSeg.scene === 'v2pov_08_heliopause_sirius_2026')
+          ? lerpNum(0.69, 1.00, smoothstepJS(0.0, 0.80, vU))
+          : 0.00;
       } else {
+        window._isV2PovEp = false;
         window._voyagerProgressOverride = 1.000;
+        window._voyager2ProgressOverride = 1.000;
       }
       state.localDays  = chosenDays;
       state.starAnim   = epT * 0.12;
@@ -18558,7 +20486,10 @@
       ? [cam.relSunKly[0] / AU_IN_KLY, cam.relSunKly[1] / AU_IN_KLY, cam.relSunKly[2] / AU_IN_KLY]
       : [(cam.posKly[0] - eph.sun[0]) / AU_IN_KLY, (cam.posKly[1] - eph.sun[1]) / AU_IN_KLY, (cam.posKly[2] - eph.sun[2]) / AU_IN_KLY];
     gl.uniform3f(uVol.uCamRelSunAU, camRelSunNowAU[0], camRelSunNowAU[1], camRelSunNowAU[2]);
-    const noseD = (VOY1_REF && VOY1_REF.escDir) ? VOY1_REF.escDir : [0.0, 0.82, 0.57];
+    const curEpVol = douyinStudio.currentEpisode();
+    const noseD = (curEpVol && curEpVol.id === 'ep07_voyager2_pov' && VOY2_REF && VOY2_REF.escDir2)
+      ? VOY2_REF.escDir2
+      : ((VOY1_REF && VOY1_REF.escDir) ? VOY1_REF.escDir : [0.0, 0.82, 0.57]);
     gl.uniform3f(uVol.uHelioNoseDir, noseD[0], noseD[1], noseD[2]);
     const hp = window._helioUniforms || [0.0, 0.0, 0.0, 0.0];
     gl.uniform4f(uVol.uHelioParams, hp[0], hp[1], hp[2], hp[3]);
@@ -18665,12 +20596,17 @@
       for (let m = 0; m < 7; m++) {
         setPlanetSlot(10 + m, eph.majorMoons[m], eph.sun, 5772.0, rsm.sun);
       }
-      // Inside Solar System (< 126 AU): dynamically bind slots 17..19 to Saturn's moons (Pan, Mimas, Iapetus) when closer to Saturn,
-      // or Jupiter's 3 Inner Ring-Shepherd Moons (Amalthea, Thebe, Metis) otherwise!
+      // Inside Solar System (< 126 AU): dynamically bind slots 17..19 to the nearest giant planet's iconic moons:
+      // Uranus -> Miranda (20km Verona Rupes!), Ariel, Titania | Saturn -> Pan, Mimas, Iapetus | Jupiter -> Amalthea, Thebe, Metis!
       if (dSunKly < 0.002) {
         const dJupSq = (cam.posKly[0] - eph.jupiter[0]) ** 2 + (cam.posKly[1] - eph.jupiter[1]) ** 2 + (cam.posKly[2] - eph.jupiter[2]) ** 2;
         const dSatSq = (cam.posKly[0] - eph.saturn[0])  ** 2 + (cam.posKly[1] - eph.saturn[1])  ** 2 + (cam.posKly[2] - eph.saturn[2])  ** 2;
-        if (dSatSq < dJupSq) {
+        const dUraSq = (cam.posKly[0] - eph.uranus[0])  ** 2 + (cam.posKly[1] - eph.uranus[1])  ** 2 + (cam.posKly[2] - eph.uranus[2])  ** 2;
+        if (dUraSq < dSatSq && dUraSq < dJupSq) {
+          setPlanetSlot(17, eph.majorMoons[13], eph.sun, 5772.0, rsm.sun); // Miranda (pType=31, 20-km Verona Rupes & Chevron!)
+          setPlanetSlot(18, eph.majorMoons[14], eph.sun, 5772.0, rsm.sun); // Ariel   (pType=32, Kachina Chasmata!)
+          setPlanetSlot(19, eph.majorMoons[15], eph.sun, 5772.0, rsm.sun); // Titania (pType=33, Messina Chasmata!)
+        } else if (dSatSq < dJupSq) {
           setPlanetSlot(17, eph.majorMoons[10], eph.sun, 5772.0, rsm.sun); // Pan     (pType=26, Encke Gap shepherd!)
           setPlanetSlot(18, eph.majorMoons[11], eph.sun, 5772.0, rsm.sun); // Mimas   (pType=27, Herschel Death Star!)
           setPlanetSlot(19, eph.majorMoons[12], eph.sun, 5772.0, rsm.sun); // Iapetus (pType=28, Yin-Yang Walnut!)
@@ -18716,6 +20652,11 @@
       gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_3D, noise3DObj.tex);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, earthDayTex);
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, earthNightTex);
+      gl.activeTexture(gl.TEXTURE0);
       gl.bindVertexArray(emptyVAO);
 
       for (let p = 0; p < localPasses.length; p++) {
@@ -18723,6 +20664,9 @@
         const uL = lp.u;
         gl.useProgram(lp.prog);
         gl.uniform1i(uL.uNoise3D, 0);
+        if (uL.uEarthDayTex)   gl.uniform1i(uL.uEarthDayTex, 1);
+        if (uL.uEarthNightTex) gl.uniform1i(uL.uEarthNightTex, 2);
+        if (uL.uEarthTexReady) gl.uniform1f(uL.uEarthTexReady, earthTexReadyFlag);
         gl.uniformMatrix3fv(uL.uCamBasis, false, mats.basis);
         gl.uniform1f(uL.uTanHalfFov, mats.tanHalfFov);
         gl.uniform1f(uL.uAspect, aspect);
@@ -19542,6 +21486,7 @@
       if (studioLogoImg.decode) {
         try { await studioLogoImg.decode(); } catch (_) {}
       }
+      try { await earthTexReadyPromise; } catch (_) {}
       douyinStudio.selectEpisode(epIdx);
       douyinStudio.setPlaying(false);
       douyinStudio.portraitMode = true;

@@ -554,7 +554,7 @@
   <div id="hudRightBox" class="hud-right">
     <div class="action-bar">
       <button id="btnStartTourEp2" class="btn glass btn-primary fade-ui" title="播放第二期 92 秒《飞出银河系 → 大小麦哲伦星系 · 本星系群与仙女座大星系群》电影巡礼">🚀 飞出银河·本星系群与仙女座大片</button>
-      <button id="btnStartTour" class="btn glass fade-ui" title="播放第一期 72 秒《银河系·太阳系与卡冈图雅黑洞》全功能大片">🎬 第一期：银河太阳系</button>
+      <button id="btnStartTour" class="btn glass fade-ui" title="播放第一期 96 秒《银河系 · 太阳系与六大传奇名星/星云》全功能大片">🎬 第一期：银河太阳系与传奇名星</button>
       <button id="btnRecordVideo" class="btn glass fade-ui" title="一键录制并导出当前巡礼大片 MP4/WebM 高清视频素材">⏺ 导出视频素材</button>
       <button id="btnToggleUI" class="btn glass" title="隐藏或显示界面 (快捷键 H) — 适合直接录制纯净无水印空镜素材">纯净视野 (H)</button>
       <button id="btnScreenshot" class="btn glass btn-shot fade-ui">截图</button>
@@ -653,6 +653,14 @@
       <button data-preset="overview" class="preset-btn">银河全景</button>
       <button data-preset="sgra" class="preset-btn">银心黑洞 Sgr A*</button>
       <button data-preset="scluster" class="preset-btn">S2 恒星轨道</button>
+      <button data-preset="pillars_of_creation" class="preset-btn">鹰状星云·创生之柱</button>
+      <button data-preset="orion_m42" class="preset-btn">猎户座大星云 M42·四合星</button>
+      <button data-preset="crab_nebula" class="preset-btn">蟹状星云 M1·天关客星</button>
+      <button data-preset="crab_pulsar" class="preset-btn">蟹状脉冲星 PSR B0531</button>
+      <button data-preset="betelgeuse" class="preset-btn">红超巨星参宿四·764 R☉</button>
+      <button data-preset="sirius" class="preset-btn">天狼星 A &amp; B 双星</button>
+      <button data-preset="sirius_b" class="preset-btn">白矮星天狼星 B</button>
+      <button data-preset="vega" class="preset-btn">极速扁球织女星 Vega</button>
       <button data-preset="solarsystem" class="preset-btn">太阳系全景 (60.2°)</button>
       <button data-preset="sun" class="preset-btn">太阳 Sol</button>
       <button data-preset="mercury" class="preset-btn">水星·卡洛里/蜘蛛纹</button>
@@ -735,8 +743,8 @@
 
   <div id="loadingOverlay">
     <div class="spinner"></div>
-    <div style="font-size:14px; font-weight:500;">正在构建 1:1 大小麦哲伦星系 (LMC/SMC)、完整本星系群、仙女座星系群与 45 万颗三维恒星...</div>
-    <div style="font-size:12px; color:#94a3b8; margin-top:6px;">3.04 Mly Local Group ↔ 161.7/203.7 kly LMC &amp; SMC ↔ SN 1987A · R136a1 &amp; Solar System</div>
+    <div style="font-size:14px; font-weight:500;">正在构建 1:1 本星系群、银河六大传奇名星与星云、仙女座星系群及 46.8 万颗三维恒星...</div>
+    <div style="font-size:12px; color:#94a3b8; margin-top:6px;">创生之柱 · 猎户座 M42 · 蟹状脉冲星 · 参宿四 (764 R☉) · 天狼双星 · 扁球织女星 ↔ 太阳系 &amp; 本星系群</div>
   </div>
 
 <script>
@@ -1277,6 +1285,83 @@
     { id: 'v1_c', name: 'M31-V1 c (热膨胀气态巨行星)', a_AU: 4.20, e: 0.06, inc: 0.32, Omega: 1.2, omega: 1.9, M0: 4.4, periodDays: 420.0, rRsun: 84000.0 / RSUN_KM,  pType: 7, flatF: 0.058 }
   ];
 
+  // ============================================================================
+  // 1D. 1:1 MILKY WAY ICONIC STARS & NEBULAE CO-ROTATING ASTROMETRY
+  //     (Betelgeuse, Sirius A & B, Oblate Vega, Crab M1 & Pulsar, Orion M42 & Trapezium, Eagle M16 & Pillars)
+  // ============================================================================
+  // Betelgeuse (alpha Orionis — Joyce et al. 2020: d = 548.0 ly, l = 199.787 deg, b = -8.959 deg, R = 764.0 R_sun)
+  const BETELGEUSE_BASE_KLY = heliocentricGalacticToWorldKly(548.0, 199.787, -8.959);
+
+  // Sirius Binary System (alpha Canis Majoris A & White Dwarf B — Bond et al. 2017 HST: d = 8.601 ly, l = 227.230 deg, b = -8.890 deg)
+  const SIRIUS_BASE_KLY = heliocentricGalacticToWorldKly(8.601, 227.230, -8.890);
+
+  // Exact Visual Binary Keplerian Elements around Sirius AB Barycenter (P = 50.1284 yr, a_rel = 19.80 AU, e = 0.59142)
+  const SIRIUS_A_ORBIT = {
+    id: 'sirius_a', name: '天狼星 A (Sirius A · 2.063 M☉)',
+    a_AU: 6.578, e: 0.59142,
+    inc: (136.336 * Math.PI) / 180.0,
+    Omega: (45.4 * Math.PI) / 180.0,
+    omega: ((149.2 + 180.0) * Math.PI) / 180.0,
+    M0: 1.65, periodYr: 50.1284,
+    rRsun: 1.711, tempK: 9940.0, style: 7.0, lumWeight: 25.4
+  };
+  const SIRIUS_B_ORBIT = {
+    id: 'sirius_b', name: '白矮星天狼星 B (The Pup · R=5,844 km)',
+    a_AU: 13.222, e: 0.59142,
+    inc: (136.336 * Math.PI) / 180.0,
+    Omega: (45.4 * Math.PI) / 180.0,
+    omega: (149.2 * Math.PI) / 180.0,
+    M0: 1.65, periodYr: 50.1284,
+    rRsun: 0.00840, tempK: 25200.0, style: 7.5, lumWeight: 2.2
+  };
+
+  // Vega (alpha Lyrae — Monnier et al. 2012 CHARA: d = 25.04 ly, l = 67.448 deg, b = +19.237 deg, R_eq = 2.726 R_sun, f = 0.1702)
+  const VEGA_BASE_KLY     = heliocentricGalacticToWorldKly(25.04, 67.448, 19.237);
+  const VEGA_SPIN_AXIS_JS = normVec3(unitGalacticDir(67.448, 19.237 + 5.700));
+
+  // Crab Nebula (M1 / SN 1054 天关客星: d = 6,500 ly, l = 184.557 deg, b = -5.784 deg) & Crab Pulsar PSR B0531+21
+  const CRAB_BASE_KLY      = heliocentricGalacticToWorldKly(6500.0, 184.557, -5.784);
+  const CRAB_SPIN_AXIS_BASE = [-0.515040, 0.236222, -0.823974];
+  const CRAB_PULSAR_SPEC   = { id: 'crab_pulsar', name: 'PSR B0531+21 (蟹状星云脉冲星)', rRsun: 0.018, tempK: 38000.0, style: 9.0, lumWeight: 42.0 };
+
+  // Orion Nebula (M42 / NGC 1976: d = 1,344 ly, l = 209.014 deg, b = -19.382 deg) & Trapezium Quartet (theta^1 Ori C1, A1, D, B)
+  const M42_BASE_KLY       = heliocentricGalacticToWorldKly(1344.0, 209.014, -19.382);
+  const TRAPEZIUM_BASE_KLY = M42_BASE_KLY;
+  const M42_LOCAL_X        = [ 0.485023, 0.000000,  0.874501];
+  const M42_LOCAL_Y        = [ 0.290216, 0.943327, -0.160962];
+  const M42_LOCAL_Z        = [-0.824941, 0.331865,  0.457536];
+  function m42LocalToBaseKly(lx, ly, lz) {
+    return [
+      M42_BASE_KLY[0] + M42_LOCAL_X[0] * lx + M42_LOCAL_Y[0] * ly + M42_LOCAL_Z[0] * lz,
+      M42_BASE_KLY[1] + M42_LOCAL_X[1] * lx + M42_LOCAL_Y[1] * ly + M42_LOCAL_Z[1] * lz,
+      M42_BASE_KLY[2] + M42_LOCAL_X[2] * lx + M42_LOCAL_Y[2] * ly + M42_LOCAL_Z[2] * lz
+    ];
+  }
+  const TRAPEZIUM_STARS_BASE = [
+    { id: 'theta1_ori_c', name: 'θ¹ Ori C1 (O6Vp · 33 M☉ · 39,000 K)', localKly: [-0.000015, -0.000060,  0.000020], rRsun: 10.6, tempK: 39000.0, style: 5.0, lumWeight: 18.0 },
+    { id: 'theta1_ori_a', name: 'θ¹ Ori A1 (B0.5V · 6.3 R☉)',          localKly: [ 0.000105,  0.000088, -0.000032], rRsun: 6.3,  tempK: 30000.0, style: 2.0, lumWeight: 7.5 },
+    { id: 'theta1_ori_d', name: 'θ¹ Ori D (B0.5V · 5.6 R☉)',           localKly: [-0.000148,  0.000052,  0.000038], rRsun: 5.6,  tempK: 32000.0, style: 2.0, lumWeight: 8.2 },
+    { id: 'theta1_ori_b', name: 'θ¹ Ori B (B1V · 4.2 R☉)',             localKly: [ 0.000038,  0.000168, -0.000024], rRsun: 4.2,  tempK: 24000.0, style: 2.0, lumWeight: 4.8 }
+  ].map(st => ({ ...st, basePosKly: m42LocalToBaseKly(st.localKly[0], st.localKly[1], st.localKly[2]) }));
+
+  // Eagle Nebula (M16 / NGC 6611: d = 5,700 ly, l = 16.954 deg, b = +0.793 deg) & 1:1 "Pillars of Creation"
+  const M16_BASE_KLY         = heliocentricGalacticToWorldKly(5700.0, 16.954, 0.793);
+  const NGC6611_BASE_KLY     = [21.2221440, 0.1542079, 1.6645619];
+  const PILLARS_M16_BASE_KLY = [21.2219491, 0.1429116, 1.6603432];
+
+  const MW_HERO_CAVITY_CENTERS_KLY = [
+    SUN_BASE_KLY,
+    PROXIMA_BASE_KLY,
+    ALPHACEN_BASE_KLY,
+    SIRIUS_BASE_KLY,
+    VEGA_BASE_KLY,
+    BETELGEUSE_BASE_KLY,
+    M42_BASE_KLY,
+    CRAB_BASE_KLY,
+    PILLARS_M16_BASE_KLY,
+    M16_BASE_KLY
+  ];
+
   function rotateGalacticDiskKly(basePos, galAngle) {
     const c = Math.cos(galAngle), s = Math.sin(galAngle);
     return [
@@ -1488,6 +1573,34 @@
     const haloAng = 0.0012 * galTime;
     const omegaKly = rotateGalacticDiskKly([-14.5, 9.2, -11.0], haloAng);
 
+    // Co-rotating Milky Way Iconic Stars & Nebulae (Betelgeuse, Sirius AB, Vega, Crab M1, Orion M42 & Trapezium, Eagle M16 & Pillars)
+    const betelgeuseKly = rotateGalacticDiskKly(BETELGEUSE_BASE_KLY, galAngle);
+    const siriusBaryKly = rotateGalacticDiskKly(SIRIUS_BASE_KLY, galAngle);
+    const vegaKly       = rotateGalacticDiskKly(VEGA_BASE_KLY, galAngle);
+    const siriusTimeYr  = localDays / 365.25;
+    const siriusAAU     = solveKepler3D(SIRIUS_A_ORBIT, siriusTimeYr);
+    const siriusBAU     = solveKepler3D(SIRIUS_B_ORBIT, siriusTimeYr);
+    const siriusAKly = [
+      siriusBaryKly[0] + siriusAAU[0] * AU_IN_KLY,
+      siriusBaryKly[1] + siriusAAU[1] * AU_IN_KLY,
+      siriusBaryKly[2] + siriusAAU[2] * AU_IN_KLY
+    ];
+    const siriusBKly = [
+      siriusBaryKly[0] + siriusBAU[0] * AU_IN_KLY,
+      siriusBaryKly[1] + siriusBAU[1] * AU_IN_KLY,
+      siriusBaryKly[2] + siriusBAU[2] * AU_IN_KLY
+    ];
+
+    const crabKly    = rotateGalacticDiskKly(CRAB_BASE_KLY, galAngle);
+    const m42Kly     = rotateGalacticDiskKly(M42_BASE_KLY, galAngle);
+    const m16Kly     = rotateGalacticDiskKly(M16_BASE_KLY, galAngle);
+    const ngc6611Kly = rotateGalacticDiskKly(NGC6611_BASE_KLY, galAngle);
+    const pillarsKly = rotateGalacticDiskKly(PILLARS_M16_BASE_KLY, galAngle);
+    const trapeziumStars = TRAPEZIUM_STARS_BASE.map(st => ({
+      ...st,
+      posKly: rotateGalacticDiskKly(st.basePosKly, galAngle)
+    }));
+
     // HD 5980 Eruptive LBV/WN6h + WN4 19.265-day Colliding-Wind Binary + O7I Tertiary inside SMC NGC 346!
     const hd5980RelBAU = solveKepler3D({ ...HD5980_COMPANION_B_ORB, periodYr: HD5980_COMPANION_B_ORB.periodDays }, localDays);
     const hd5980Stars = [
@@ -1524,6 +1637,20 @@
     return {
       galAngle,
       bhPhase,
+      betelgeuse: betelgeuseKly,
+      sirius: siriusBaryKly,
+      sirius_a: siriusAKly,
+      sirius_b: siriusBKly,
+      vega: vegaKly,
+      crab_nebula: crabKly,
+      crab_pulsar: crabKly,
+      crabPulsarSpec: CRAB_PULSAR_SPEC,
+      orion_m42: m42Kly,
+      trapezium: m42Kly,
+      trapeziumStars,
+      eagle_m16: m16Kly,
+      ngc6611: ngc6611Kly,
+      pillars_of_creation: pillarsKly,
       localgroup: LOCAL_GROUP_MID_KLY,
       lmc: LMC_BASE_KLY,
       tarantula_30dor: TARANTULA_30DOR_KLY,
@@ -2024,8 +2151,9 @@
       float prevDiskY   = dot(pos, spinAxis);
       bool captured     = false;
       int crossingCount = 0;
+      int zeroBh        = min(uStepCount, 0);
 
-      for (int stepIdx = 0; stepIdx < 96; stepIdx++) {
+      for (int stepIdx = zeroBh; stepIdx < 96; stepIdx++) {
         float r2 = dot(pos, pos);
         float r  = sqrt(r2);
 
@@ -2353,8 +2481,9 @@
           float span = t1 - t0;
           float invS = 1.0 / float(SN_STEPS);
           float prevT = t0;
+          int zeroSn = min(uStepCount, 0);
 
-          for (int i = 0; i < SN_STEPS; i++) {
+          for (int i = zeroSn; i < SN_STEPS; i++) {
             float tMid  = t0 + span * ((float(i) + ign) * invS);
             float tNext = t0 + span * min((float(i + 1) + ign) * invS, 1.0);
             float dt    = max(tNext - prevT, 1e-6);
@@ -2434,8 +2563,9 @@
         float bgFogDamp   = mix(1.0, 0.24, snCloseup) * mix(1.0, 0.52, r136Closeup);
         float lmcContDamp = mix(1.0, 0.24, snCloseup) * mix(1.0, 0.06, r136Closeup);
         float nearStepBias = max(0.30 * inLMCDisk, 0.88 * r136Closeup);
+        int zeroLmc = min(uStepCount, 0);
 
-        for (int i = 0; i < LMC_STEPS; i++) {
+        for (int i = zeroLmc; i < LMC_STEPS; i++) {
           float s1 = (float(i) + ign) * invSteps;
           float s2 = (float(i + 1) + ign) * invSteps;
           float u1 = mix(s1, s1 * s1 * mix(1.0, s1, 0.62 * r136Closeup), nearStepBias);
@@ -2632,8 +2762,9 @@
           const vec3 ngc602Pos = vec3(6.40, 6.85, -2.40);
           float dCam346   = length(roSMC - ngc346Pos);
           float smcBgFade = smoothstep(2.3, 6.2, dCam346) * smoothstep(1.2, 6.0, rCamSMC);
+          int zeroSmc = min(uStepCount, 0);
 
-          for (int i = 0; i < SMC_MAIN_STEPS; i++) {
+          for (int i = zeroSmc; i < SMC_MAIN_STEPS; i++) {
             float s1 = (float(i) + ign) * invSteps;
             float s2 = (float(i + 1) + ign) * invSteps;
             float u1 = mix(s1, s1 * s1, 0.35 * insideSMC);
@@ -2731,8 +2862,7 @@
                 int steps346 = (dCam346 < 5.5) ? 12 : 4;
                 float dt346  = (tB - tA) / float(steps346);
                 float nearFade346 = smoothstep(0.008, 0.085, length(rel346));
-                for (int j = 0; j < 12; j++) {
-                  if (j >= steps346) break;
+                for (int j = zeroSmc; j < steps346; j++) {
                   float tj = tA + (float(j) + ign) * dt346;
                   vec3 q = (roSMC + rdSMC * tj - ngc346Pos) / 0.64;
                   float r2 = dot(q, q);
@@ -3068,9 +3198,9 @@
           float invSteps = 1.0 / float(effSteps);
           float insideM31 = sstepInv(85.0, 18.0, rCamM31);
           float prevT = tStart;
+          int zeroM31 = min(uStepCount, 0);
 
-          for (int i = 0; i < 38; i++) {
-            if (i >= effSteps) break;
+          for (int i = zeroM31; i < effSteps; i++) {
             float s1 = (float(i) + ign) * invSteps;
             float s2 = (float(i + 1) + ign) * invSteps;
             float u1 = mix(s1, s1 * s1, 0.34 * insideM31);
@@ -3194,8 +3324,9 @@
           const int M33_STEPS = 20;
           float invSteps = 1.0 / float(M33_STEPS);
           float prevT = tStart;
+          int zeroM33 = min(uStepCount, 0);
 
-          for (int i = 0; i < M33_STEPS; i++) {
+          for (int i = zeroM33; i < M33_STEPS; i++) {
             float s1 = (float(i) + ign) * invSteps;
             float s2 = (float(i + 1) + ign) * invSteps;
             float tMid  = tStart + span * s1;
@@ -3325,9 +3456,9 @@
             float invSteps = 1.0 / float(max(effStepCount, 12));
             float insideFactor = sstepInv(42.0, 10.0, rCamKly);
             float prevT = tStart;
+            int zeroMw = min(uStepCount, 0);
 
-            for (int i = 0; i < 110; i++) {
-              if (i >= effStepCount) break;
+            for (int i = zeroMw; i < effStepCount; i++) {
               float s1 = (float(i) + ign) * invSteps;
               float s2 = (float(i + 1) + ign) * invSteps;
               float u1 = mix(s1, s1 * s1, 0.36 * insideFactor);
@@ -3472,6 +3603,764 @@
   `;
 
   // ============================================================================
+  // 4B. PASS 1B (ANGLE D3D11 FAST-LINK PARALLEL SHADER):
+  //     1:1 MILKY WAY ICONIC NEBULAE (CRAB M1 & CHANDRA PWN, ORION M42 & PROPLYDS,
+  //     EAGLE M16 & 3D OPAQUE "PILLARS OF CREATION")
+  // ============================================================================
+  const MW_NEBULAE_FRAG = `#version 300 es
+    precision highp float;
+    precision highp sampler3D;
+
+    in vec2 vUv;
+    out vec4 fragColor;
+
+    uniform sampler3D uNoise3D;
+    uniform vec3 uCamPos;
+    uniform vec3 uCamRelCrabGal;
+    uniform vec3 uCamRelM42Gal;
+    uniform vec3 uCamRelM16Gal;
+    uniform vec3 uCamRelPillarsGal;
+    uniform mat3 uCamBasis;
+    uniform float uTanHalfFov;
+    uniform float uAspect;
+    uniform float uGalAngle;
+    uniform float uBhPhase;
+    uniform float uDustStrength;
+    uniform float uNebulaStrength;
+    uniform float uHdrScale;
+    uniform int uStepCount;
+
+    ${GALAXY_COMMON_GLSL}
+
+    vec2 intersectBox(vec3 ro, vec3 rd, vec3 boxMax) {
+      vec3 inv = 1.0 / (rd + sign(rd + 1e-8) * 1e-8);
+      vec3 t0 = (-boxMax - ro) * inv;
+      vec3 t1 = ( boxMax - ro) * inv;
+      vec3 tmin = min(t0, t1);
+      vec3 tmax = max(t0, t1);
+      return vec2(max(max(tmin.x, tmin.y), tmin.z), min(min(tmax.x, tmax.y), tmax.z));
+    }
+
+    float mwNeb_safeAtan(float y, float x) {
+      float sx = (abs(x) < 1e-7 && abs(y) < 1e-7) ? 1e-7 : x;
+      return atan(y, sx);
+    }
+
+    vec3 mwNeb_chromaShoulder(vec3 c, float knee, float asymCap) {
+      float pk = max(c.r, max(c.g, c.b));
+      if (pk <= knee) return c;
+      float ex = pk - knee;
+      float span = max(asymCap - knee, 0.05);
+      float comp = knee + span * (ex / (ex + span));
+      return c * (comp / max(pk, 1e-6));
+    }
+
+    float mwNeb_seg2D(vec2 p, vec2 a, vec2 b, out float hFrac) {
+      vec2 pa = p - a;
+      vec2 ba = b - a;
+      hFrac = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-9), 0.0, 1.0);
+      return length(pa - ba * hFrac);
+    }
+
+    vec3 mwNeb_evalGalacticBeacon(vec3 toC, vec3 rdGal, float physR, float dCam, vec3 coreCol, vec3 outerCol, float gain) {
+      if (dCam < physR * 2.4 || dCam > 34.0) return vec3(0.0);
+      float tCl = dot(toC, rdGal);
+      if (tCl <= 0.0) return vec3(0.0);
+      vec3 perpB = toC - rdGal * tCl;
+      float b2 = dot(perpB, perpB);
+      float angSig = max(physR * 0.75, dCam * uTanHalfFov * 0.0065);
+      if (b2 > sqr(angSig * 4.5)) return vec3(0.0);
+      float nearCrossFade = smoothstep(physR * 2.4, physR * 7.5, dCam);
+      float farFade       = sstepInv(34.0, 8.5, dCam);
+      float dustDim       = exp(-min(dCam * 0.045 * uDustStrength, 1.15));
+      float u2 = b2 / sqr(angSig);
+      float core = exp(-u2 * 1.65);
+      float halo = exp(-u2 * 0.32) * 0.36;
+      return mix(outerCol, coreCol, core) * (core + halo) * (gain * nearCrossFade * farFade * dustDim);
+    }
+
+    // A. CRAB NEBULA (M1 / SN 1054 天关客星: 11.0 x 7.6 x 7.6 ly) — Open Lacy Multicolor Filaments + Broad Sapphire PWN Core
+    void mwNeb_evalCrabM1(vec3 camRelCrabGal, vec3 rdGal, float ign, float nebStr, int zeroU, inout vec3 accum, inout vec3 trans) {
+      const float R_BOUND = 0.0078;
+
+      vec3 toC = -camRelCrabGal;
+      float dCam = length(toC);
+      if (dCam > R_BOUND * 2.4 && dCam < 32.0) {
+        accum += trans * mwNeb_evalGalacticBeacon(
+          toC, rdGal, 0.0052, dCam, vec3(0.28, 0.76, 1.00), vec3(0.96, 0.24, 0.38), 0.28 * nebStr
+        );
+      }
+
+      float bSph = dot(toC, rdGal);
+      vec3 perpSph = toC - rdGal * bSph;
+      float disc = R_BOUND * R_BOUND - dot(perpSph, perpSph);
+      if (disc <= 0.0) return;
+      float sDisc = sqrt(disc);
+      float tEnd = bSph + sDisc;
+      if (tEnd <= 1.0e-9) return;
+      float tStart = max(bSph - sDisc, 1.0e-9);
+
+      const vec3 CR_X = vec3(-0.515040,  0.236222, -0.823974);
+      const vec3 CR_Y = vec3(-0.115195, -0.971631, -0.206549);
+      const vec3 CR_Z = vec3(-0.849391, -0.011463,  0.527640);
+      const vec3 CR_TOSUN = vec3(-0.991764, 0.100778, 0.079046);
+      mat3 toCrab = transpose(mat3(CR_X, CR_Y, CR_Z));
+
+      vec3 q0 = toCrab * camRelCrabGal;
+      vec3 d  = toCrab * rdGal;
+
+      vec3 crabEmit  = vec3(0.0);
+      vec3 crabTrans = vec3(1.0);
+
+      int crabSteps = (dCam < 0.0012) ? min(uStepCount, 8) : min(uStepCount, 22);
+      float span = tEnd - tStart;
+      float invS = 1.0 / float(max(crabSteps, 1));
+      float prevT = tStart;
+      float jitter = 0.85 * ign;
+      float pulsarInsideClear = smoothstep(0.00002, 0.00022, dCam);
+
+      for (int i = zeroU; i < crabSteps; i++) {
+        float tMid  = tStart + span * ((float(i) + jitter) * invS);
+        float tNext = tStart + span * min((float(i + 1) + jitter) * invS, 1.0);
+        float dt    = max(tNext - prevT, 1e-7);
+        prevT = tNext;
+
+        vec3 q = q0 + d * tMid;
+        vec3 qEll = vec3(q.x / 0.0055, q.y / 0.0038, q.z / 0.0038);
+        float rEll = length(qEll);
+        if (rEll > 1.28) continue;
+
+        vec4 n0 = textureLod(uNoise3D, qEll * 0.24 + vec3(0.17, 0.41, 0.29), 0.0);
+        vec3 qD = qEll + (n0.rgb - 0.5) * 0.56;
+        vec4 n1 = textureLod(uNoise3D, qD * 0.56 + vec3(0.31, -0.19, 0.53), 0.0);
+        vec4 n2 = textureLod(uNoise3D, qD * 1.32 + (n1.gbr - 0.5) * 0.28 + 0.13, 0.0);
+
+        float azEq = mwNeb_safeAtan(qEll.z, qEll.y);
+        float ewBays = 0.16 * exp(-sqr(qEll.x * 1.6)) * cos(2.0 * azEq + 0.5) +
+                       (n0.a - 0.5) * 0.34 + (n1.b - 0.5) * 0.18;
+        float rWarp  = rEll + ewBays;
+
+        float ridge1 = 1.0 - abs(n1.r * 2.0 - 1.0);
+        float ridge2 = 1.0 - abs(n1.g * 2.0 - 1.0);
+        float ridge3 = 1.0 - abs(n2.r * 2.0 - 1.0);
+        float ridge4 = 1.0 - abs(n2.g * 2.0 - 1.0);
+
+        // Crisp ~32% open lacy filament web (dark transparent gaps reveal glowing sapphire synchrotron core!)
+        float majorRibs = smoothstep(0.66, 0.96, ridge1 * ridge2 * 1.18);
+        float minorRibs = smoothstep(0.70, 0.97, ridge2 * ridge3 * 1.20) * (0.45 + 0.75 * ridge4);
+        float outerTips = smoothstep(0.68, 0.96, ridge1 * ridge3 * 1.18) * smoothstep(0.70, 0.98, rWarp);
+
+        float cageEnv = smoothstep(0.42, 0.68, rWarp) * sstepInv(1.16, 0.85, rWarp);
+        float nearPsrClear = (dCam < 0.0012) ? smoothstep(0.0005, 0.0024, tMid) : 1.0;
+        float filDens = (majorRibs * 1.10 + minorRibs * 0.95 + outerTips * 0.85) * cageEnv * nearPsrClear;
+
+        // Pure 2-stop spectral ramp: Emerald [O III] -> Golden-Amber [S II] -> Crimson-Ruby [N II]/Hα (ZERO chalky green+red grey!)
+        vec3 colEmerald = vec3(0.04, 0.92, 0.50);
+        vec3 colAmber   = vec3(1.00, 0.58, 0.10);
+        vec3 colCrimson = vec3(1.00, 0.10, 0.24);
+        float ionPhase  = clamp(smoothstep(0.50, 0.98, rWarp) * 0.72 + (n0.r - 0.35) * 0.48 + (n1.a - 0.45) * 0.28, 0.0, 1.0);
+        vec3 filCol     = (ionPhase < 0.5)
+          ? mix(colEmerald, colAmber, ionPhase * 2.0)
+          : mix(colAmber, colCrimson, (ionPhase - 0.5) * 2.0);
+
+        // Broad, vivid cobalt-sapphire Pulsar Wind Nebula (PWN) synchrotron core (shines out to rWarp ~ 0.76!)
+        float pwnEnv   = exp(-pow(max(rWarp / 0.70, 0.0), 2.05)) * sstepInv(1.02, 0.62, rEll) *
+                         mix(0.45, 1.0, pulsarInsideClear) * nearPsrClear;
+        float magWisps = 0.76 + 0.34 * sin(length(qEll.yz) * 16.0 - uBhPhase * 0.9 + n1.r * 2.2);
+        vec3  pwnCol   = mix(vec3(0.08, 0.44, 1.00), vec3(0.24, 0.70, 1.00), exp(-rEll * 2.0));
+
+        float jetEmitVol = 0.0;
+        if (abs(q.x) < 0.0044) {
+          float sNorm = q.x / 0.0042;
+          vec2 jetSpine = vec2(0.00026 * sin(sNorm * 3.1 + 0.35), 0.00018 * (1.0 - cos(sNorm * 2.6)));
+          float dJet = length(q.yz - jetSpine);
+          float jetW = 0.00014 + 0.00032 * abs(sNorm);
+          jetEmitVol = exp(-sqr(dJet / jetW)) * smoothstep(0.00012, 0.00045, abs(q.x)) *
+                       sstepInv(0.0044, 0.0031, abs(q.x)) * (0.72 + 0.40 * n2.a) * nearPsrClear;
+        }
+
+        vec3 stepEmit = filCol * (filDens * 430.0) +
+                        pwnCol * (pwnEnv * magWisps * 84.0) +
+                        vec3(0.20, 0.66, 1.00) * (jetEmitVol * 195.0);
+
+        vec3 sigmaT = (filDens * vec3(44.0, 50.0, 58.0) + pwnEnv * vec3(42.0, 34.0, 20.0)) * max(uDustStrength, 0.45);
+        vec3 stepTr = exp(-sigmaT * dt);
+        crabEmit  += crabTrans * stepEmit * dt;
+        crabTrans *= stepTr;
+      }
+
+      float safeDx = (abs(d.x) > 0.055) ? d.x : (d.x >= 0.0 ? 0.055 : -0.055);
+      float tEq = -q0.x / safeDx;
+      vec3 chandraEmit = vec3(0.0);
+      if (tEq > 1.0e-9 && tEq < tEnd + 0.002) {
+        vec3 pEq = q0 + d * tEq;
+        float rEq = length(pEq.yz);
+        if (rEq > 0.00016 && rEq < 0.00185) {
+          float azW = mwNeb_safeAtan(pEq.z, pEq.y);
+          float innerShock = exp(-sqr((rEq - 0.00038) / 0.000058)) * 1.35;
+          float wispPhase  = rEq * 21500.0 - uBhPhase * 2.2 + 0.45 * sin(azW * 2.0 - 0.6);
+          float wispRings  = pow(max(0.5 + 0.5 * cos(wispPhase), 0.0), 3.4) *
+                             smoothstep(0.00032, 0.00044, rEq) * sstepInv(0.00155, 0.00100, rEq);
+          float torusGlow  = exp(-sqr((rEq - 0.00078) / 0.00040)) * 0.48;
+
+          vec3 eqWorldDir = normalize(CR_Y * pEq.y + CR_Z * pEq.z + 1e-8);
+          float doppler   = 0.68 + 0.62 * clamp(dot(eqWorldDir, CR_TOSUN), -0.65, 0.95);
+          float slantLim  = 1.0 / clamp(abs(d.x), 0.24, 1.0);
+          vec3 wispCol    = mix(vec3(0.14, 0.54, 1.00), vec3(0.48, 0.82, 1.00), clamp(innerShock * 0.50 + wispRings * 0.45, 0.0, 0.80));
+          chandraEmit    += wispCol * ((innerShock + wispRings * 0.98 + torusGlow) * doppler * slantLim * 0.62);
+        }
+      }
+
+      float dDotX = d.x;
+      float denomJ = max(1.0 - dDotX * dDotX, 0.045);
+      float sJet = clamp((dot(q0, d) * dDotX - q0.x) / denomJ, -0.0042, 0.0042);
+      float tJet = max(1.0e-9, -dot(q0, d) + sJet * dDotX);
+      vec3  pJet = q0 + d * tJet;
+      float sJNorm = pJet.x / 0.0042;
+      vec2  spineYZ = vec2(0.00026 * sin(sJNorm * 3.1 + 0.35), 0.00018 * (1.0 - cos(sJNorm * 2.6)));
+      float rJetPerp = length(pJet.yz - spineYZ);
+      float jetRad = 0.000048 + 0.00022 * abs(sJNorm);
+      float jetCore = exp(-sqr(rJetPerp / jetRad)) * smoothstep(0.000015, 0.00022, abs(pJet.x)) *
+                      sstepInv(0.0043, 0.0030, abs(pJet.x));
+      float jetKnots = 0.72 + 0.38 * sin(abs(pJet.x) * 9200.0 - uBhPhase * 2.6);
+      float jetDoppler = (pJet.x > 0.0) ? 1.24 : 0.82;
+      chandraEmit += mix(vec3(0.20, 0.64, 1.00), vec3(0.52, 0.48, 1.00), abs(sJNorm)) * (jetCore * jetKnots * jetDoppler * 0.52);
+
+      float fgDust = exp(-min(tStart * 0.042 * uDustStrength, 0.95));
+      vec3 totalCrab = mwNeb_chromaShoulder((crabEmit + crabTrans * chandraEmit) * nebStr * fgDust, 0.64, 1.20);
+      accum += trans * totalCrab;
+      trans *= mix(vec3(1.0), crabTrans, fgDust);
+    }
+
+    // B. ORION NEBULA (M42: Filamentary Sweeping Butterfly Wings, Crenellated Orion Bar & True Cometary Teardrop Proplyds)
+    void mwNeb_evalSingleProplyd(
+      vec3 q0, vec3 d, vec3 pHead, vec3 qOriC, float rHead, float tailLen,
+      inout vec3 propEmit, inout vec3 propTrans
+    ) {
+      vec3 uAway = normalize(pHead - qOriC);
+      vec3 pMid  = pHead + uAway * (tailLen * 0.42);
+      vec3 toM   = pMid - q0;
+      float projM = dot(toM, d);
+      if (projM <= 0.0) return;
+      vec3 perpM = toM - d * projM;
+      if (dot(perpM, perpM) > sqr(tailLen * 0.78)) return;
+
+      vec3 oa = q0 - pHead;
+      float da = dot(d, uAway);
+      float denom = max(1.0 - da * da, 0.045);
+      // Exact closest-approach parameter along uAway (+s = cometary tail streaming away from θ¹ Ori C1!)
+      float sRaw = (dot(oa, uAway) - dot(oa, d) * da) / denom;
+      if (sRaw < -rHead * 1.05 || sRaw > tailLen * 1.05) return;
+      float s = clamp(sRaw, -rHead * 0.90, tailLen);
+      float t = -dot(oa, d) + s * da;
+      if (t <= 1.0e-7) return;
+
+      vec3 pCl = oa + d * t;
+      vec3 radVec = pCl - uAway * s;
+      float rPerp = length(radVec);
+
+      // Parabolic bow-shock nose (s < 0) smoothly tapering into a long 50-90px cometary teardrop tail (s > 0)!
+      float uNose = max(0.0, (s + rHead * 0.90) / (rHead * 1.20));
+      float tailTaper = (s > 0.0) ? exp(-s / (tailLen * 0.62)) : 1.0;
+      float profR = rHead * (0.14 + 0.92 * sqrt(min(uNose, 1.30))) * (0.28 + 0.72 * tailTaper);
+
+      if (rPerp < profR * 1.65) {
+        float uR = rPerp / max(profR, 1e-7);
+        // 1) Filled parabolic sunlit ionization cap on the θ¹ Ori C1-facing nose (s < rHead * 0.45, zero hollow washer!)
+        float noseAxial = sstepInv(rHead * 0.48, -rHead * 0.30, s) * smoothstep(-rHead * 0.90, -rHead * 0.52, s);
+        float noseCap   = (0.55 + 0.55 * uR * uR) * sstepInv(1.12, 0.76, uR) * noseAxial;
+
+        // 2) Long, filled misty cometary plume streaming away from θ¹ Ori C1
+        float tailAxial = smoothstep(-rHead * 0.65, rHead * 0.15, s) * exp(-max(s, 0.0) / (tailLen * 0.50)) *
+                          sstepInv(tailLen, tailLen * 0.55, s);
+        float tailPlume = exp(-uR * uR * 1.60) * tailAxial;
+
+        vec3 noseCol = mix(vec3(1.00, 0.68, 0.22), vec3(0.20, 0.92, 0.96), smoothstep(0.45, 1.05, uR));
+        vec3 tailCol = mix(vec3(0.22, 0.86, 0.82), vec3(0.98, 0.32, 0.46), smoothstep(0.0, tailLen * 0.55, max(s, 0.0)));
+
+        // 3) Compact dark protoplanetary dust-core silhouette inside the head (rHead * 0.14)
+        float tHead = max(1e-7, -dot(oa, d));
+        vec3  pKnot = oa + d * tHead - uAway * (rHead * 0.06);
+        float dKnot2 = sqr(dot(pKnot, uAway) / (rHead * 0.13)) +
+                       dot(pKnot - uAway * dot(pKnot, uAway), pKnot - uAway * dot(pKnot, uAway)) / sqr(rHead * 0.15);
+        float tauKnot = 1.85 * exp(-dKnot2);
+        vec3  knotAtten = exp(-tauKnot * vec3(1.15, 1.08, 1.00));
+
+        vec3 addGlow = noseCol * (noseCap * 1.18) + tailCol * (tailPlume * 1.02);
+        propEmit  = propEmit * knotAtten + addGlow;
+        propTrans *= knotAtten;
+      }
+    }
+
+    void mwNeb_evalOrionM42(vec3 camRelM42Gal, vec3 rdGal, float ign, float nebStr, int zeroU, inout vec3 accum, inout vec3 trans) {
+      const float R_BOUND = 0.0185;
+
+      vec3 toC = -camRelM42Gal;
+      float dCam = length(toC);
+      if (dCam > R_BOUND * 2.4 && dCam < 32.0) {
+        accum += trans * mwNeb_evalGalacticBeacon(
+          toC, rdGal, 0.0120, dCam, vec3(0.24, 0.90, 0.84), vec3(0.98, 0.22, 0.48), 0.42 * nebStr
+        );
+      }
+
+      float bSph = dot(toC, rdGal);
+      vec3 perpSph = toC - rdGal * bSph;
+      float disc = R_BOUND * R_BOUND - dot(perpSph, perpSph);
+      if (disc <= 0.0) return;
+      float sDisc = sqrt(disc);
+      float tEnd = bSph + sDisc;
+      if (tEnd <= 1.0e-7) return;
+      float tStart = max(bSph - sDisc, 1.0e-7);
+
+      const vec3 M42_X = vec3( 0.485023, 0.000000,  0.874501);
+      const vec3 M42_Y = vec3( 0.290216, 0.943327, -0.160962);
+      const vec3 M42_Z = vec3(-0.824941, 0.331865,  0.457536);
+      mat3 toM42 = transpose(mat3(M42_X, M42_Y, M42_Z));
+
+      vec3 q0 = toM42 * camRelM42Gal;
+      vec3 d  = toM42 * rdGal;
+
+      vec3 propEmit  = vec3(0.0);
+      vec3 propTrans = vec3(1.0);
+      float propFade = sstepInv(0.0026, 0.0009, dCam);
+      if (propFade > 0.001) {
+        const vec3 Q_ORIC = vec3(-0.000015, -0.000060, 0.000020);
+        // 5 Explicitly Unrolled HST Cometary Teardrop Proplyds (50-90px tails pointing radially away from θ¹ Ori C1!)
+        mwNeb_evalSingleProplyd(q0, d, vec3( 0.000072, -0.000010, 0.000046), Q_ORIC, 0.0000068, 0.000056, propEmit, propTrans);
+        mwNeb_evalSingleProplyd(q0, d, vec3(-0.000076, -0.000034, 0.000032), Q_ORIC, 0.0000064, 0.000052, propEmit, propTrans);
+        mwNeb_evalSingleProplyd(q0, d, vec3(-0.000028,  0.000062, 0.000052), Q_ORIC, 0.0000060, 0.000048, propEmit, propTrans);
+        mwNeb_evalSingleProplyd(q0, d, vec3( 0.000108,  0.000040, 0.000064), Q_ORIC, 0.0000072, 0.000046, propEmit, propTrans);
+        mwNeb_evalSingleProplyd(q0, d, vec3( 0.000026, -0.000124, 0.000036), Q_ORIC, 0.0000066, 0.000054, propEmit, propTrans);
+        propEmit  = mwNeb_chromaShoulder(propEmit * propFade, 0.68, 1.22);
+        propTrans = mix(vec3(1.0), propTrans, propFade);
+      }
+
+      vec2 obbM42 = intersectBox(q0 - vec3(0.0, 0.0, 0.0005), d, vec3(0.0158, 0.0154, 0.0068));
+      float tStartM42 = max(tStart, obbM42.x);
+      float tEndM42   = min(tEnd, obbM42.y);
+
+      vec3 m42Emit  = vec3(0.0);
+      vec3 m42Trans = vec3(1.0);
+
+      if (tEndM42 > tStartM42) {
+        int m42Steps = (dCam < 0.0020) ? min(uStepCount, 10) : min(uStepCount, 12);
+        float span = tEndM42 - tStartM42;
+        float invS = 1.0 / float(max(m42Steps, 1));
+        float prevT = tStartM42;
+        float jitter = 0.85 * ign;
+        float coreSubtleDamp = mix(0.42, 1.0, smoothstep(0.00035, 0.0032, dCam));
+
+        for (int i = zeroU; i < m42Steps; i++) {
+          float tMid  = tStartM42 + span * ((float(i) + jitter) * invS);
+          float tNext = tStartM42 + span * min((float(i + 1) + jitter) * invS, 1.0);
+          float dt    = max(tNext - prevT, 1e-7);
+          prevT = tNext;
+
+          vec3 q = q0 + d * tMid;
+          vec3 u = q / 0.0120;
+          float rU = length(u.xy);
+          if (rU > 1.38) continue;
+
+          // Multi-scale macro + fine filamentary striations (carves crisp radial Huygens wisps & crenellated Orion Bar!)
+          vec4 n0 = textureLod(uNoise3D, u * 0.28 + vec3(0.19, 0.37, 0.51), 0.0);
+          vec3 uD = u + (n0.rgb - 0.5) * 0.52;
+          vec4 n1 = textureLod(uNoise3D, uD * 0.95 + vec3(0.41, 0.13, 0.27), 0.0);
+          vec4 n2 = textureLod(uNoise3D, uD * 3.10 + (n1.gbr - 0.5) * 0.32, 0.0);
+          vec2 xyW = u.xy + (n0.rg - 0.5) * 0.30 + (n1.gb - 0.5) * 0.14;
+          float rW2 = dot(xyW, xyW);
+          float rW  = sqrt(rW2);
+
+          float foldA = 1.0 - abs(n1.r * 2.0 - 1.0);
+          float foldB = 1.0 - abs(n2.g * 2.0 - 1.0);
+          float fineWisp = 1.0 - abs(n2.r * 2.0 - 1.0);
+          float radAng = mwNeb_safeAtan(xyW.y, xyW.x);
+          float radFan = 0.65 + 0.35 * sin(radAng * 14.0 + n1.g * 5.0 + n2.b * 2.5);
+          float drapes = (0.30 + 1.15 * pow(clamp(foldA * 0.52 + foldB * 0.42 + fineWisp * 0.32, 0.0, 1.0), 2.15)) * radFan;
+
+          // 1) 3D Concave Warped Huygens Blister Cavity with crisp radial photoevaporation striations
+          float zBlister = -0.0018 + 0.0058 * (rW2 * 0.85) + (n0.b - 0.5) * 0.0020 + (n1.r - 0.5) * 0.0006;
+          float dWall    = q.z - zBlister;
+          float wallThick = 0.0011 + 0.0015 * rW;
+          float wallSheet = exp(-sqr(dWall / wallThick)) * sstepInv(1.18, 0.62, rW);
+          float huygensCore = wallSheet * exp(-dot(xyW * vec2(0.92, 1.18), xyW * vec2(0.92, 1.18)) / 0.13);
+
+          // 2) Sweeping Filamentary Great Orion Butterfly Wings (sharp crimson-magenta arcs + cobalt-violet veil)
+          float wingSpineY = -0.08 - 0.48 * xyW.x * xyW.x + 0.14 * xyW.x;
+          float dWingArc   = abs(xyW.y - wingSpineY) / (0.19 + 0.22 * abs(xyW.x));
+          float southOpen  = 1.0 - 0.78 * exp(-sqr((xyW.x + 0.08) / 0.34)) * smoothstep(-0.12, -0.64, xyW.y);
+          float greatWings = exp(-dWingArc * dWingArc * 1.28) * smoothstep(0.15, 0.42, rW) * sstepInv(1.36, 0.80, rW) *
+                             exp(-sqr((q.z - 0.0010) / 0.0036)) * southOpen * drapes;
+          float outerVeil  = exp(-sqr((rW - 0.92) / 0.26)) * exp(-sqr((q.z - 0.0018) / 0.0040)) *
+                             (0.35 + 0.85 * pow(foldB, 1.8)) * southOpen;
+
+          // 3) Jagged, Crenellated Sunlit Ionization Cliff ("Orion Bar") merging continuously SE into the crimson wing!
+          vec2 dBar = q.xy - vec2(-0.00165, -0.00155);
+          float sBar = dBar.x * (-0.660) + dBar.y * 0.751;
+          float nBar = -(dBar.x * 0.751 + dBar.y * 0.660) + 0.00075 * sqr(sBar / 0.0030) +
+                       (n1.r - 0.5) * 0.00075 + (n2.g - 0.5) * 0.00042;
+          float barAlong = sstepInv(0.0046, 0.0015, abs(sBar)) * exp(-sqr((q.z - (-0.0002)) / 0.0017));
+          float barCrest = exp(-sqr(nBar / 0.00024)) * barAlong * (0.42 + 0.95 * pow(fineWisp, 1.6));
+          float barScarp = smoothstep(-0.00018, 0.00018, nBar) * exp(-max(nBar, 0.0) / 0.0024) * barAlong * drapes;
+
+          // 4) De Mairan's Nebula M43 & Ragged Tendril-Edged Fish's Mouth Dark Molecular Bay
+          vec3 dM43 = q - vec3(0.0036, 0.0041, 0.0005);
+          float rM43 = length(dM43 + (n1.rgb - 0.5) * 0.0009 + (n2.gbr - 0.5) * 0.0004);
+          float m43Comma = exp(-sqr(rM43 / 0.00180)) * drapes;
+
+          float hFish = 0.0;
+          vec2 qFishW = q.xy + (n0.gb - 0.5) * 0.0026 + (n1.rg - 0.5) * 0.0018 + (n2.rg - 0.5) * 0.00085;
+          float dFish = mwNeb_seg2D(qFishW, vec2(-0.00035, 0.00042), vec2(-0.00740, 0.00315), hFish);
+          float fishRad = mix(0.00045, 0.00185, hFish) + (n1.b - 0.5) * 0.00055 + (n2.b - 0.5) * 0.00032;
+          float fishTendril = smoothstep(0.26, 0.80, n1.a * 0.52 + fineWisp * 0.48);
+          float fishMask = sstepInv(fishRad * 1.85, fishRad * 0.25, dFish) *
+                           exp(-sqr((q.z - 0.0019) / 0.0019)) * (0.35 + 1.10 * fishTendril);
+          float darkDustRho = fishMask * 1.35 + barScarp * 0.45 * n2.a;
+          float bgOmcDust   = smoothstep(0.0008, 0.0028, -dWall) * sstepInv(1.25, 0.55, rW) * 0.72;
+
+          vec3 colCore  = mix(vec3(0.06, 0.84, 0.78), vec3(0.24, 0.78, 0.98), exp(-rW2 * 8.5));
+          colCore       = mix(colCore, vec3(0.96, 0.28, 0.46), smoothstep(0.18, 0.44, rW));
+          vec3 colScarp = mix(vec3(1.00, 0.52, 0.20), vec3(0.94, 0.16, 0.34), smoothstep(-0.00005, 0.00085, nBar));
+          vec3 colWings = mix(vec3(0.96, 0.14, 0.38), vec3(0.86, 0.28, 0.56), n1.b * 0.6 + foldB * 0.4);
+          vec3 colVeil  = mix(vec3(0.24, 0.44, 0.96), vec3(0.54, 0.34, 0.88), n0.a);
+          float fishRim = exp(-sqr((dFish - fishRad * 0.92) / 0.00034)) * exp(-sqr((q.z - 0.0015) / 0.0016)) *
+                          smoothstep(0.0, 0.6, hFish) * fishTendril;
+
+          vec3 stepEmit = colCore  * (huygensCore * drapes * 118.0 * coreSubtleDamp) +
+                          colScarp * ((barCrest * 86.0 + barScarp * 76.0)) +
+                          colWings * (greatWings * 105.0 + m43Comma * 92.0) +
+                          colVeil  * (outerVeil * 48.0) +
+                          vec3(1.00, 0.44, 0.18) * (fishRim * 58.0) +
+                          vec3(0.07, 0.04, 0.03) * (darkDustRho * 5.0);
+
+          vec3 sigmaT = (darkDustRho * 620.0 + bgOmcDust * 320.0 + huygensCore * 90.0 + greatWings * 38.0) *
+                        vec3(1.32, 1.06, 0.84) * max(uDustStrength, 0.45);
+          vec3 stepTr = exp(-sigmaT * dt);
+          vec3 safeSig = max(sigmaT, vec3(1e-4));
+          vec3 wInt = mix(vec3(dt), (1.0 - stepTr) / safeSig, step(vec3(1e-4), sigmaT));
+
+          m42Emit  += m42Trans * stepEmit * wInt;
+          m42Trans *= stepTr;
+          if (max(m42Trans.r, max(m42Trans.g, m42Trans.b)) < 0.015) break;
+        }
+      }
+
+      float fgDust = exp(-min(tStart * 0.038 * uDustStrength, 0.65));
+      vec3 combinedM42 = propEmit + propTrans * m42Emit;
+      vec3 totalTrans  = propTrans * m42Trans;
+      accum += trans * mwNeb_chromaShoulder(combinedM42 * nebStr * fgDust, 0.66, 1.24);
+      trans *= mix(vec3(1.0), totalTrans, fgDust);
+    }
+
+    // C. EAGLE NEBULA (M16: 70 x 55 ly) & 3 S-CURVED CRAGGY "PILLARS OF CREATION" CONNECTED TO M16'S SE MOLECULAR CLIFF!
+    float mwNeb_pillarsBaseSdf(vec3 q, vec4 nLow, vec4 nMid, out float hOut, out float uvFace) {
+      float crag = (nMid.r - 0.48) * 0.00018 + (nLow.g - 0.50) * 0.00014;
+
+      // Pillar I (Left, 4.50 ly tall): Broad S-curved trunk, sculpted waist & gnarled multi-cusp sunlit head!
+      float h1 = clamp((q.y - (-0.00225)) / 0.00460, 0.0, 1.0);
+      float sBend1 = 0.00024 * sin(h1 * 3.5 - 0.35) - 0.00016 * h1 * h1;
+      float fork1  = smoothstep(0.74, 0.98, h1) * 0.00024;
+      float x1Sp   = -0.00126 + sBend1;
+      float x1Near = (q.x < x1Sp) ? (x1Sp - fork1 * 0.95) : (x1Sp + fork1 * 0.75);
+      vec3  c1 = vec3(x1Near, -0.00225 + 0.00460 * h1, 0.00014 + 0.00012 * cos(h1 * 3.0));
+      float r1 = mix(0.00054, 0.00023, h1) - 0.000075 * sin(h1 * PI) +
+                 0.000085 * exp(-sqr((h1 - 0.89) / 0.11)) + crag * (0.55 + 0.45 * h1);
+      float bestD = length(q - c1) - max(r1, 0.00008);
+      hOut   = h1;
+      uvFace = clamp(0.45 + 0.55 * ((q.y - c1.y) / max(r1, 1e-5)) + 0.35 * ((q.z - c1.z) / max(r1, 1e-5)), 0.0, 1.25);
+
+      // Pillar II (Center, 3.25 ly tall): Tilted S-curved trunk leaning slightly NW with pinched neck & bulbous head!
+      float h2 = clamp((q.y - (-0.00235)) / 0.00350, 0.0, 1.0);
+      float sBend2 = -0.00022 * h2 + 0.00016 * sin(h2 * 4.2 + 0.9);
+      vec3  c2 = vec3(0.00014 + sBend2, -0.00235 + 0.00350 * h2, -0.00010 + 0.00010 * sin(h2 * 3.4));
+      float r2 = mix(0.00040, 0.00019, h2) - 0.000065 * sin(h2 * PI * 1.1) +
+                 0.000065 * exp(-sqr((h2 - 0.91) / 0.11)) + crag * 0.85;
+      float d2 = length(q - c2) - max(r2, 0.00007);
+      if (d2 < bestD) {
+        bestD  = d2;
+        hOut   = h2;
+        uvFace = clamp(0.45 + 0.55 * ((q.y - c2.y) / max(r2, 1e-5)) + 0.35 * ((q.z - c2.z) / max(r2, 1e-5)), 0.0, 1.25);
+      }
+
+      // Pillar III (Right, 2.00 ly tall): Shorter ragged spire sloping SE into M16's molecular promontory!
+      float h3 = clamp((q.y - (-0.00255)) / 0.00245, 0.0, 1.0);
+      float sBend3 = -0.00022 * h3 + 0.00013 * sin(h3 * 3.9 + 2.1);
+      vec3  c3 = vec3(0.00124 + sBend3, -0.00255 + 0.00245 * h3, 0.00008 - 0.00006 * h3);
+      float r3 = mix(0.00032, 0.000125, h3) + 0.000040 * exp(-sqr((h3 - 0.90) / 0.12)) + crag * 0.75;
+      float d3 = length(q - c3) - max(r3, 0.00006);
+      if (d3 < bestD) {
+        bestD  = d3;
+        hOut   = h3;
+        uvFace = clamp(0.45 + 0.55 * ((q.y - c3.y) / max(r3, 1e-5)) + 0.35 * ((q.z - c3.z) / max(r3, 1e-5)), 0.0, 1.25);
+      }
+
+      // Diagonally sloping SE molecular ridge root (merges seamlessly down-SE into M16's macro SE promontory cliff!)
+      float hRoot = clamp((q.x + 0.0015) / 0.0038, 0.0, 1.0);
+      vec3  cRoot = vec3(-0.0015 + 0.0038 * hRoot, -0.00225 - 0.00115 * hRoot, 0.00004);
+      float rRoot = mix(0.00058, 0.00095, hRoot) + (nLow.r - 0.45) * 0.00045 + (nMid.g - 0.48) * 0.00022;
+      float rootSdf = length(vec3(q.x - cRoot.x, (q.y - cRoot.y) * 1.15, (q.z - cRoot.z) * 1.25)) - rRoot;
+
+      float hSmooth = clamp(0.5 + 0.5 * (rootSdf - bestD) / 0.00045, 0.0, 1.0);
+      bestD  = mix(rootSdf, bestD, hSmooth) - 0.00045 * hSmooth * (1.0 - hSmooth);
+      hOut   = mix(0.04, hOut, hSmooth);
+      uvFace = mix(0.30 + 0.34 * nMid.b, uvFace, hSmooth);
+
+      float eggWave = max(0.0, sin(q.x * 13500.0 + nLow.b * 5.0 + q.z * 6200.0));
+      float eggTips = smoothstep(0.78, 0.99, hOut) * eggWave * eggWave * 0.000125;
+      return bestD - eggTips;
+    }
+
+    void mwNeb_evalEagleM16AndPillars(
+      vec3 camRelM16Gal, vec3 camRelPillarsGal, vec3 rdGal, float ign, float nebStr, int zeroU,
+      inout vec3 accum, inout vec3 trans
+    ) {
+      const float R_M16 = 0.0460;
+      const float R_PIL = 0.0046;
+
+      vec3 toM16 = -camRelM16Gal;
+      float dCamM16 = length(toM16);
+      if (dCamM16 > R_M16 * 2.2 && dCamM16 < 34.0) {
+        accum += trans * mwNeb_evalGalacticBeacon(
+          toM16, rdGal, 0.0320, dCamM16, vec3(0.14, 0.84, 0.90), vec3(1.00, 0.52, 0.26), 0.38 * nebStr
+        );
+      }
+
+      float bM = dot(toM16, rdGal);
+      vec3 perpM = toM16 - rdGal * bM;
+      float discM = R_M16 * R_M16 - dot(perpM, perpM);
+      if (discM <= 0.0) return;
+      float sM = sqrt(discM);
+      float tM1 = bM + sM;
+      if (tM1 <= 1.0e-7) return;
+      float tM0 = max(bM - sM, 1.0e-7);
+
+      const vec3 PIL_X = vec3(-0.269611, 0.340977, -0.900580);
+      const vec3 PIL_Y = vec3( 0.016159, 0.936682,  0.349808);
+      const vec3 PIL_Z = vec3( 0.962834, 0.079759, -0.258049);
+      mat3 toPil = transpose(mat3(PIL_X, PIL_Y, PIL_Z));
+
+      vec3 qM0 = toPil * camRelM16Gal;
+      vec3 qP0 = toPil * camRelPillarsGal;
+      vec3 dL  = toPil * rdGal;
+
+      vec3 toPilC = -camRelPillarsGal;
+      float dCamPil = length(toPilC);
+      float bP = dot(toPilC, rdGal);
+      vec3 perpP = toPilC - rdGal * bP;
+      float discP = R_PIL * R_PIL - dot(perpP, perpP);
+      bool hitPillars = false;
+      float tP0 = 0.0, tP1 = 0.0;
+      if (discP > 0.0) {
+        float sP = sqrt(discP);
+        vec2 obb = intersectBox(qP0, dL, vec3(0.00295, 0.00335, 0.00108));
+        tP0 = max(max(bP - sP, obb.x), 1.0e-7);
+        tP1 = min(bP + sP, obb.y);
+        hitPillars = (tP1 > tP0);
+      }
+
+      float jitter = 0.85 * ign;
+      vec3 pilEmit  = vec3(0.0);
+      vec3 pilTrans = vec3(1.0);
+      if (hitPillars) {
+        int pilSteps = (dCamPil < 0.018) ? min(uStepCount, 22) : min(uStepCount, 14);
+        float spanP = tP1 - tP0;
+        float invP  = 1.0 / float(max(pilSteps, 1));
+        float prevT = tP0;
+
+        for (int i = zeroU; i < pilSteps; i++) {
+          float tMid  = tP0 + spanP * ((float(i) + jitter) * invP);
+          float tNext = tP0 + spanP * min((float(i + 1) + jitter) * invP, 1.0);
+          float dt    = max(tNext - prevT, 1e-7);
+          prevT = tNext;
+
+          vec3 q = qP0 + dL * tMid;
+
+          vec4 nLow = textureLod(uNoise3D, q * 128.0 + vec3(0.19, 0.37, 0.53), 0.0);
+          vec4 nMid = textureLod(uNoise3D, q * 380.0 + (nLow.rgb - 0.5) * 0.42 + 0.11, 0.0);
+
+          float billowA = 1.0 - abs(nLow.r * 2.0 - 1.0);
+          float billowB = 1.0 - abs(nMid.g * 2.0 - 1.0);
+          float billowC = 1.0 - abs(nMid.a * 2.0 - 1.0);
+          float cauli   = billowA * 0.48 + billowB * 0.36 + billowC * 0.16;
+
+          vec3 qWarp = q + (nLow.rgb - 0.5) * vec3(0.00062, 0.00028, 0.00048) +
+                       (nMid.gbr - 0.5) * vec3(0.00024, 0.00014, 0.00022);
+
+          float hFrac = 0.0, uvFace = 0.0;
+          float sdf = mwNeb_pillarsBaseSdf(qWarp, nLow, nMid, hFrac, uvFace) - (cauli - 0.38) * 0.00024;
+          // Diagonally sloped handoff into M16's macro SE molecular promontory cliff (never a flat floating bottom!)
+          float diagFloor    = q.y + 0.32 * q.x + (nLow.g - 0.5) * 0.00055;
+          float wideRootSoft = mix(1.0, smoothstep(-0.0031, -0.0019, diagFloor), smoothstep(0.015, 0.036, dCamPil) * 0.85);
+          float baseFade     = smoothstep(-0.00325, -0.00175, diagFloor) * sstepInv(0.00285, 0.00185, abs(q.x - 0.0002)) * wideRootSoft;
+
+          if (sdf < 0.00032 && baseFade > 0.01) {
+            float uvExposed = clamp(uvFace * (0.30 + 0.70 * smoothstep(0.06, 0.78, hFrac)) * (0.55 + 0.65 * nMid.r), 0.0, 1.25);
+
+            float coreMask = sstepInv(0.000055, -0.000180, sdf) * baseFade;
+            float dustDens = coreMask * (0.74 + 0.58 * cauli) * 7200.0 * max(uDustStrength, 0.65);
+
+            float goldW    = max(0.000058, dt * 0.55);
+            float cyanW    = max(0.000098, dt * 0.82);
+            float goldRim  = exp(-sqr((sdf - (-0.000010)) / goldW)) * uvExposed * (0.62 + 0.75 * billowB) * baseFade;
+            float cyanHalo = exp(-sqr((sdf - 0.000072) / cyanW)) * uvExposed *
+                             (0.50 + 0.68 * (1.0 - abs(nMid.b * 2.0 - 1.0))) * baseFade;
+            float crownStream = exp(-sqr(max(sdf, 0.0) / 0.00018)) * smoothstep(0.72, 0.98, hFrac) *
+                                uvExposed * sqr(clamp(nLow.a * 0.65 + billowB * 0.5, 0.0, 1.1)) * baseFade;
+
+            float hhShock = exp(-sqr(length(q - vec3(-0.00138, 0.00222, 0.00016)) / 0.000115)) +
+                            exp(-sqr(length(q - vec3(-0.00096, 0.00214, 0.00008)) / 0.000095)) * 0.85 +
+                            exp(-sqr(length(q - vec3(-0.00008, 0.00108, -0.00004)) / 0.000100)) * 0.90;
+            hhShock *= (0.65 + 0.75 * billowC) * baseFade;
+
+            vec3 darkOchre = mix(vec3(0.018, 0.010, 0.006), vec3(0.088, 0.044, 0.018), billowB * 0.62 + uvExposed * 0.34);
+            vec3 stepEmit  = darkOchre * (dustDens * 0.085) +
+                             vec3(1.00, 0.60, 0.15) * (goldRim * (1950.0 * (0.000058 / goldW))) +
+                             vec3(0.10, 0.86, 0.96) * ((cyanHalo * 460.0 + crownStream * 360.0)) +
+                             vec3(1.00, 0.12, 0.22) * (hhShock * 2100.0);
+
+            vec3 sigmaT  = vec3(1.38, 1.08, 0.86) * dustDens;
+            vec3 stepTr  = exp(-sigmaT * dt);
+            vec3 safeSig = max(sigmaT, vec3(1e-4));
+            vec3 wInt    = mix(vec3(dt), (1.0 - stepTr) / safeSig, step(vec3(1e-4), sigmaT));
+
+            pilEmit  += pilTrans * stepEmit * wInt;
+            pilTrans *= stepTr;
+            if (max(pilTrans.r, max(pilTrans.g, pilTrans.b)) < 0.004) break;
+          }
+        }
+        pilEmit = mwNeb_chromaShoulder(pilEmit, 0.68, 1.24);
+      }
+
+      int m16Steps = min(uStepCount, 14);
+      float spanM = tM1 - tM0;
+      float invM  = 1.0 / float(max(m16Steps, 1));
+      float prevM = tM0;
+      float fgCavClear = smoothstep(0.0045, 0.0240, dCamPil);
+      float widePromBlend = smoothstep(0.015, 0.036, dCamPil);
+      // Offset between M16 center and Pillars center in local toPil coordinates
+      vec3 pilInM16 = qM0 - qP0;
+
+      vec3 m16Emit  = vec3(0.0);
+      vec3 m16Trans = vec3(1.0);
+      bool splicedPillars = !hitPillars;
+
+      for (int i = zeroU; i < m16Steps; i++) {
+        float tMid  = tM0 + spanM * ((float(i) + jitter) * invM);
+        float tNext = tM0 + spanM * min((float(i + 1) + jitter) * invM, 1.0);
+        float dt    = max(tNext - prevM, 1e-7);
+        prevM = tNext;
+
+        if (!splicedPillars && tMid >= tP0) {
+          m16Emit  += m16Trans * pilEmit;
+          m16Trans *= pilTrans;
+          splicedPillars = true;
+        }
+
+        vec3 qM16 = qM0 + dL * tMid;
+        vec3 qRelPil = qM16 - pilInM16;
+
+        vec4 n0 = textureLod(uNoise3D, qM16 * 9.2 + vec3(0.27, 0.13, 0.49), 0.0);
+        vec3 qMWarp = qM16 + (n0.rgb - 0.5) * 0.0145;
+        vec3 qNorm  = vec3(qMWarp.x / 0.028, qMWarp.y / 0.035, qMWarp.z / 0.026);
+        float rEll  = length(qNorm);
+        if (rEll > 1.20) continue;
+
+        vec4 n1 = textureLod(uNoise3D, qMWarp * 26.0 + 0.31, 0.0);
+        vec4 n2 = textureLod(uNoise3D, qMWarp * 72.0 + (n1.rgb - 0.5) * 0.35, 0.0);
+        float billow = 1.0 - abs(n2.g * 2.0 - 1.0);
+        float rW = rEll + (n1.r - 0.5) * 0.24 + (billow - 0.5) * 0.12;
+        float envTaper = sstepInv(1.16, 0.80, length(vec3(qM16.x / 0.029, qM16.y / 0.036, qM16.z / 0.027)));
+
+        // Craggy same-depth (z = -0.0004) Beer-Lambert SE Molecular Promontory cradling the Pillars root into M16's SE cliffShell!
+        float hProm = 0.0;
+        vec2 promA = vec2(0.0003, -0.0027);
+        vec2 promB = vec2(0.0085, -0.0165);
+        vec2 qPromXY = qRelPil.xy + (n1.gb - 0.5) * 0.0038 + (n2.rg - 0.5) * 0.0018;
+        float dProm   = mwNeb_seg2D(qPromXY, promA, promB, hProm);
+        float promRad = mix(0.0018, 0.0072, pow(hProm, 0.85)) + (n1.r - 0.5) * 0.0018;
+        float promZ   = exp(-sqr((qRelPil.z - (-0.0004)) / mix(0.0045, 0.0082, hProm)));
+        float promShellTaper = sstepInv(0.92, 0.56, rEll) * widePromBlend;
+        float promCore = sstepInv(promRad * 1.35, promRad * 0.25, dProm) * promZ * promShellTaper * (0.68 + 0.72 * billow);
+        vec2 promSpine = mix(promA, promB, hProm);
+        float uvProm   = smoothstep(-0.45, 0.72, dot(qPromXY - promSpine, vec2(-0.42, 0.91)) / max(promRad, 1e-4));
+        float promRim  = exp(-sqr((dProm - promRad * 0.86) / 0.0015)) * promZ * promShellTaper *
+                         smoothstep(-0.016, 0.002, qRelPil.y) * (0.35 + 0.85 * uvProm) * (0.55 + 0.75 * billow);
+
+        if (hitPillars && tMid >= tP0 && tMid <= tP1 && promCore < 0.02) continue;
+
+        float d6611 = length((qMWarp - vec3(0.0, 0.0080, 0.0)) / vec3(0.021, 0.026, 0.021));
+        float oiiiCore = exp(-sqr(d6611 / 0.78)) * (0.62 + 0.65 * n1.g + 0.35 * billow);
+        float behindPillarsGlow = exp(-sqr(length(qRelPil - vec3(0.0, 0.0012, -0.0055)) / 0.0145)) *
+                                  (0.85 + 0.50 * n2.b) * (1.0 - 0.55 * clamp(promCore, 0.0, 1.0));
+
+        float cliffShell = exp(-sqr((rW - 0.82) / 0.20)) * (0.45 + 0.85 * sqr(clamp(billow * 0.7 + n1.b * 0.45, 0.0, 1.1)));
+        float northArch  = smoothstep(-0.005, 0.022, qMWarp.y) * cliffShell;
+
+        vec3 colOIII  = mix(vec3(0.03, 0.64, 0.88), vec3(0.08, 0.84, 0.76), n2.r);
+        vec3 colCliff = mix(vec3(0.96, 0.48, 0.18), vec3(0.94, 0.18, 0.32), smoothstep(0.72, 1.02, rW));
+        vec3 darkPromCol = mix(vec3(0.032, 0.018, 0.011), vec3(0.14, 0.068, 0.030), billow * 0.65 + 0.25 * n1.g);
+
+        float clearMod = (qRelPil.z > -0.0008) ? mix(0.02, 1.0, fgCavClear) : 1.0;
+        vec3 cavEmit = (colOIII * ((oiiiCore * 9.5 + behindPillarsGlow * 13.0) * sstepInv(1.02, 0.58, rW)) +
+                        colCliff * ((cliffShell * 11.8 + northArch * 7.5))) * clearMod * envTaper;
+
+        float cavDust = exp(-rEll * rEll * 1.5) * 22.0;
+        float rimDust = (cavDust + smoothstep(0.74, 1.04, rW) * (0.4 + 0.9 * billow) * 24.0) *
+                        envTaper * max(uDustStrength, 0.45) * clearMod;
+        float promDust  = promCore * 240.0 * envTaper * max(uDustStrength, 0.55);
+        float totalDust = rimDust + promDust;
+        vec3 promEmit   = darkPromCol * (promDust * 0.14) + vec3(1.00, 0.58, 0.18) * (promRim * 24.0 * envTaper);
+
+        vec3 sigmaT  = totalDust * vec3(1.32, 1.06, 0.84);
+        vec3 stepTr  = exp(-sigmaT * dt);
+        vec3 safeSig = max(sigmaT, vec3(1e-4));
+        vec3 wInt    = mix(vec3(dt), (1.0 - stepTr) / safeSig, step(vec3(1e-4), sigmaT));
+
+        m16Emit  += m16Trans * (cavEmit + promEmit) * wInt;
+        m16Trans *= stepTr;
+      }
+
+      if (!splicedPillars) {
+        m16Emit  += m16Trans * pilEmit;
+        m16Trans *= pilTrans;
+      }
+
+      float fgDust = exp(-min(tM0 * 0.040 * uDustStrength, 0.88));
+      accum += trans * mwNeb_chromaShoulder(m16Emit * nebStr * fgDust, 0.60, 1.16);
+      trans *= mix(vec3(1.0), m16Trans, fgDust);
+    }
+
+    void main() {
+      float rCam = length(uCamPos);
+      float regionMask = smoothstep(0.08, 0.45, rCam) * sstepInv(115.0, 48.0, rCam);
+      float nebStr = max(uNebulaStrength, 0.30) * regionMask;
+      if (nebStr <= 0.002) discard;
+
+      vec2 ndc = vUv * 2.0 - 1.0;
+      vec3 rd = normalize(
+        uCamBasis[2] +
+        uCamBasis[0] * (ndc.x * uAspect * uTanHalfFov) +
+        uCamBasis[1] * (ndc.y * uTanHalfFov)
+      );
+      vec2 rdXZ = advectGalactic(rd.xz, uGalAngle);
+      vec3 rdGal = vec3(rdXZ.x, rd.y, rdXZ.y);
+      float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+      int zeroU = min(uStepCount, 0);
+
+      vec3 mwNebAccum = vec3(0.0);
+      vec3 mwNebTrans = vec3(1.0);
+      mwNeb_evalCrabM1(uCamRelCrabGal, rdGal, ign, nebStr, zeroU, mwNebAccum, mwNebTrans);
+      mwNeb_evalOrionM42(uCamRelM42Gal, rdGal, ign, nebStr, zeroU, mwNebAccum, mwNebTrans);
+      mwNeb_evalEagleM16AndPillars(uCamRelM16Gal, uCamRelPillarsGal, rdGal, ign, nebStr, zeroU, mwNebAccum, mwNebTrans);
+
+      mwNebTrans = mix(vec3(1.0), mwNebTrans, regionMask);
+      if (dot(mwNebAccum, vec3(1.0)) < 1e-6 && min(mwNebTrans.r, min(mwNebTrans.g, mwNebTrans.b)) > 0.999) discard;
+
+      float meanTr = clamp(dot(mwNebTrans, vec3(0.333333)), 0.05, 1.0);
+      fragColor = vec4(mwNebAccum * regionMask * uHdrScale, 1.0 - meanTr);
+    }
+  `;
+
+  // ============================================================================
   // 5. PASS 2 (4-PROGRAM ANGLE D3D11 PARALLEL FAST-LINK ARCHITECTURE):
   //    1:1 RAY-TRACED OBLATE SOLAR SYSTEM (SUN, 8 PLANETS, PLUTO, 8 MOONS,
   //    RINGS & MUTUAL ECLIPSES), PROXIMA (d, b, c), ALPHA CEN & S-STARS
@@ -3485,6 +4374,7 @@
     uniform float uTanHalfFov;
     uniform float uAspect;
     uniform float uStarAnimTime;
+    uniform float uGalAngle;
     uniform float uHdrScale;
 
     uniform vec4 uStarPosRad[4];
@@ -3498,6 +4388,8 @@
 
     const float PI = 3.14159265359;
     const float TWO_PI = 6.28318530718;
+    const vec3 VEGA_SPIN_AXIS    = vec3(-0.347767, 0.421621, 0.837433);
+    const vec3 BETEL_DIMMING_DIR = vec3(0.684042, -0.703711, -0.192032);
 
     float sqr(float x) { return x * x; }
     float pow4(float x) { float x2 = x * x; return x2 * x2; }
@@ -3506,6 +4398,11 @@
     vec2 rot2D(vec2 v, float a) {
       float c = cos(a), s = sin(a);
       return vec2(c * v.x - s * v.y, s * v.x + c * v.y);
+    }
+
+    vec3 rotGalY(vec3 v, float a) {
+      vec2 r = rot2D(v.xz, a);
+      return vec3(r.x, v.y, r.y);
     }
 
     vec3 kelvinToRgb(float kelvin) {
@@ -3690,7 +4587,9 @@
       for (int i = 0; i < 4; i++) {
         float rad = uStarPosRad[i].w;
         if (rad > 0.0) {
-          vec2 ts = raySphere(uStarPosRad[i].xyz, rad, rd);
+          vec2 ts = (abs(uStarMeta[i].y - 8.0) < 0.3)
+            ? rayOblateSpheroid(uStarPosRad[i].xyz, rad, VEGA_SPIN_AXIS, 0.1702, rd)
+            : raySphere(uStarPosRad[i].xyz, rad, rd);
           if (ts.x > 0.0 && ts.x < bestT) {
             bestT = ts.x;
             hitKind = 1;
@@ -4530,11 +5429,179 @@
     ${LOCAL_COMMON_GLSL}
     ${LOCAL_CRATER_GLSL}
 
+    // 3D Domain-Warped Cellular Super-Granulation for Red Supergiant Betelgeuse (Schwarzschild 1975 / CO5BOLD 3D RHD):
+    // Low frequency (freq ~ 1.58) resolves ONLY 4-6 colossal boiling convective super-plumes across the hemisphere!
+    vec3 mw_evalSupergiantPlumes(vec3 pUnit, float animT) {
+      vec4 wTex = textureLod(uNoise3D, pUnit * 0.68 + vec3(0.17, animT * 0.014, -0.23), 0.0);
+      vec3 q = (pUnit + (wTex.rgb - 0.5) * 0.42) * 1.58 + vec3(0.0, -animT * 0.018, 0.0);
+      vec3 cell0 = floor(q);
+      vec3 f = q - cell0;
+      vec3 stepDir = vec3(f.x < 0.5 ? -1.0 : 1.0, f.y < 0.5 ? -1.0 : 1.0, f.z < 0.5 ? -1.0 : 1.0);
+
+      float d1 = 8.0;
+      float d2 = 8.0;
+      float hotId = 0.5;
+      for (int ix = 0; ix < 2; ix++) {
+        for (int iy = 0; iy < 2; iy++) {
+          for (int iz = 0; iz < 2; iz++) {
+            vec3 off = vec3(float(ix), float(iy), float(iz)) * stepDir;
+            vec3 rnd = hash33(cell0 + off);
+            vec3 jitter = 0.5 + 0.36 * sin(rnd * 6.2831853 + animT * 0.16);
+            vec3 cPos = off + 0.16 + 0.68 * jitter;
+            float dist = length(f - cPos);
+            if (dist < d1) {
+              d2 = d1;
+              d1 = dist;
+              hotId = fract(rnd.x * 3.71 + rnd.z * 5.13);
+            } else if (dist < d2) {
+              d2 = dist;
+            }
+          }
+        }
+      }
+      float border = clamp(d2 - d1, 0.0, 1.0);
+      float dome = smoothstep(0.04, 0.44, border) * sstepInv(0.76, 0.12, d1);
+      float lane = sstepInv(0.22, 0.02, border);
+      return vec3(dome, lane, hotId);
+    }
+
     vec3 shadeStarSurface(vec3 nrm, vec3 viewDir, float tempK, float style, float animT, float flareBoost) {
       float mu = clamp(dot(nrm, viewDir), 0.0, 1.0);
       vec3 starOut = vec3(0.0);
 
-      if (style > 0.5 && style < 1.5) {
+      if (abs(style - 6.0) < 0.3) {
+        // === BETELGEUSE (alpha Orionis, M1-M2 Ia-ab Red Supergiant: R = 764 R_sun = 3.553 AU, T_eff = 3,600 K) ===
+        float rotA = animT * 0.012;
+        vec3 pRot = vec3(rot2D(nrm.xz, rotA), nrm.y).xzy;
+
+        vec3 sgCell = mw_evalSupergiantPlumes(pRot, animT);
+        vec4 nMeso  = textureLod(uNoise3D, pRot * 3.65 + vec3(animT * 0.024, -animT * 0.019, 0.11), 0.0);
+        vec4 nBoil  = textureLod(uNoise3D, pRot * 9.20 - vec3(0.0, animT * 0.036, animT * 0.022), 0.0);
+
+        float mesoPlume = smoothstep(0.24, 0.80, nMeso.g * 0.64 + nBoil.r * 0.36);
+        float hotSpot   = smoothstep(0.56, 0.90, sgCell.z) * sgCell.x;
+        float plumeHeat = clamp(sgCell.x * (0.62 + 0.38 * mesoPlume) + hotSpot * 0.34, 0.0, 1.0);
+        float tioDark   = clamp(sgCell.y * 0.82 + sstepInv(0.38, 0.14, nMeso.r * 0.65 + nBoil.b * 0.35) * 0.48, 0.0, 1.0);
+        float shockRim  = pow(clamp(nMeso.b * 0.58 + nBoil.g * 0.52, 0.0, 1.0), 3.4) * sgCell.x * clamp(flareBoost, 0.7, 1.25);
+
+        vec3 tioCrimson   = vec3(0.48, 0.070, 0.030);
+        vec3 rsgVermilion = vec3(1.34, 0.390, 0.085);
+        vec3 amberPlume   = vec3(1.95, 0.880, 0.260);
+
+        vec3 convCol = mix(rsgVermilion, amberPlume, smoothstep(0.22, 0.92, plumeHeat + shockRim * 0.28));
+        convCol      = mix(convCol, tioCrimson, tioDark * 0.88);
+
+        float fuzzyLimb = 0.16 + 0.84 * pow(max(mu, 0.0), 0.86);
+        float molRim    = pow(max(1.0 - mu, 0.0), 2.85) * 0.62;
+        starOut = convCol * fuzzyLimb * (0.90 + 0.18 * mesoPlume) + vec3(1.08, 0.22, 0.06) * molRim;
+      } else if (abs(style - 7.0) < 0.25) {
+        // === SIRIUS A (alpha Canis Majoris A, A0mA1 Va: R = 1.711 R_sun, T_eff = 9,940 K) ===
+        float rotA = animT * 0.075;
+        vec3 pRot = vec3(rot2D(nrm.xz, rotA), nrm.y).xzy;
+        vec4 nRad1 = textureLod(uNoise3D, pRot * 6.8 + vec3(animT * 0.028, 0.19, -animT * 0.022), 0.0);
+        vec4 nRad2 = textureLod(uNoise3D, pRot * 19.5 - vec3(animT * 0.045, 0.0, 0.31), 0.0);
+
+        float microShimmer = smoothstep(0.24, 0.82, nRad1.g * 0.58 + nRad2.r * 0.42);
+        float acousticWave = 0.5 + 0.5 * sin(pRot.y * 18.0 + nRad1.a * 4.2 + animT * 0.35);
+        float limbPow      = pow(max(mu, 0.0), 0.62);
+
+        vec3 coreDiamond = vec3(0.62, 0.82, 1.85);
+        vec3 cobaltLimb  = vec3(0.15, 0.35, 1.06);
+        vec3 photoA      = mix(cobaltLimb, coreDiamond, limbPow) * (0.91 + 0.15 * microShimmer + 0.05 * acousticWave);
+        float balmerRim  = pow(max(1.0 - mu, 0.0), 3.6) * 0.52;
+        starOut = photoA + vec3(0.26, 0.56, 1.38) * balmerRim;
+      } else if (abs(style - 7.5) < 0.25) {
+        // === SIRIUS B ("The Pup" 白矮星, Degenerate DA2 White Dwarf: R = 5,844 km, T_eff = 25,200 K, log g = 8.57) ===
+        float rotA = animT * 0.16;
+        vec3 pRot = vec3(rot2D(nrm.xz, rotA), nrm.y).xzy;
+        vec4 nGmode = textureLod(uNoise3D, pRot * 8.4 + vec3(0.0, animT * 0.065, 0.27), 0.0);
+        vec4 nCryst = textureLod(uNoise3D, pRot * 22.0 - vec3(animT * 0.085, 0.13, 0.0), 0.0);
+
+        vec3 wdMagAxis   = normalize(vec3(0.22, 0.95, -0.22));
+        float magPole    = pow(clamp(abs(dot(nrm, wdMagAxis)), 0.0, 1.0), 3.4);
+        float gModePulse = smoothstep(0.28, 0.78, nGmode.r * 0.55 + nCryst.g * 0.45);
+        float starkLimb  = pow(max(mu, 0.0), 0.56);
+
+        vec3 uvSapphire  = vec3(0.42, 0.68, 2.15);
+        vec3 starkIndigo = vec3(0.11, 0.22, 1.16);
+        vec3 wdPhoto     = mix(starkIndigo, uvSapphire, starkLimb) * (0.90 + 0.13 * gModePulse);
+        wdPhoto         += vec3(0.20, 0.52, 1.15) * magPole * (0.14 + 0.08 * sin(animT * 0.9 + nGmode.b * 4.0));
+        float degenRim   = pow(max(1.0 - mu, 0.0), 3.8) * 0.68;
+        starOut = wdPhoto + vec3(0.30, 0.58, 1.62) * degenRim;
+      } else if (abs(style - 8.0) < 0.3) {
+        // === VEGA (alpha Lyrae, Rapidly Rotating Oblate A0V Star: P_rot = 12.5 hr, R_eq = 2.726 R_sun, R_pol = 2.262 R_sun, f = 0.1702) ===
+        vec3 eqX = normalize(cross(VEGA_SPIN_AXIS, vec3(0.0, 1.0, 0.0)));
+        vec3 eqZ = cross(eqX, VEGA_SPIN_AXIS);
+        float lx = dot(nrm, eqX);
+        float ly = dot(nrm, VEGA_SPIN_AXIS);
+        float lz = dot(nrm, eqZ);
+
+        float cosPol = clamp(abs(ly), 0.0, 1.0);
+        float sinPol = sqrt(max(0.0, 1.0 - cosPol * cosPol));
+        float zonalSpin = animT * (0.26 + 0.09 * sinPol * sinPol);
+        vec2 xzSpin = rot2D(vec2(lx, lz), zonalSpin);
+        vec3 vSpinCoord = vec3(xzSpin.x * 1.35, ly * 4.8, xzSpin.y * 1.35);
+
+        vec4 nZon1 = textureLod(uNoise3D, vSpinCoord * 1.75 + vec3(0.13, 0.29, -0.17), 0.0);
+        vec4 nZon2 = textureLod(uNoise3D, vSpinCoord * 5.20 + nZon1.a * 0.24, 0.0);
+        float shearBands = 0.5 + 0.5 * cos(ly * 26.0 + nZon1.r * 2.4 + nZon2.g * 1.2);
+        float fineBoil   = smoothstep(0.25, 0.80, nZon1.g * 0.55 + nZon2.b * 0.45);
+
+        float vzGrad = pow(max(cosPol, 0.0), 1.52);
+        vec3 eqPeriwinkle = vec3(0.24, 0.42, 0.96);
+        vec3 midAzure     = vec3(0.48, 0.69, 1.54);
+        vec3 poleIcyWhite = vec3(0.80, 0.93, 2.14);
+
+        vec3 vzBase = (vzGrad < 0.5)
+          ? mix(eqPeriwinkle, midAzure, vzGrad * 2.0)
+          : mix(midAzure, poleIcyWhite, (vzGrad - 0.5) * 2.0);
+        float zonalMod = mix(0.88 + 0.20 * shearBands, 0.96 + 0.08 * fineBoil, vzGrad);
+        float limb     = 0.26 + 0.74 * pow(max(mu, 0.0), 0.60);
+        float vegaRim  = pow(max(1.0 - mu, 0.0), 3.5) * mix(0.32, 0.54, vzGrad);
+        starOut = vzBase * zonalMod * limb + vec3(0.28, 0.54, 1.32) * vegaRim;
+      } else if (style > 8.5 && style < 9.5) {
+        // === CRAB PULSAR PSR B0531+21 (SN 1054 Neutron Star & Inner Force-Free Magnetosphere, rRsun = 0.018 ~ 12,500 km) ===
+        vec3 psrSpin = rotGalY(vec3(-0.515040,  0.236222, -0.823974), uGalAngle);
+        vec3 psrU    = rotGalY(vec3(-0.115195, -0.971631, -0.206549), uGalAngle);
+        vec3 psrV    = rotGalY(vec3(-0.849391, -0.011463,  0.527640), uGalAngle);
+
+        float rotPhase = animT * 9.5;
+        float cR = cos(rotPhase), sR = sin(rotPhase);
+        vec3 eqRot    = cR * psrU + sR * psrV;
+        vec3 eqOrtho  = -sR * psrU + cR * psrV;
+        vec3 magAxis  = psrSpin * 0.6156615 + eqRot * 0.7880108;
+        vec3 magMerid = psrSpin * 0.7880108 - eqRot * 0.6156615;
+
+        float cosMag = clamp(dot(nrm, magAxis), -1.0, 1.0);
+        float absMag = abs(cosMag);
+        float sinMag = sqrt(max(0.0, 1.0 - cosMag * cosMag));
+        float azMag  = atan(dot(nrm, eqOrtho), dot(nrm, magMerid) + 1e-6);
+
+        float innerCrustGleam = pow(max(mu, 0.0), 4.2);
+        float polarCap        = smoothstep(0.74, 0.96, absMag);
+        float auroralRing     = exp(-sqr((absMag - 0.82) / 0.075));
+        float fieldRibs       = pow(max(0.5 + 0.5 * cos(azMag * 10.0), 0.0), 3.2) * pow(max(sinMag, 0.0), 1.6);
+
+        vec4 nPl = textureLod(uNoise3D, vec3(cosMag * 4.5, sin(azMag * 2.0 + animT * 0.8), cos(azMag * 2.0)) * 1.8, 0.0);
+        float spark = 0.72 + 0.45 * nPl.g;
+
+        vec3 coreSapphire = vec3(0.46, 0.84, 1.95);
+        vec3 magViolet    = vec3(0.48, 0.34, 1.82);
+        vec3 hotCapCyan   = vec3(0.68, 0.95, 2.20);
+
+        float limb = 0.26 + 0.74 * pow(max(mu, 0.0), 0.65);
+        vec3 surf = mix(magViolet * 0.55, coreSapphire, innerCrustGleam * 0.78) * limb;
+        surf += hotCapCyan * (polarCap * 0.92 + auroralRing * 0.58) * spark;
+        surf += vec3(0.28, 0.72, 1.65) * (fieldRibs * 0.62 * spark);
+        surf += vec3(0.32, 0.68, 1.55) * pow(max(1.0 - mu, 0.0), 2.8) * 0.75;
+
+        float pkP = max(surf.r, max(surf.g, surf.b));
+        if (pkP > 1.45) {
+          float exP = pkP - 1.45;
+          surf *= (1.45 + 0.83 * (exP / (exP + 0.83))) / pkP;
+        }
+        starOut = surf;
+      } else if (style > 0.5 && style < 1.5) {
         // PROXIMA CENTAURI (M5.5Ve Fully-Convective Flare Red Dwarf, T=2,992 K, R=107,277 km)
         float rotA = animT * 0.08;
         vec3 pRot = vec3(rot2D(nrm.xz, rotA), nrm.y).xzy;
@@ -4601,7 +5668,7 @@
         float intensity = (0.72 + 0.76 * cellCore + 0.68 * shockArcs) * mix(1.0, 0.28, darkRift) * polarBright * limb;
         float wrWindRim = pow(max(1.0 - mu, 0.0), 3.1) * 0.82;
         starOut = baseTint * intensity + vec3(0.24, 0.50, 1.00) * wrWindRim;
-      } else if (style > 3.5) {
+      } else if (style > 3.5 && style < 4.5) {
         // AE ANDROMEDAE (Luminous Blue Variable Hypergiant in M31, R=68 R_sun, T=22,500 K, L~7e5 L_sun!)
         float rotA = animT * 0.095;
         vec3 pRot = vec3(rot2D(nrm.xz, rotA), nrm.y).xzy;
@@ -5098,7 +6165,8 @@
         if (rad > 0.0) {
           vec3 c = uStarPosRad[i].xyz;
           float tP = dot(c, rd);
-          if (tP > 0.0 && max(0.0, dot(c, c) - tP * tP) <= rad * rad * 1.01) cand = true;
+          vec3 pPerp = c - rd * tP;
+          if (tP > 0.0 && dot(pPerp, pPerp) <= rad * rad * 1.01) cand = true;
         }
       }
       for (int j = 0; j < 20; j++) {
@@ -5107,7 +6175,8 @@
         if (rad > 0.0 && pt < 6.5 && abs(pt - 3.0) > 0.3) {
           vec3 c = uPlanetPosRad[j].xyz;
           float tP = dot(c, rd);
-          if (tP > 0.0 && max(0.0, dot(c, c) - tP * tP) <= rad * rad * 1.02) cand = true;
+          vec3 pPerp = c - rd * tP;
+          if (tP > 0.0 && dot(pPerp, pPerp) <= rad * rad * 1.02) cand = true;
         }
       }
       if (!cand) discard;
@@ -5123,8 +6192,12 @@
 
       vec3 outRgb = vec3(0.0);
       if (hitKind == 1) {
-        vec3 nrm = normalize(rd * bestT - uStarPosRad[hitIdx].xyz);
-        outRgb = shadeStarSurface(nrm, -rd, uStarMeta[hitIdx].x, uStarMeta[hitIdx].y, uStarAnimTime, uStarMeta[hitIdx].z);
+        float stStyle = uStarMeta[hitIdx].y;
+        vec3 relStar  = rd * bestT - uStarPosRad[hitIdx].xyz;
+        vec3 nrm = (abs(stStyle - 8.0) < 0.3)
+          ? evalOblateGeodeticNormal(relStar, VEGA_SPIN_AXIS, 0.1702)
+          : normalize(relStar);
+        outRgb = shadeStarSurface(nrm, -rd, uStarMeta[hitIdx].x, stStyle, uStarAnimTime, uStarMeta[hitIdx].z);
       } else {
         outRgb = shadeTerrExoPlanet(
           hitIdx, rd * bestT, uPlanetPosRad[hitIdx].xyz, uPlanetFlat[hitIdx], -rd,
@@ -5963,10 +7036,10 @@
           float lassell   = smoothstep(2.148, 2.165, rNorm) * sstepInv(2.395, 2.365, rNorm) * 0.010;
           float arago     = exp(-sqr((rNorm - 2.310) / 0.0055)) * 0.024;
           float azDeg = degrees(azim);
-          float arcCourage    = exp(-sqr(wrapDeg(azDeg - 13.0) / 2.8)) * 0.55;
-          float arcLiberte    = exp(-sqr(wrapDeg(azDeg - 23.5) / 3.4)) * 0.85;
-          float arcEgalite    = exp(-sqr(wrapDeg(azDeg - 34.5) / 4.2)) * 0.92;
-          float arcFraternite = exp(-sqr(wrapDeg(azDeg - 47.5) / 5.8)) * 1.00;
+          float arcCourage    = exp(-min(sqr(wrapDeg(azDeg - 13.0) / 2.8), 14.0)) * 0.55;
+          float arcLiberte    = exp(-min(sqr(wrapDeg(azDeg - 23.5) / 3.4), 14.0)) * 0.85;
+          float arcEgalite    = exp(-min(sqr(wrapDeg(azDeg - 34.5) / 4.2), 14.0)) * 0.92;
+          float arcFraternite = exp(-min(sqr(wrapDeg(azDeg - 47.5) / 5.8), 14.0)) * 1.00;
           float arcClumps = clamp(arcCourage + arcLiberte + arcEgalite + arcFraternite, 0.0, 1.15);
           float adams = exp(-sqr((rNorm - 2.541) / 0.0058)) * (0.042 + 0.185 * arcClumps);
           res = vec2(galle + leVerrier + lassell + arago + adams, clamp(0.42 + 0.42 * arcClumps, 0.0, 1.0));
@@ -6026,8 +7099,16 @@
       float tCl = dot(starPos, rd);
       if (tCl > 0.0) {
         vec3 pCl = rd * tCl - starPos;
-        float b = length(pCl);
-        float coronaMaxR = (style > 4.5 && style < 5.5) ? (starR * 11.2) : ((style > 3.5) ? (starR * 9.5) : ((style > 2.5) ? (starR * 6.2) : (starR * 4.4)));
+        vec3 pCor = (abs(style - 8.0) < 0.3)
+          ? (pCl + VEGA_SPIN_AXIS * dot(pCl, VEGA_SPIN_AXIS) * 0.20511)
+          : pCl;
+        float b = length(pCor);
+        float coronaMaxR = (style > 8.5 && style < 9.5) ? (starR * 13.2)
+          : ((style > 4.5 && style < 5.5) ? (starR * 11.2)
+          : ((abs(style - 6.0) < 0.3) ? (starR * 4.85)
+          : ((abs(style - 7.5) < 0.25) ? (starR * 5.5)
+          : ((abs(style - 7.0) < 0.25 || abs(style - 8.0) < 0.3) ? (starR * 4.8)
+          : ((style > 3.5 && style < 4.5) ? (starR * 9.5) : ((style > 2.5 && style < 3.5) ? (starR * 6.2) : (starR * 4.4)))))));
         if (b >= starR && b < coronaMaxR && tCl <= maxT + starR) {
           float xNorm = b / starR;
           vec3 dirCl = normalize(pCl + 1e-8);
@@ -6039,7 +7120,105 @@
           float streamer = 0.55 + 0.85 * pow(max(nLoop.r, 0.0), 1.8);
           float prominence = exp(-(xNorm - 1.0) * 5.8) * pow(clamp(nLoop.g * 0.7 + nFine.r * 0.55, 0.0, 1.2), 3.4);
 
-          if (style > 4.5 && style < 5.5) {
+          if (abs(style - 6.0) < 0.3) {
+            // Betelgeuse 2019-2020 "Great Dimming" Asymmetric Southern-Western Silicate Dust Plume & Mass-Loss Shells (1.0 - 4.8 R_*)
+            float alignSW = dot(dirCl, BETEL_DIMMING_DIR);
+            float swCone  = smoothstep(-0.18, 0.72, alignSW);
+            vec3 dCoord   = dirCl * 2.45 - BETEL_DIMMING_DIR * (xNorm * 0.52 - animT * 0.025);
+            vec4 nDustA   = textureLod(uNoise3D, dCoord, 0.0);
+            vec4 nDustB   = textureLod(uNoise3D, dCoord * 2.7 + nDustA.a * 0.32, 0.0);
+            float clump   = smoothstep(0.22, 0.84, nDustA.g * 0.58 + nDustB.r * 0.42);
+
+            float shellWaves = 0.55 + 0.45 * sin((xNorm - 1.0) * 4.6 - animT * 0.12 + nDustA.r * 2.8);
+            float plumeRad   = exp(-sqr((xNorm - 1.85) / 1.35)) * sstepInv(4.80, 3.35, xNorm) +
+                               0.55 * exp(-(xNorm - 1.0) * 1.45);
+            float molAtmo    = exp(-(xNorm - 1.0) * 3.2) * (0.65 + 0.55 * nLoop.g);
+
+            vec3 chromoRuby  = vec3(1.05, 0.24, 0.07) * molAtmo * 0.62;
+            vec3 silicateCol = mix(vec3(0.68, 0.17, 0.06), vec3(1.14, 0.44, 0.14), clump * shellWaves);
+            vec3 swDustGlow  = silicateCol * swCone * plumeRad * (0.42 + 0.88 * clump) * 0.72 * clamp(flareBoost, 0.7, 1.3);
+            vec3 haloShell   = vec3(0.72, 0.20, 0.07) * pow(max(xNorm, 1.0), -3.1) * shellWaves * clump * 0.22 * sstepInv(4.80, 3.60, xNorm);
+            res = chromoRuby + swDustGlow + haloShell;
+          } else if (abs(style - 7.0) < 0.25) {
+            // Sirius A: Crisp diamond-sapphire radiative A0V corona
+            vec3 sirACor = mix(vec3(0.28, 0.58, 1.38), vec3(0.56, 0.78, 1.55), nLoop.b * 0.5) *
+                           (exp(-(xNorm - 1.0) * 3.1) * 0.68 + pow(max(xNorm, 1.0), -3.8) * 0.24) * streamer;
+            res = sirACor;
+          } else if (abs(style - 7.5) < 0.25) {
+            // Sirius B White Dwarf (5,844 km, log g = 8.57): Compact UV-sapphire corona + gravitational-deflection shimmer!
+            float gravHaloRing = exp(-sqr((xNorm - 1.34) / 0.26)) * (0.72 + 0.28 * sin(xNorm * 14.0 - animT * 1.4 + nFine.r * 3.5));
+            float innerDeflect = sstepInv(2.40, 1.02, xNorm) * exp(-(xNorm - 1.0) * 1.65) * (0.65 + 0.55 * nFine.g);
+            vec3 wdCor = vec3(0.30, 0.58, 1.68) * (exp(-(xNorm - 1.0) * 3.3) * 0.74 + pow(max(xNorm, 1.0), -4.0) * 0.22) * streamer;
+            vec3 wdLensShimmer = mix(vec3(0.26, 0.52, 1.75), vec3(0.58, 0.80, 1.95), gravHaloRing) *
+                                 (gravHaloRing * 0.38 + innerDeflect * 0.26);
+            res = wdCor + wdLensShimmer;
+          } else if (abs(style - 8.0) < 0.3) {
+            // Oblate Vega: Polar-brightened radiative wind matching von Zeipel 10,020 K poles vs 7,900 K equatorial waist
+            vec3 dirObl  = normalize(pCor + 1e-8);
+            float cosPV  = clamp(abs(dot(dirObl, VEGA_SPIN_AXIS)), 0.0, 1.0);
+            vec3 vCorHue = mix(vec3(0.22, 0.44, 1.12), vec3(0.54, 0.78, 1.62), pow(max(cosPV, 0.0), 1.4));
+            float pBoost = mix(0.72, 1.24, cosPV * cosPV);
+            res = vCorHue * (exp(-(xNorm - 1.0) * 3.0) * 0.66 + pow(max(xNorm, 1.0), -3.7) * 0.24) * streamer * pBoost;
+          } else if (style > 8.5 && style < 9.5) {
+            // CRAB PULSAR PSR B0531+21 MAGNETOSPHERE: Sweeping Twin Oblique Lighthouse Beams & 3D Dipole Arcs!
+            vec3 psrSpin = rotGalY(vec3(-0.515040,  0.236222, -0.823974), uGalAngle);
+            vec3 psrU    = rotGalY(vec3(-0.115195, -0.971631, -0.206549), uGalAngle);
+            vec3 psrV    = rotGalY(vec3(-0.849391, -0.011463,  0.527640), uGalAngle);
+
+            float rotPhase = animT * 9.5;
+            float cR = cos(rotPhase), sR = sin(rotPhase);
+            vec3 eqRot    = cR * psrU + sR * psrV;
+            vec3 eqOrtho  = -sR * psrU + cR * psrV;
+            vec3 magAxis  = psrSpin * 0.6156615 + eqRot * 0.7880108;
+            vec3 magMerid = psrSpin * 0.7880108 - eqRot * 0.6156615;
+
+            float cosM  = clamp(dot(dirCl, magAxis), -1.0, 1.0);
+            float sinM2 = max(0.06, 1.0 - cosM * cosM);
+            float lShell = xNorm / sinM2;
+            float azD   = atan(dot(dirCl, eqOrtho), dot(dirCl, magMerid) + 1e-6);
+
+            float shellWave = pow(max(0.5 + 0.5 * cos(lShell * 4.2 - 0.6), 0.0), 3.4);
+            float azBundles = 0.45 + 0.55 * pow(max(0.5 + 0.5 * cos(azD * 8.0 + nLoop.r * 1.2), 0.0), 2.4);
+            float dipoleArcs = shellWave * azBundles * sinM2 * exp(-(xNorm - 1.0) * 0.42) * sstepInv(7.2, 4.2, lShell);
+
+            float spinEq = 1.0 - abs(dot(dirCl, psrSpin));
+            float stripedSheet = pow(max(spinEq, 0.0), 6.0) * exp(-(xNorm - 1.0) * 0.22) *
+                                 (0.55 + 0.45 * cos(xNorm * 2.8 - rotPhase * 2.0)) * sstepInv(13.0, 8.5, xNorm);
+
+            vec3 oNorm = -starPos / max(starR, 1e-8);
+            vec3 beamSum = vec3(0.0);
+            for (int bSign = 0; bSign < 2; bSign++) {
+              vec3 bAx = (bSign == 0) ? magAxis : (-magAxis);
+              float bd = dot(rd, bAx);
+              float den = max(1.0 - bd * bd, 0.035);
+              float sB = clamp((dot(oNorm, rd) * bd - dot(oNorm, bAx)) / den, 1.0, 12.8);
+              float tB = -dot(oNorm, rd) + sB * bd;
+              if (tB > 0.0 && tB * starR <= maxT + starR * 0.5) {
+                vec3 pB = oNorm + rd * tB;
+                float rPerp = length(pB - bAx * sB);
+                float coneW = 0.16 + 0.145 * (sB - 1.0);
+                float coreB = exp(-sqr(rPerp / coneW));
+                float rimB  = exp(-sqr((rPerp - coneW * 0.68) / (coneW * 0.36))) * 0.45;
+                float doppB = 0.72 + 0.68 * max(0.0, -bd);
+                float lenFade = exp(-(sB - 1.0) * 0.21) * sstepInv(12.8, 9.2, sB);
+                vec3 bCol = mix(vec3(0.26, 0.78, 1.00), vec3(0.66, 0.56, 1.00), smoothstep(1.5, 9.5, sB));
+                beamSum += bCol * ((coreB * 0.92 + rimB) * doppB * lenFade);
+              }
+            }
+
+            vec3 innerHalo = vec3(0.32, 0.74, 1.00) * (exp(-(xNorm - 1.0) * 2.4) * 0.52 + pow(max(xNorm, 1.0), -3.2) * 0.18);
+            vec3 rawCor = innerHalo +
+                          mix(vec3(0.24, 0.72, 1.00), vec3(0.56, 0.38, 1.00), 0.45) * (dipoleArcs * 0.78) +
+                          vec3(0.28, 0.66, 1.00) * (stripedSheet * 0.34) +
+                          beamSum * 0.92;
+
+            float pkC = max(rawCor.r, max(rawCor.g, rawCor.b));
+            if (pkC > 0.98) {
+              float exC = pkC - 0.98;
+              rawCor *= (0.98 + 0.88 * (exC / (exC + 0.88))) / pkC;
+            }
+            res = rawCor;
+          } else if (style > 4.5 && style < 5.5) {
             // R136a1 Wolf-Rayet Supersonic Clumpy Radiative Wind (2,600 km/s) + Colliding-Wind Pinwheel Shock Arcs!
             vec3 outFlow = sampleDir * 2.6 - vec3(0.0, 0.0, animT * 0.22 - xNorm * 0.48);
             vec4 nWind   = textureLod(uNoise3D, outFlow, 0.0);
@@ -6056,7 +7235,7 @@
             vec3 collideArc = mix(vec3(0.22, 0.86, 1.00), vec3(0.84, 0.36, 1.00), smoothstep(2.2, 7.5, xNorm)) *
                               shockShell * clumpyStreaks * 0.46 * clamp(flareBoost, 0.6, 1.35);
             res = innerHeII + collideArc;
-          } else if (style > 3.5) {
+          } else if (style > 3.5 && style < 4.5) {
             // AE Andromedae LBV: 3D Bipolar Homunculus Eruption Nebula (Crimson N-II/H-alpha Polar Lobes + [OIII] Cyan Skirt!)
             vec3 lbvAxis = normalize(vec3(0.24, 0.94, -0.22));
             float cosPol = abs(dot(dirCl, lbvAxis));
@@ -6072,7 +7251,7 @@
             vec3 skirtCol = vec3(0.18, 0.78, 1.00) * eqSkirt * knots * 0.76 * flareBoost;
             vec3 innerWind = vec3(0.52, 0.78, 1.00) * (exp(-(xNorm - 1.0) * 2.8) * 0.62 + pow(max(xNorm, 1.0), -3.6) * 0.22) * streamer;
             res = innerWind + lobeCol + skirtCol;
-          } else if (style > 2.5) {
+          } else if (style > 2.5 && style < 3.5) {
             // Hubble V1 Cepheid: Expanding Concentric Pulsation Light-Echo & Circumstellar Shock Shells (RS Puppis / M31-V1!)
             float wave = 0.5 + 0.5 * sin((xNorm - 1.0) * 5.4 - animT * 0.55 + nLoop.a * 1.8);
             float echoShells = pow(wave, 3.2) * exp(-(xNorm - 1.0) * 0.55) * sstepInv(6.1, 4.5, xNorm) * (0.55 + 0.75 * nFine.g);
@@ -6120,7 +7299,7 @@
           if (sRing > 0.0) {
             vec3 ringHitLocal = rel + lightDir * sRing;
             float rNormSh = length(ringHitLocal) / rad;
-            vec2 rp = evalRingProfile(rNormSh, 0.0, pType);
+            vec2 rp = evalRingProfile(rNormSh, bodyLon, pType);
             if (rp.x > 0.001) {
               ringShadowTrans = mix(0.06, 1.0, exp(-rp.x / max(abs(denom), 0.14)));
             }
@@ -6520,11 +7699,29 @@
           vec3 c = uStarPosRad[i].xyz;
           float dist2 = dot(c, c);
           float tP = dot(c, rd);
+          float stStyle = uStarMeta[i].y;
           if (tP > 0.0) {
-            float perp2 = max(0.0, dist2 - tP * tP);
-            float corMult = (uStarMeta[i].y > 4.5) ? 11.4 : ((uStarMeta[i].y > 3.5) ? 9.8 : ((uStarMeta[i].y > 2.5) ? 6.4 : 4.5));
+            vec3 pPerp = c - rd * tP;
+            float perp2 = dot(pPerp, pPerp);
+            float corMult = (stStyle > 8.5 && stStyle < 9.5) ? 13.5
+              : ((stStyle > 4.5 && stStyle < 5.5) ? 11.4
+              : ((abs(stStyle - 6.0) < 0.3) ? 5.1
+              : ((abs(stStyle - 7.5) < 0.25) ? 5.8
+              : ((abs(stStyle - 7.0) < 0.25 || abs(stStyle - 8.0) < 0.3) ? 5.2
+              : ((stStyle > 3.5 && stStyle < 4.5) ? 9.8 : ((stStyle > 2.5 && stStyle < 3.5) ? 6.4 : 4.5))))));
             float maxReach = max(rad * corMult, sqrt(dist2) * 0.052 * uTanHalfFov);
             if (perp2 < maxReach * maxReach) anyNear = true;
+          }
+          if (abs(stStyle - 8.0) < 0.3) {
+            float dVegaAU = sqrt(dist2) * 0.00465047;
+            if (dVegaAU > 18.0 && dVegaAU < 620.0) {
+              if (dVegaAU < 185.0) {
+                anyNear = true;
+              } else if (tP > 0.0) {
+                vec3 pPerpV = c - rd * tP;
+                if (dot(pPerpV, pPerpV) < sqr(rad * 14200.0)) anyNear = true;
+              }
+            }
           }
         }
       }
@@ -6721,6 +7918,59 @@
         }
       }
 
+      // 3B. Betelgeuse 2019-2020 "Great Dimming" Foreground Beer-Lambert Silicate Dust Extinction over SW Photosphere!
+      if (hitKind == 1 && abs(uStarMeta[hitIdx].y - 6.0) < 0.3) {
+        vec3 cBet    = uStarPosRad[hitIdx].xyz;
+        vec3 hitNrm  = normalize(rd * bestT - cBet);
+        float muBet  = clamp(dot(hitNrm, -rd), 0.0, 1.0);
+        float swProj = dot(hitNrm, BETEL_DIMMING_DIR);
+        if (swProj > -0.08) {
+          vec3 veilP   = hitNrm * 2.55 - BETEL_DIMMING_DIR * 0.35 + vec3(0.0, uStarAnimTime * 0.022, 0.0);
+          vec4 vNoise1 = textureLod(uNoise3D, veilP, 0.0);
+          vec4 vNoise2 = textureLod(uNoise3D, veilP * 2.85 + vNoise1.a * 0.34, 0.0);
+          float sootClump = smoothstep(0.20, 0.80, vNoise1.g * 0.60 + vNoise2.r * 0.40);
+          float swMask    = smoothstep(-0.05, 0.58, swProj + (vNoise1.r - 0.5) * 0.28);
+          float tauSilicate = swMask * (0.35 + 1.55 * sootClump) * clamp(uStarMeta[hitIdx].z, 0.7, 1.3);
+          float dustVeilAlpha = clamp(1.0 - exp(-tauSilicate), 0.0, 0.82);
+
+          float rimScatter = pow(max(1.0 - muBet, 0.0), 1.45) * 0.65 + (1.0 - dustVeilAlpha) * 0.45;
+          vec3 copperSoot  = mix(vec3(0.22, 0.042, 0.015), vec3(0.66, 0.165, 0.048), sootClump * rimScatter);
+          outRgb      += copperSoot * dustVeilAlpha;
+          opaqueAlpha  = max(opaqueAlpha, dustVeilAlpha);
+        }
+      }
+
+      // 3C. Vega 1:1 JWST/ALMA Smooth Icy Kuiper-Analog Debris Belt (85-145 AU = 6,705-11,438 R_eq, viewed at 18-620 AU)
+      for (int i = 0; i < 4; i++) {
+        float radV = uStarPosRad[i].w;
+        if (radV > 0.0 && abs(uStarMeta[i].y - 8.0) < 0.3) {
+          vec3 cV = uStarPosRad[i].xyz;
+          float dCamAU = length(cV) * 0.00465047;
+          float beltRangeFade = smoothstep(18.0, 48.0, dCamAU) * sstepInv(620.0, 380.0, dCamAU);
+          float denomV = dot(rd, VEGA_SPIN_AXIS);
+          if (beltRangeFade > 0.001 && abs(denomV) > 1e-4) {
+            float tBelt = dot(cV, VEGA_SPIN_AXIS) / denomV;
+            if (tBelt > 0.0 && tBelt < bestT) {
+              vec3 relBelt  = rd * tBelt - cV;
+              float rNormEq = length(relBelt) / radV;
+              if (rNormEq > 5200.0 && rNormEq < 14200.0) {
+                float innerEdge = smoothstep(5600.0, 6850.0, rNormEq);
+                float outerEdge = sstepInv(13800.0, 11100.0, rNormEq);
+                vec3 eqDir = normalize(relBelt + 1e-5);
+                float fineIce = textureLod(uNoise3D, vec3(rNormEq * 0.00055, eqDir.x * 1.4, eqDir.z * 1.4), 0.0).g;
+                float smoothWave = 0.86 + 0.14 * fineIce + 0.06 * sin((rNormEq - 6700.0) * 0.0032);
+                float tauBelt = innerEdge * outerEdge * smoothWave * 0.14;
+                float slant   = min(2.5, 1.0 / max(abs(denomV), 0.18));
+                float bAlpha  = clamp(1.0 - exp(-tauBelt * slant), 0.0, 0.58) * beltRangeFade;
+                vec3 icyHue   = mix(vec3(0.46, 0.66, 1.08), vec3(0.30, 0.48, 0.88), smoothstep(6700.0, 12200.0, rNormEq));
+                outRgb       += icyHue * bAlpha * 0.85;
+                if (!hitEarlierOpaque) opaqueAlpha = max(opaqueAlpha, bAlpha * 0.55);
+              }
+            }
+          }
+        }
+      }
+
       // 4. 3D Stellar Coronas & Anti-Aliased Optical Star Glare
       for (int i = 0; i < 4; i++) {
         float rad = uStarPosRad[i].w;
@@ -6748,12 +7998,58 @@
               float diskAng = rad / max(dist * uTanHalfFov, 1e-7);
               float unresolvedFade = 1.0 - smoothstep(0.025, 0.18, diskAng);
               if (unresolvedFade > 0.001 && ang < 0.052) {
+                float stStyle = uStarMeta[i].y;
                 float corePsf = exp(-ang * ang * 52000.0) * 5.2;
                 float wingPsf = exp(-ang * 155.0) * 0.78;
                 float dx = abs(dot(normalize(pCl + 1e-9), uCamBasis[0])) * ang;
                 float dy = abs(dot(normalize(pCl + 1e-9), uCamBasis[1])) * ang;
                 float spikes = (exp(-dy * 1900.0) * exp(-dx * 95.0) + exp(-dx * 1900.0) * exp(-dy * 95.0)) * 0.88;
-                outRgb += kelvinToRgb(uStarMeta[i].x) * (corePsf + wingPsf + spikes) * irrad * unresolvedFade;
+                if (abs(stStyle - 7.5) < 0.25) {
+                  // Sirius B ("The Pup") crisp ultraviolet-sapphire companion point-beacon at ~20-26 AU!
+                  float pupCore   = exp(-ang * ang * 44000.0) * 2.35;
+                  float pupHalo   = exp(-ang * 185.0) * 0.62;
+                  float pupSpikes = (exp(-dy * 2100.0) * exp(-dx * 115.0) + exp(-dx * 2100.0) * exp(-dy * 115.0)) * 0.95;
+                  float pupIrrad  = clamp(1.35 / (1.0 + dLy * dLy * 0.04), 0.001, 1.45);
+                  outRgb += vec3(0.30, 0.58, 1.85) * (pupCore + pupHalo + pupSpikes) * pupIrrad * unresolvedFade;
+                } else if (abs(stStyle - 7.0) < 0.25) {
+                  // Sirius A dazzling diamond-sapphire sky beacon when viewed from Sirius B (~26 AU away), chroma-preserved!
+                  float sirCore   = exp(-ang * ang * 9000.0) * 2.15;
+                  float sirHalo   = exp(-ang * 62.0) * 0.95;
+                  float sirSpikes = (exp(-dy * 1500.0) * exp(-dx * 38.0) + exp(-dx * 1500.0) * exp(-dy * 38.0)) * 1.50;
+                  float sirIrrad  = clamp(1.65 / (1.0 + dLy * dLy * 0.015), 0.001, 1.75);
+                  vec3 sirRaw     = vec3(0.42, 0.68, 1.72) * (sirCore + sirHalo + sirSpikes) * sirIrrad * unresolvedFade;
+                  float sirPk     = max(sirRaw.r, max(sirRaw.g, sirRaw.b));
+                  if (sirPk > 1.35) {
+                    float sirEx = sirPk - 1.35;
+                    sirRaw *= (1.35 + 0.85 * (sirEx / (sirEx + 0.85))) / sirPk;
+                  }
+                  outRgb += sirRaw;
+                } else if (stStyle > 8.5 && stStyle < 9.5) {
+                  // Crab Pulsar PSR B0531+21 crisp sapphire-cyan pinpoint beacon inside Chandra wisps!
+                  float psrCore = exp(-ang * ang * 68000.0) * 1.45;
+                  float psrHalo = exp(-ang * 420.0) * 0.22;
+                  float psrSpk  = (exp(-dy * 2600.0) * exp(-dx * 160.0) + exp(-dx * 2600.0) * exp(-dy * 160.0)) * 0.52;
+                  outRgb += vec3(0.28, 0.66, 1.75) * (psrCore + psrHalo + psrSpk) * clamp(irrad * 0.28, 0.001, 1.15) * unresolvedFade;
+                } else if (abs(fract(stStyle) - 0.2) < 0.08) {
+                  // Trapezium OB Quartet inside Orion M42: crisp dazzling sapphire jewels with zero Huygens bowl white-out!
+                  float trapCore  = exp(-ang * ang * 14000.0) * 2.20;
+                  float trapWing  = exp(-ang * 82.0) * 0.85;
+                  float trapSpk   = (exp(-dy * 1600.0) * exp(-dx * 42.0) + exp(-dx * 1600.0) * exp(-dy * 42.0)) * 1.35;
+                  float trapScale = mix(1.05, 0.28, smoothstep(1.2, 8.0, dLy)) * (0.55 + 0.45 * sqrt(max(lum, 1.0) * 0.08));
+                  vec3 trapRaw    = vec3(0.32, 0.64, 1.72) * (trapCore + trapWing + trapSpk) * trapScale * unresolvedFade;
+                  float trapPk    = max(trapRaw.r, max(trapRaw.g, trapRaw.b));
+                  if (trapPk > 1.32) {
+                    float trapEx = trapPk - 1.32;
+                    trapRaw *= (1.32 + 0.83 * (trapEx / (trapEx + 0.83))) / trapPk;
+                  }
+                  outRgb += trapRaw;
+                } else if (abs(stStyle - 8.0) < 0.3) {
+                  outRgb += vec3(0.38, 0.66, 1.68) * (corePsf * 0.52 + wingPsf * 0.75 + spikes) * clamp(irrad * 0.55, 0.001, 1.65) * unresolvedFade;
+                } else if (abs(stStyle - 6.0) < 0.3) {
+                  outRgb += vec3(1.15, 0.32, 0.07) * (corePsf * 0.45 + wingPsf * 0.72 + spikes * 0.85) * clamp(irrad * 0.42, 0.001, 1.80) * unresolvedFade;
+                } else {
+                  outRgb += kelvinToRgb(uStarMeta[i].x) * (corePsf + wingPsf + spikes) * irrad * unresolvedFade;
+                }
               }
             }
           }
@@ -7112,6 +8408,7 @@
   }
 
   const progVolumetric   = queueProgram('Volumetric',    FULLSCREEN_VERT, VOLUMETRIC_FRAG);
+  const progMwNebulae    = queueProgram('MwNebulae',     FULLSCREEN_VERT, MW_NEBULAE_FRAG);
   const progLocalEarth   = queueProgram('LocalEarth',    FULLSCREEN_VERT, LOCAL_EARTH_FRAG);
   const progLocalTerrExo = queueProgram('LocalTerrExo',  FULLSCREEN_VERT, LOCAL_TERR_EXO_FRAG);
   const progLocalMoons   = queueProgram('LocalMoons',    FULLSCREEN_VERT, LOCAL_MOONS_FRAG);
@@ -7240,11 +8537,26 @@
     hd5980AB: {
       mesh: createOrbitLoopVAO({ ...HD5980_COMPANION_B_ORB, periodYr: HD5980_COMPANION_B_ORB.periodDays }, 512),
       color: [0.36, 0.86, 1.0, 0.78]
+    },
+    siriusA: {
+      mesh: createOrbitLoopVAO(SIRIUS_A_ORBIT, 512),
+      color: [0.44, 0.78, 1.00, 0.72]
+    },
+    siriusB: {
+      mesh: createOrbitLoopVAO(SIRIUS_B_ORBIT, 512),
+      color: [0.58, 0.62, 1.00, 0.78]
     }
   };
 
+  function warpHeightJS(x, z) {
+    const r = Math.hypot(x, z);
+    const t = Math.max(0.0, Math.min(1.0, (r - 28.0) / 26.0));
+    const s = t * t * (3.0 - 2.0 * t);
+    return s * s * 2.35 * Math.sin(Math.atan2(z, x) - 0.35);
+  }
+
   const MW_STARS    = 260000;
-  const TOTAL_STARS = 450000;
+  const TOTAL_STARS = 468000;
   function buildStarCatalog(noiseObj) {
     const orbitBuf = new Float32Array(TOTAL_STARS * 4);
     const propsBuf = new Float32Array(TOTAL_STARS * 4);
@@ -7274,9 +8586,14 @@
       if (idx >= TOTAL_STARS) return;
       if (o3 > 0.0) {
         const wx = Math.cos(o1) * o0, wz = Math.sin(o1) * o0;
-        const dSun2 = (wx - SUN_BASE_KLY[0]) ** 2 + (o2 - SUN_BASE_KLY[1]) ** 2 + (wz - SUN_BASE_KLY[2]) ** 2;
-        if (dSun2 < 0.008 * 0.008) {
-          o0 += 0.030;
+        const wy = o2 + warpHeightJS(wx, wz);
+        for (let k = 0; k < MW_HERO_CAVITY_CENTERS_KLY.length; k++) {
+          const c = MW_HERO_CAVITY_CENTERS_KLY[k];
+          const dx = wx - c[0], dy = wy - c[1], dz = wz - c[2];
+          if (dx * dx + dy * dy + dz * dz < 0.024 * 0.024) {
+            o0 += 0.035;
+            break;
+          }
         }
         if (o0 < 0.045) o0 += 0.050;
       } else if (o3 < -1.5) {
@@ -8133,6 +9450,204 @@
     populateDSph(CARINA_DSPH_KLY,   350, 2.0, 1.5, 1.7, 0.18, 0.0,  0.00);
     populateDSph(SGR_DSPH_KLY,      450, 9.2, 3.2, 3.6, 0.14, 0.52, 0.24);
 
+    // 7. 18,000 Milky Way Iconic OB Associations & Neighboring Star Fields (450,000 + 18,000 = 468,000)
+    const populateMilkyWayFamousStars = (outOrbit, outProps, startIdx, maxStars) => {
+      let fSeed = 20261054;
+      const fRnd = () => {
+        fSeed = (fSeed * 1664525 + 1013904223) >>> 0;
+        return fSeed / 4294967296;
+      };
+      const fGauss = () => {
+        const u1 = Math.max(1e-7, fRnd());
+        return Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(6.28318530718 * fRnd());
+      };
+
+      let curIdx = startIdx;
+      let emitted = 0;
+      const MW_FAMOUS_STAR_COUNT = 18000;
+
+      const enforceHeroCavities = (wx, wy, wz) => {
+        for (let pass = 0; pass < 2; pass++) {
+          for (let k = 0; k < MW_HERO_CAVITY_CENTERS_KLY.length; k++) {
+            const c = MW_HERO_CAVITY_CENTERS_KLY[k];
+            const minR = (k === 9) ? 0.010 : 0.0165;
+            const dx = wx - c[0], dy = wy - c[1], dz = wz - c[2];
+            const d2 = dx * dx + dy * dy + dz * dz;
+            if (d2 < minR * minR) {
+              const d = Math.sqrt(d2) || 1e-6;
+              const push = (minR * (1.08 + 0.35 * fRnd())) / d;
+              wx = c[0] + dx * push;
+              wy = c[1] + dy * push;
+              wz = c[2] + dz * push;
+            }
+          }
+        }
+        return [wx, wy, wz];
+      };
+
+      const emitDiskWorld = (rawX, rawY, rawZ, temp, lum, sz) => {
+        if (emitted >= MW_FAMOUS_STAR_COUNT || curIdx >= maxStars) return;
+        const p = enforceHeroCavities(rawX, rawY, rawZ);
+        const wx = p[0], wy = p[1], wz = p[2];
+        const r = Math.max(0.08, Math.hypot(wx, wz));
+        const theta0 = Math.atan2(wz, wx);
+        const zRel = wy - warpHeightJS(wx, wz);
+        const b = curIdx * 4;
+        outOrbit[b]     = r;
+        outOrbit[b + 1] = theta0;
+        outOrbit[b + 2] = zRel;
+        outOrbit[b + 3] = 1.0;
+        outProps[b]     = temp;
+        outProps[b + 1] = lum;
+        outProps[b + 2] = sz;
+        outProps[b + 3] = fRnd() * 6.2831853;
+        curIdx++;
+        emitted++;
+      };
+
+      // A. 6,500 Stars — Orion OB1 Association (Belt/Sword/Gould Belt) & Outer ONC/M42 Shell
+      for (let i = 0; i < 6500; i++) {
+        let wx, wy, wz, temp, lum, sz;
+        if (i < 650) {
+          const rShell = 0.0168 + Math.pow(fRnd(), 1.35) * 0.042;
+          const a1 = fRnd() * 6.2831853;
+          const c2 = 2.0 * fRnd() - 1.0;
+          const s2 = Math.sqrt(Math.max(0.0, 1.0 - c2 * c2));
+          wx = M42_BASE_KLY[0] + rShell * s2 * Math.cos(a1);
+          wy = M42_BASE_KLY[1] + rShell * c2 * 0.85;
+          wz = M42_BASE_KLY[2] + rShell * s2 * Math.sin(a1);
+          const isHotB = fRnd() < 0.62;
+          temp = isHotB ? (0.68 + fRnd() * 0.32) : (0.14 + fRnd() * 0.42);
+          lum  = isHotB ? (0.18 + Math.pow(fRnd(), 2.6) * 0.42) : (0.10 + fRnd() * 0.22);
+          sz   = 0.007 + Math.pow(fRnd(), 2.2) * 0.012;
+        } else if (i < 2450) {
+          const beltT = fRnd();
+          const cx = M42_BASE_KLY[0] * (1.0 - beltT * 0.18) + BETELGEUSE_BASE_KLY[0] * (beltT * 0.18);
+          const cy = M42_BASE_KLY[1] + beltT * 0.095;
+          const cz = M42_BASE_KLY[2] + beltT * 0.085;
+          const spread = 0.045 + 0.095 * fRnd();
+          wx = cx + fGauss() * spread;
+          wy = cy + fGauss() * (spread * 0.65);
+          wz = cz + fGauss() * spread;
+          const isSuperOB = fRnd() < 0.72;
+          temp = isSuperOB ? (0.72 + fRnd() * 0.28) : (0.12 + fRnd() * 0.44);
+          lum  = isSuperOB ? (0.42 + Math.pow(fRnd(), 2.8) * 1.65) : (0.22 + fRnd() * 0.55);
+          sz   = 0.018 + Math.pow(fRnd(), 2.8) * 0.14;
+        } else {
+          wx = M42_BASE_KLY[0] - 0.12 + fGauss() * 0.28;
+          wy = M42_BASE_KLY[1] + 0.08 + fGauss() * 0.16;
+          wz = M42_BASE_KLY[2] + 0.06 + fGauss() * 0.28;
+          const isOB = fRnd() < 0.56;
+          const isRSG = !isOB && fRnd() < 0.05;
+          temp = isRSG ? (0.04 + fRnd() * 0.08) : (isOB ? (0.64 + fRnd() * 0.36) : (0.18 + fRnd() * 0.46));
+          lum  = isRSG ? (0.85 + fRnd() * 1.45) : (isOB ? (0.48 + Math.pow(fRnd(), 3.0) * 2.10) : (0.26 + fRnd() * 0.68));
+          sz   = 0.045 + Math.pow(fRnd(), 3.2) * 0.55;
+        }
+        emitDiskWorld(wx, wy, wz, temp, lum, sz);
+      }
+
+      // B. 6,500 Stars — Eagle Nebula M16 / NGC 6611 Young OB Cluster & Serpens OB1 Arm
+      for (let i = 0; i < 6500; i++) {
+        let wx, wy, wz, temp, lum, sz;
+        if (i < 720) {
+          const rCl = 0.0125 + Math.pow(fRnd(), 1.45) * 0.048;
+          const a1 = fRnd() * 6.2831853;
+          const c2 = 2.0 * fRnd() - 1.0;
+          const s2 = Math.sqrt(Math.max(0.0, 1.0 - c2 * c2));
+          wx = NGC6611_BASE_KLY[0] + rCl * s2 * Math.cos(a1);
+          wy = NGC6611_BASE_KLY[1] + Math.abs(rCl * c2) * 0.55 + rCl * c2 * 0.45 + 0.004;
+          wz = NGC6611_BASE_KLY[2] + rCl * s2 * Math.sin(a1) + 0.002;
+          const isOStar = fRnd() < 0.74;
+          temp = isOStar ? (0.76 + fRnd() * 0.24) : (0.20 + fRnd() * 0.42);
+          lum  = isOStar ? (0.18 + Math.pow(fRnd(), 2.5) * 0.46) : (0.10 + fRnd() * 0.24);
+          sz   = 0.0065 + Math.pow(fRnd(), 2.3) * 0.011;
+        } else if (i < 2600) {
+          const rOut = 0.058 + Math.pow(fRnd(), 1.15) * 0.22;
+          const a1 = fRnd() * 6.2831853;
+          const c2 = 2.0 * fRnd() - 1.0;
+          const s2 = Math.sqrt(Math.max(0.0, 1.0 - c2 * c2));
+          wx = M16_BASE_KLY[0] + rOut * s2 * Math.cos(a1);
+          wy = M16_BASE_KLY[1] + rOut * c2 * 0.58;
+          wz = M16_BASE_KLY[2] + rOut * s2 * Math.sin(a1);
+          const isOB = fRnd() < 0.64;
+          temp = isOB ? (0.68 + fRnd() * 0.32) : (0.12 + fRnd() * 0.44);
+          lum  = isOB ? (0.38 + Math.pow(fRnd(), 2.9) * 1.75) : (0.22 + fRnd() * 0.62);
+          sz   = 0.018 + Math.pow(fRnd(), 3.0) * 0.22;
+        } else {
+          wx = M16_BASE_KLY[0] + fGauss() * 0.42;
+          wy = M16_BASE_KLY[1] + fGauss() * 0.15;
+          wz = M16_BASE_KLY[2] + fGauss() * 0.42;
+          const isHot = fRnd() < 0.52;
+          const isRSG = !isHot && fRnd() < 0.06;
+          temp = isRSG ? (0.04 + fRnd() * 0.08) : (isHot ? (0.62 + fRnd() * 0.38) : (0.14 + fRnd() * 0.46));
+          lum  = isRSG ? (0.90 + fRnd() * 1.65) : (isHot ? (0.45 + Math.pow(fRnd(), 3.0) * 2.25) : (0.28 + fRnd() * 0.72));
+          sz   = 0.055 + Math.pow(fRnd(), 3.4) * 0.68;
+        }
+        emitDiskWorld(wx, wy, wz, temp, lum, sz);
+      }
+
+      // C. 2,500 Stars — Crab Nebula Outer Taurus / Perseus-Anticenter Stellar Field
+      for (let i = 0; i < 2500; i++) {
+        let wx, wy, wz, temp, lum, sz;
+        if (i < 550) {
+          const rShell = 0.0185 + Math.pow(fRnd(), 1.25) * 0.078;
+          const a1 = fRnd() * 6.2831853;
+          const c2 = 2.0 * fRnd() - 1.0;
+          const s2 = Math.sqrt(Math.max(0.0, 1.0 - c2 * c2));
+          wx = CRAB_BASE_KLY[0] + rShell * s2 * Math.cos(a1);
+          wy = CRAB_BASE_KLY[1] + rShell * c2 * 0.75;
+          wz = CRAB_BASE_KLY[2] + rShell * s2 * Math.sin(a1);
+          const isBlue = fRnd() < 0.38;
+          temp = isBlue ? (0.62 + fRnd() * 0.34) : (0.14 + fRnd() * 0.48);
+          lum  = 0.16 + Math.pow(fRnd(), 2.8) * 0.48;
+          sz   = 0.008 + Math.pow(fRnd(), 2.5) * 0.018;
+        } else {
+          wx = CRAB_BASE_KLY[0] + fGauss() * 0.38;
+          wy = CRAB_BASE_KLY[1] + fGauss() * 0.18;
+          wz = CRAB_BASE_KLY[2] + fGauss() * 0.38;
+          const isHot = fRnd() < 0.46;
+          temp = isHot ? (0.58 + fRnd() * 0.40) : (0.14 + fRnd() * 0.48);
+          lum  = isHot ? (0.42 + Math.pow(fRnd(), 3.0) * 1.95) : (0.25 + fRnd() * 0.65);
+          sz   = 0.040 + Math.pow(fRnd(), 3.4) * 0.62;
+        }
+        emitDiskWorld(wx, wy, wz, temp, lum, sz);
+      }
+
+      // D. 2,500 Stars — Sirius / Vega / Betelgeuse / Solar–Orion Gould Belt Neighborhood
+      for (let i = 0; i < 2500; i++) {
+        let wx, wy, wz, temp, lum, sz;
+        if (i < 950) {
+          const rLoc = 0.022 + Math.pow(fRnd(), 1.15) * 0.26;
+          const a1 = fRnd() * 6.2831853;
+          const c2 = 2.0 * fRnd() - 1.0;
+          const s2 = Math.sqrt(Math.max(0.0, 1.0 - c2 * c2));
+          wx = SUN_BASE_KLY[0] + rLoc * s2 * Math.cos(a1);
+          wy = SUN_BASE_KLY[1] + rLoc * c2 * 0.68;
+          wz = SUN_BASE_KLY[2] + rLoc * s2 * Math.sin(a1);
+          const isAF = fRnd() < 0.42;
+          temp = isAF ? (0.56 + fRnd() * 0.38) : (0.14 + fRnd() * 0.44);
+          lum  = 0.20 + Math.pow(fRnd(), 2.9) * 0.85;
+          sz   = 0.010 + Math.pow(fRnd(), 2.8) * 0.085;
+        } else {
+          const u = fRnd();
+          const cx = SUN_BASE_KLY[0] * (1.0 - u) + BETELGEUSE_BASE_KLY[0] * u;
+          const cy = SUN_BASE_KLY[1] * (1.0 - u) + BETELGEUSE_BASE_KLY[1] * u;
+          const cz = SUN_BASE_KLY[2] * (1.0 - u) + BETELGEUSE_BASE_KLY[2] * u;
+          const spread = 0.045 + 0.16 * Math.sin(u * Math.PI) + 0.06 * fRnd();
+          wx = cx + fGauss() * spread;
+          wy = cy + fGauss() * (spread * 0.62);
+          wz = cz + fGauss() * spread;
+          const isOB = fRnd() < 0.54;
+          temp = isOB ? (0.64 + fRnd() * 0.36) : (0.14 + fRnd() * 0.46);
+          lum  = isOB ? (0.36 + Math.pow(fRnd(), 2.9) * 1.65) : (0.22 + fRnd() * 0.58);
+          sz   = 0.022 + Math.pow(fRnd(), 3.1) * 0.28;
+        }
+        emitDiskWorld(wx, wy, wz, temp, lum, sz);
+      }
+      return curIdx;
+    };
+    idx = populateMilkyWayFamousStars(orbitBuf, propsBuf, idx, TOTAL_STARS);
+
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
 
@@ -8287,6 +9802,17 @@
       case 'triton':    return 0.0038 * RSUN_IN_KLY;
       case 'pluto':     return 0.0033 * RSUN_IN_KLY;
       case 'alphacen':  return 2.20 * RSUN_IN_KLY;
+      case 'betelgeuse':          return 1180.0 * RSUN_IN_KLY;
+      case 'sirius':              return 2.65 * RSUN_IN_KLY;
+      case 'sirius_a':            return 2.65 * RSUN_IN_KLY;
+      case 'sirius_b':            return 0.0145 * RSUN_IN_KLY;
+      case 'vega':                return 4.20 * RSUN_IN_KLY;
+      case 'crab_nebula':         return 0.0012;
+      case 'crab_pulsar':         return 0.055 * RSUN_IN_KLY;
+      case 'orion_m42':           return 0.0015;
+      case 'trapezium':           return 32.0 * RSUN_IN_KLY;
+      case 'eagle_m16':           return 0.0080;
+      case 'pillars_of_creation': return 0.0012;
       default:          return 1.5e-12;
     }
   }
@@ -8359,6 +9885,41 @@
   const HERO_NGC346_ANG  = { yaw:  0.8060, pitch:  0.3461 };
   const HERO_NGC6822_ANG = { yaw: -0.3938, pitch:  0.1897 };
   const HERO_IC10_ANG    = { yaw: -2.2442, pitch:  0.1450 };
+
+  // Exact 3D Astrophysical View Directions for Milky Way Famous Stars & Iconic Nebulae
+  const _vegaHorizH   = normVec3([VEGA_SPIN_AXIS_JS[0], 0.0, VEGA_SPIN_AXIS_JS[2]]);
+  const _vegaCamTheta = ((24.937 - 58.0) * Math.PI) / 180.0;
+  const HERO_VEGA_ANG = dirToYawPitch([
+    Math.cos(_vegaCamTheta) * _vegaHorizH[0],
+    Math.sin(_vegaCamTheta),
+    Math.cos(_vegaCamTheta) * _vegaHorizH[2]
+  ]);
+  const _sirA0     = solveKepler3D(SIRIUS_A_ORBIT, 0.0);
+  const _sirB0     = solveKepler3D(SIRIUS_B_ORBIT, 0.0);
+  const _uSirAB    = normVec3([_sirB0[0] - _sirA0[0], _sirB0[1] - _sirA0[1], _sirB0[2] - _sirA0[2]]);
+  const _sideSirAB = normVec3(crossVec3(_uSirAB, [0.0, 1.0, 0.0]));
+  const _upSirAB   = normVec3(crossVec3(_sideSirAB, _uSirAB));
+  const _angSirA   = (23.5 * Math.PI) / 180.0;
+  const HERO_SIRIUS_ANG = dirToYawPitch([
+    -_uSirAB[0] * Math.cos(_angSirA) + _sideSirAB[0] * Math.sin(_angSirA) + _upSirAB[0] * 0.06,
+    -_uSirAB[1] * Math.cos(_angSirA) + _sideSirAB[1] * Math.sin(_angSirA) + _upSirAB[1] * 0.06,
+    -_uSirAB[2] * Math.cos(_angSirA) + _sideSirAB[2] * Math.sin(_angSirA) + _upSirAB[2] * 0.06
+  ]);
+  const _uSirBA    = [-_uSirAB[0], -_uSirAB[1], -_uSirAB[2]];
+  const _sideSirBA = normVec3(crossVec3(_uSirBA, [0.0, 1.0, 0.0]));
+  const _upSirBA   = normVec3(crossVec3(_sideSirBA, _uSirBA));
+  const _angSirB   = (22.5 * Math.PI) / 180.0;
+  const HERO_SIRIUS_B_ANG = dirToYawPitch([
+    -_uSirBA[0] * Math.cos(_angSirB) + _sideSirBA[0] * Math.sin(_angSirB) - _upSirBA[0] * 0.05,
+    -_uSirBA[1] * Math.cos(_angSirB) + _sideSirBA[1] * Math.sin(_angSirB) - _upSirBA[1] * 0.05,
+    -_uSirBA[2] * Math.cos(_angSirB) + _sideSirBA[2] * Math.sin(_angSirB) - _upSirBA[2] * 0.05
+  ]);
+  const HERO_CRAB_ANG        = { yaw:  3.062058, pitch:  0.100950 };
+  const HERO_CRAB_PULSAR_ANG = { yaw:  2.912544, pitch:  0.322153 };
+  const HERO_M42_ANG         = { yaw:  2.635203, pitch:  0.338280 };
+  const HERO_TRAPEZIUM_ANG   = { yaw:  2.588802, pitch:  0.415023 };
+  const HERO_M16_ANG         = { yaw: -0.295903, pitch: -0.013840 };
+  const HERO_PILLARS_ANG     = { yaw: -0.295903, pitch: -0.013840 };
 
   const cam = {
     anchorId: 'm31',
@@ -8672,6 +10233,66 @@
       desc: '沿银道面侧视，清晰呈现中央花生状核球、薄层中平面分子暗尘埃裂谷以及外银盘 S 型引力翘曲。',
       anchorId: 'sgra', anchorLabel: '银河系侧视截面',
       offsetKly: [0, 0, 0], yaw: -0.35, pitch: 0.032, distKly: 62.0, fov: 46
+    },
+    pillars_of_creation: {
+      title: '鹰状星云 M16 核心 ·“创生之柱” Pillars of Creation (1:1 真实 4.5 / 3.2 / 1.95 光年分子云柱)：',
+      desc: '参照哈勃 2014 与韦布 NIRCam 复刻：三座高耸的不透明冷分子暗尘埃巨柱背衬 M16 绿松石色 [O III] 电离腔，顶端受 NGC 6611 紫外辐射光致蒸发闪耀金珀青蓝电离锋、指状蒸发气态球粒 (EGGs) 与韦布绯红原恒星激波尖端！',
+      anchorId: 'pillars_of_creation', anchorLabel: '鹰状星云 · 创生之柱 (高 4.5 ly)',
+      offsetKly: [0, 0, 0], yaw: HERO_PILLARS_ANG.yaw, pitch: HERO_PILLARS_ANG.pitch, distKly: 0.0052, fov: 52
+    },
+    eagle_m16: {
+      title: '鹰状星云 M16 与年轻 OB 星团 NGC 6611 (距地 5,700 光年 · 跨度 70 × 55 ly · 人马-船底臂)：',
+      desc: '深入人马-船底旋臂育星工厂：西北部炽热 O 型星团 NGC 6611 吹蚀出璀璨青翠 [O III] 电离空腔与赤金 Hα/[S II] 分子悬崖，东南部矗立着著名的“创生之柱”（点击核心标签即可一键潜入 5.2 ly 近景）！',
+      anchorId: 'eagle_m16', anchorLabel: '鹰状星云 M16 (NGC 6611 · 70 ly)',
+      offsetKly: [0, 0, 0], yaw: HERO_M16_ANG.yaw, pitch: HERO_M16_ANG.pitch, distKly: 0.068, fov: 50
+    },
+    orion_m42: {
+      title: '猎户座大星云 M42 / NGC 1976 (距地 1,344 光年 · 直径 24 ly 三维凹面惠更斯电离腔)：',
+      desc: '距太阳系最近的大质量恒星诞生区：朝向地球敞开的三维凹面 [O III] 绿松石惠更斯碗、斜向金珊瑚色猎户座电离锋脊 (Orion Bar)、前景暗尘埃“鱼口湾” (Fish\'s Mouth)、北侧 M43 逗点星云与 24 光年展翅双翼！',
+      anchorId: 'orion_m42', anchorLabel: '猎户座大星云 M42 (直径 24 ly)',
+      offsetKly: [0, 0, 0], yaw: HERO_M42_ANG.yaw, pitch: HERO_M42_ANG.pitch, distKly: 0.028, fov: 50
+    },
+    trapezium: {
+      title: '猎户座四合星团 Trapezium (θ¹ Orionis C1/A1/D/B) 与泪滴状光致蒸发原行星盘 (Proplyds)：',
+      desc: '潜入 M42 核心 0.55 光年：同屏呈现 20 万倍太阳光度的 O6Vp 主星 θ¹ Ori C1 (39,000 K) 等四颗炽热 OB 恒星，以及 5 枚背向主星拖曳电离彗尾、内含暗尘埃盘剪影的哈勃泪滴状原行星盘 (Proplyds)！',
+      anchorId: 'trapezium', anchorLabel: '猎户座四合星团 Trapezium & 原行星盘',
+      offsetKly: [0, 0, 0], yaw: HERO_TRAPEZIUM_ANG.yaw, pitch: HERO_TRAPEZIUM_ANG.pitch, distKly: 0.00055, fov: 50
+    },
+    crab_nebula: {
+      title: '蟹状星云 M1 / NGC 1952 · 宋至和元年“天关客星” SN 1054 (距地 6,500 ly · 11.0 × 7.6 ly)：',
+      desc: '公元 1054 年超新星爆发遗迹 1:1 复刻：外层翡翠绿 [O III]、绯红 [N II]/Hα 与金珀 [S II] 交织的三维瑞利-泰勒丝状笼，内部幽蓝光学同步辐射脉冲星风星云、28° 倾角钱德拉赤道环纹与 ±4.2 ly 相对论极向喷流！',
+      anchorId: 'crab_nebula', anchorLabel: '蟹状星云 M1 (SN 1054 · 11×7.6 ly)',
+      offsetKly: [0, 0, 0], yaw: HERO_CRAB_ANG.yaw, pitch: HERO_CRAB_ANG.pitch, distKly: 0.0155, fov: 48
+    },
+    crab_pulsar: {
+      title: '蟹状星云脉冲星 PSR B0531+21 (高速自转磁层灯塔 · 钱德拉同步辐射环与极向喷流中心)：',
+      desc: '深入蟹状星云最核心的光速圆柱磁层 (~12,500 km)：展现炽热蓝紫中子星极冠、倾斜偶极磁力线拱弧与高速扫掠的相对论双极灯塔辐射束，四周环绕三维钱德拉同步辐射环纹与天关客星丝状遗迹！',
+      anchorId: 'crab_pulsar', anchorLabel: '蟹状脉冲星 PSR B0531+21 (磁层灯塔)',
+      offsetKly: [0, 0, 0], yaw: HERO_CRAB_PULSAR_ANG.yaw, pitch: HERO_CRAB_PULSAR_ANG.pitch, distKly: 0.14 * RSUN_IN_KLY, fov: 48
+    },
+    betelgeuse: {
+      title: '红超巨星参宿四 Betelgeuse / α Orionis (R=764 R☉ = 3.55 AU · 超越火星轨道的沸腾巨兽)：',
+      desc: '参照 Joyce et al. (2020) 与 VLT/SPHERE 实测 1:1 复刻：整颗恒星半球仅由 4–6 个怪兽级沸腾对流超羽流统治，呈现 4,150 K 熔金上升流与 3,050 K 氧化钛深红下沉暗巷，以及 2019–2020“大变暗”西南硅酸盐尘埃云遮蔽！',
+      anchorId: 'betelgeuse', anchorLabel: '红超巨星参宿四 (R=764 R☉ · 3.55 AU)',
+      offsetKly: [0, 0, 0], yaw: 0.42, pitch: -0.14, distKly: 2150.0 * RSUN_IN_KLY, fov: 50
+    },
+    sirius: {
+      title: '天狼星双星系统 Sirius A & 白矮星 Sirius B (距地 8.60 ly · 50.13 年偏心双星轨道)：',
+      desc: '参照哈勃望远镜 Bond et al. (2017) 实测轨道 (a=19.80 AU, e=0.591)：前景闪耀 9,940 K 钻石蓝宝石主星天狼星 A (1.711 R☉)，右侧深空伴随双星开普勒轨道环与紫外蓝简并伴星“小狗星”天狼星 B！',
+      anchorId: 'sirius_a', anchorLabel: '天狼星 A & B 双星系统 (8.60 ly)',
+      offsetKly: [0, 0, 0], yaw: HERO_SIRIUS_ANG.yaw, pitch: HERO_SIRIUS_ANG.pitch, distKly: 6.2 * RSUN_IN_KLY, fov: 50
+    },
+    sirius_b: {
+      title: '白矮星天狼星 B · "The Pup" (1.018 M☉ 压缩至地球大小 R=5,844 km · 25,200 K 简并星)：',
+      desc: '潜入距简并表面仅 2.2 万公里：1.018 倍太阳质量坍缩进仅地球 91.6% 半径的碳氧简并核，表面重力达地球 35 万倍 (log g=8.57)，呈现斯塔克展宽电光蓝紫光球与引力偏折微晕，远景约 26 AU 外主星天狼星 A 璀璨夺目！',
+      anchorId: 'sirius_b', anchorLabel: '白矮星天狼星 B (R=5,844 km · 25,200 K)',
+      offsetKly: [0, 0, 0], yaw: HERO_SIRIUS_B_ANG.yaw, pitch: HERO_SIRIUS_B_ANG.pitch, distKly: 0.032 * RSUN_IN_KLY, fov: 48
+    },
+    vega: {
+      title: '极速自转扁球星织女星 Vega / α Lyrae (周期 12.5h · 赤道扁率 17.0% · 冯·蔡佩尔重力昏暗)：',
+      desc: '参照 CHARA 干涉阵与韦布望远镜 1:1 复刻：236 km/s 极速自转将赤道甩出 17% 显著隆起 (Req=2.726 R☉ vs Rpol=2.262 R☉)，完美印证冯·蔡佩尔定理——10,020 K 炽白蓝宝石极冠与 7,900 K 幽蓝赤道昏暗带鲜明对峙，外围环绕 85–145 AU 冰晶残骸盘！',
+      anchorId: 'vega', anchorLabel: '极速扁球织女星 Vega (f=17% · 25.04 ly)',
+      offsetKly: [0, 0, 0], yaw: HERO_VEGA_ANG.yaw, pitch: HERO_VEGA_ANG.pitch, distKly: 8.8 * RSUN_IN_KLY, fov: 46
     }
   };
 
@@ -8821,10 +10442,40 @@
     };
   }
 
+  function computeSiriusHeroAngles(eph, isPup) {
+    const uSirAB = normVec3([
+      eph.sirius_b[0] - eph.sirius_a[0],
+      eph.sirius_b[1] - eph.sirius_a[1],
+      eph.sirius_b[2] - eph.sirius_a[2]
+    ]);
+    if (!isPup) {
+      const side = normVec3(crossVec3(uSirAB, [0.0, 1.0, 0.0]));
+      const up   = normVec3(crossVec3(side, uSirAB));
+      const ang  = (23.5 * Math.PI) / 180.0;
+      return dirToYawPitch([
+        -uSirAB[0] * Math.cos(ang) + side[0] * Math.sin(ang) + up[0] * 0.06,
+        -uSirAB[1] * Math.cos(ang) + side[1] * Math.sin(ang) + up[1] * 0.06,
+        -uSirAB[2] * Math.cos(ang) + side[2] * Math.sin(ang) + up[2] * 0.06
+      ]);
+    }
+    const uSirBA = [-uSirAB[0], -uSirAB[1], -uSirAB[2]];
+    const sideB  = normVec3(crossVec3(uSirBA, [0.0, 1.0, 0.0]));
+    const upB    = normVec3(crossVec3(sideB, uSirBA));
+    const angB   = (22.5 * Math.PI) / 180.0;
+    return dirToYawPitch([
+      -uSirBA[0] * Math.cos(angB) + sideB[0] * Math.sin(angB) - upB[0] * 0.05,
+      -uSirBA[1] * Math.cos(angB) + sideB[1] * Math.sin(angB) - upB[1] * 0.05,
+      -uSirBA[2] * Math.cos(angB) + sideB[2] * Math.sin(angB) - upB[2] * 0.05
+    ]);
+  }
+
   const PLANET_PRESET_KEYS = new Set([
     'proximab', 'pa99n2b', 'mercury', 'venus', 'earth', 'moon', 'mars',
     'jupiter', 'io', 'europa', 'ganymede', 'callisto',
     'saturn', 'enceladus', 'titan', 'uranus', 'neptune', 'triton', 'pluto'
+  ]);
+  const CO_ROTATING_MW_YAW_KEYS = new Set([
+    'nightsky', 'crab_nebula', 'crab_pulsar', 'orion_m42', 'trapezium', 'eagle_m16', 'pillars_of_creation'
   ]);
 
   function applyPreset(key) {
@@ -8839,7 +10490,7 @@
 
     // Capture current world origin BEFORE snapping hero orbital/spin epoch so warp transitions never jump!
     const startWorld = getCurrentTargetWorldKly(latestEph);
-    if (key === 'earth' || key === 'earthrise' || key === 'jupiter' || key === 'io' || key === 'triton' || key === 'pa99n2b') {
+    if (key === 'earth' || key === 'earthrise' || key === 'jupiter' || key === 'io' || key === 'triton' || key === 'pa99n2b' || key === 'sirius' || key === 'sirius_b') {
       state.localDays = 0.0;
       if (key === 'earth' || key === 'earthrise' || key === 'pa99n2b') state.starAnim = 0.0;
       latestEph = computeEphemeris(state.galTime, state.localDays, state.sStarYears, state.bhPhase, state.starAnim);
@@ -8856,8 +10507,13 @@
       ? rotateGalacticDiskKly(p.offsetKly, latestEph.galAngle)
       : p.offsetKly;
 
-    let targetYaw = p.yaw + ((key === 'nightsky') ? latestEph.galAngle : 0.0);
+    let targetYaw = p.yaw + (CO_ROTATING_MW_YAW_KEYS.has(key) ? latestEph.galAngle : 0.0);
     let targetPitch = p.pitch;
+    if (key === 'sirius' || key === 'sirius_b') {
+      const sirAng = computeSiriusHeroAngles(latestEph, key === 'sirius_b');
+      targetYaw = sirAng.yaw;
+      targetPitch = sirAng.pitch;
+    }
     cam.earthriseMode = (key === 'earthrise');
 
     if (key === 'earthrise') {
@@ -9140,6 +10796,16 @@
     { key: null,              name: '玉夫座矮星系 Sculptor dSph',     sub: '距地 28.7万 ly · 银南极古老矮椭球星系',     getPos: e => e.sculptor_dsph,   color: '#e2e8f0', minKly: 8.0,                maxKly: 1800,  hideNearKly: 4.5,                radiusKly: 2.0 },
     { key: null,              name: '船底座矮星系 Carina dSph',       sub: '距地 33.0万 ly · 多世代恒星形成矮星系',     getPos: e => e.carina_dsph,     color: '#cbd5e1', minKly: 8.0,                maxKly: 1800,  hideNearKly: 4.5,                radiusKly: 1.8 },
     { key: 'sgra',        name: '银心黑洞 Sgr A*',        sub: 'Kerr a*=0.96 · Rs=1,269万 km',  getPos: e => e.sgra,     color: '#fbbf24', minKly: 120 * SGRA_RS_KLY, maxKly: 96,    hideNearKly: 120 * SGRA_RS_KLY,  radiusKly: 3.0 * SGRA_RS_KLY },
+    { key: 'pillars_of_creation', name: '创生之柱 Pillars of Creation', sub: 'M16 核心 · 4.5 / 3.2 / 1.95 ly 分子云柱', getPos: e => e.pillars_of_creation, color: '#fbbf24', minKly: 0.0095,              maxKly: 0.35,   hideNearKly: 0.0095,              radiusKly: 0.0028 },
+    { key: 'eagle_m16',           name: '鹰状星云 M16 (NGC 6611)',      sub: '距地 5,700 ly · 创生之柱母星云',           getPos: e => e.eagle_m16,           color: '#2dd4bf', minKly: 0.14,                maxKly: 92.0,   hideNearKly: 0.14,                radiusKly: 0.035 },
+    { key: 'trapezium',           name: '猎户座四合星团 Trapezium',      sub: 'θ¹ Ori C1 (39,000 K) · 泪滴原行星盘',      getPos: e => e.trapezium,           color: '#38bdf8', minKly: 0.0016,              maxKly: 0.12,   hideNearKly: 0.0016,              radiusKly: 0.00035 },
+    { key: 'orion_m42',           name: '猎户座大星云 M42 (NGC 1976)',   sub: '距地 1,344 ly · 24 ly 惠更斯电离腔',       getPos: e => e.orion_m42,           color: '#f472b6', minKly: 0.065,               maxKly: 92.0,   hideNearKly: 0.065,               radiusKly: 0.012 },
+    { key: 'crab_pulsar',         name: '蟹状脉冲星 PSR B0531+21',       sub: 'SN 1054 中子星磁层 · 同步辐射风源',        getPos: e => e.crab_pulsar,         color: '#60a5fa', minKly: 2.0 * RSUN_IN_KLY,   maxKly: 0.055,  hideNearKly: 2.0 * RSUN_IN_KLY,   radiusKly: 0.04 * RSUN_IN_KLY },
+    { key: 'crab_nebula',         name: '蟹状星云 M1 (天关客星)',        sub: '距地 6,500 ly · 11×7.6 ly 超新星遗迹',     getPos: e => e.crab_nebula,         color: '#34d399', minKly: 0.035,               maxKly: 92.0,   hideNearKly: 0.035,               radiusKly: 0.0055 },
+    { key: 'betelgeuse',          name: '红超巨星参宿四 Betelgeuse',     sub: '距地 548 ly · R=764 R☉ (3.55 AU) · 大变暗尘埃云', getPos: e => e.betelgeuse,   color: '#fb923c', minKly: 4800.0 * RSUN_IN_KLY, maxKly: 38.0,   hideNearKly: 4800.0 * RSUN_IN_KLY, radiusKly: 820.0 * RSUN_IN_KLY },
+    { key: 'sirius',              name: '天狼星 Sirius A & B',           sub: '距地 8.60 ly · 夜空最亮恒星与白矮伴星',     getPos: e => e.sirius_a,            color: '#60a5fa', minKly: 22.0 * RSUN_IN_KLY,  maxKly: 12.0,   hideNearKly: 22.0 * RSUN_IN_KLY,  radiusKly: 2.0 * RSUN_IN_KLY },
+    { key: 'sirius_b',            name: '白矮星天狼星 B (The Pup)',      sub: '1.018 M☉ · R=5,844 km · 25,200 K 简并星',  getPos: e => e.sirius_b,            color: '#818cf8', minKly: 0.16 * RSUN_IN_KLY,  maxKly: 0.0008, hideNearKly: 0.16 * RSUN_IN_KLY,  radiusKly: 0.02 * RSUN_IN_KLY },
+    { key: 'vega',                name: '织女星 Vega (α Lyrae)',         sub: '距地 25.04 ly · 12.5h 极速扁球星 (f=0.17)', getPos: e => e.vega,                color: '#38bdf8', minKly: 28.0 * RSUN_IN_KLY,  maxKly: 18.0,   hideNearKly: 28.0 * RSUN_IN_KLY,  radiusKly: 3.0 * RSUN_IN_KLY },
     { key: 'proxima',     name: '比邻星 Proxima Centauri', sub: '距太阳 4.2465 ly · R=107,277 km', getPos: e => e.proxima, color: '#fb7185', minKly: 8.0 * RSUN_IN_KLY, maxKly: 8.5,   hideNearKly: 8.0 * RSUN_IN_KLY,  radiusKly: 0.16 * RSUN_IN_KLY },
     { key: 'proximab',    name: '比邻星 b (宜居行星)',     sub: '0.04856 AU · R=6,562 km',       getPos: e => e.proximab, color: '#34d399', minKly: 0.45 * RSUN_IN_KLY, maxKly: 2.5e-5, hideNearKly: 0.45 * RSUN_IN_KLY, radiusKly: 0.01 * RSUN_IN_KLY },
     { key: 'proxima',     name: '比邻星 d',               sub: '0.02885 AU · 周期 5.12 天',     getPos: e => e.proximad, color: '#fb923c', minKly: 0.35 * RSUN_IN_KLY, maxKly: 1.2e-5, hideNearKly: 0.35 * RSUN_IN_KLY, radiusKly: 0.008 * RSUN_IN_KLY },
@@ -9251,7 +10917,10 @@
       const rz = wp[2] - cam.posKly[2];
       const dKly = Math.hypot(rx, ry, rz);
 
-      if (cam.distKly < L.minKly || Math.max(cam.distKly, dKly * 0.68) > L.maxKly || dKly <= L.hideNearKly) {
+      const effMinKly = (L.key === 'sirius' && cam.anchorId === 'sirius_b') ? (0.01 * RSUN_IN_KLY) : L.minKly;
+      const hideBgOnCloseup = (cam.distKly < 0.12 && dKly > 0.5) ||
+                              (cam.anchorId === 'betelgeuse' && cam.distKly < 0.08 && dKly > 0.08);
+      if (cam.distKly < effMinKly || Math.max(cam.distKly, dKly * 0.68) > L.maxKly || dKly <= L.hideNearKly || hideBgOnCloseup) {
         el.style.opacity = '0';
         el.style.pointerEvents = 'none';
         continue;
@@ -9363,8 +11032,8 @@
     return Math.exp(LOG_MIN + t * (LOG_MAX - LOG_MIN));
   }
 
-  // Tour & Recorder state declarations (Episode 2 = 92s Fly Out of Milky Way -> LMC/SMC -> Local Group -> Andromeda Subgroup, Episode 1 = 72s Milky Way & Solar System)
-  const TOUR_EP1_DURATION = 72.0;
+  // Tour & Recorder state declarations (Episode 2 = 92s Fly Out of Milky Way -> LMC/SMC -> Local Group -> Andromeda Subgroup, Episode 1 = 96s Milky Way, Solar System & 6 Iconic Stars/Nebulae)
+  const TOUR_EP1_DURATION = 96.0;
   const TOUR_EP2_DURATION = 92.0;
   const tour = {
     episode: 2,
@@ -9616,8 +11285,9 @@
   ];
 
   const TOUR_EP1_SHORTS = [
-    '01 银河全景', '02 尘埃裂谷', '03 S星团轨道', '04 银心黑洞', '05 比邻星', '06 比邻星b',
-    '07 太阳系', '08 金星与火星', '09 地球与月球', '10 木星大红斑', '11 土星与海王星', '12 一镜收官'
+    '01 银河与裂谷', '02 银心黑洞', '03 比邻星与b', '04 太阳系与太阳', '05 金星与火星',
+    '06 地球与月球', '07 木星大红斑', '08 土星与海王星', '09 天狼双星与白矮B', '10 扁球织女星',
+    '11 沸腾参宿四', '12 猎户M42四合星', '13 蟹状脉冲星', '14 鹰状星云M16', '15 创生之柱'
   ];
 
   function getActiveTourChapters() {
@@ -9627,74 +11297,92 @@
   const TOUR_CHAPTERS = [
     {
       t0: 0.0, t1: 5.5,
-      title: '银河系 1:1 全局架构 (105,700 ly)',
-      sub: '26 万颗光谱恒星 · 27° 中央恒星棒 · 四条主对数旋臂与 115 个球状星团银晕',
+      title: '银河系 1:1 全局架构 (105,700 ly) 与暗尘埃大裂谷',
+      sub: '46.8 万颗三维恒星 · 27° 中央恒星棒 · 四条主对数旋臂与银道面分子暗尘埃裂谷',
       chord: [146.83, 220.00, 293.66, 369.99]
     },
     {
-      t0: 5.5, t1: 11.5,
-      title: '实时物理参数调控与侧视暗尘埃裂谷',
-      sub: '动态推演中平面暗尘埃消光、H-II 电离氢星云与外银盘 S 型引力翘曲截面',
-      chord: [130.81, 196.00, 293.66, 392.00]
-    },
-    {
-      t0: 11.5, t1: 16.5,
-      title: '银心 S 星团三维开普勒椭圆轨道 (S2 / S62)',
-      sub: '跨越 7 个数量级潜入银心：观测 B 型恒星 S2 (周期 16.05 年) 与 S62 环绕黑洞高速运行',
-      chord: [123.47, 185.00, 277.18, 369.99]
-    },
-    {
-      t0: 16.5, t1: 23.5,
-      title: '银心黑洞 Sgr A* · 克尔广义相对论光线追踪 (a*=0.90)',
-      sub: '史瓦西半径 1,269 万 km：参考系拖曳 D 型视界阴影 · n=1/n=2 光子子环 · MAD 螺旋流与爱因斯坦环',
+      t0: 5.5, t1: 12.0,
+      title: '银心 S 星团轨道与卡冈图雅级黑洞 Sgr A* (a*=0.96)',
+      sub: '潜入银心观测 S2/S62 开普勒椭圆轨道 → 史瓦西半径 1,269 万 km 克尔弯曲时空吸积盘双拱',
       chord: [92.50, 138.59, 207.65, 311.13]
     },
     {
-      t0: 23.5, t1: 29.0,
-      title: '跃迁 26,673 光年至比邻星 Proxima Centauri',
-      sub: '猎户支臂恒星邻域 · 半径 107,277 km 红矮耀星对流胞、磁黑子、日珥与磁重联耀斑',
-      chord: [146.83, 220.00, 329.63, 440.00]
-    },
-    {
-      t0: 29.0, t1: 34.5,
-      title: '比邻星 b 宜居带岩石行星 (向阳面海洋与极光)',
-      sub: '0.04856 AU 潮汐锁定宜居行星 (R=6,562 km)：红光海洋镜面反射、气旋云系与晨昏圈极光',
+      t0: 12.0, t1: 18.0,
+      title: '跃迁 26,673 光年至比邻星与宜居带眼球行星 Proxima b',
+      sub: '红矮耀星磁重联日珥耀斑 → 0.04856 AU 潮汐锁定宜居行星向阳面海洋镜面反射与极光椭圆',
       chord: [174.61, 261.63, 329.63, 440.00]
     },
     {
-      t0: 34.5, t1: 40.5,
-      title: '太阳系 1:1 全景 (黄银交角 60.19°) 与太阳 Sol',
-      sub: '飞越 4.2465 光年抵达太阳系：展现 60.19° 倾角八大行星轨道、太阳米粒组织、黑子与光斑',
+      t0: 18.0, t1: 23.5,
+      title: '太阳系 1:1 全景 (黄银交角 60.19°) 与主序星太阳 Sol',
+      sub: '飞越 4.2465 光年抵达太阳系：展现 60.19° 倾角八大行星轨道、太阳米粒组织、黑子与三维日冕',
       chord: [196.00, 293.66, 392.00, 493.88]
     },
     {
-      t0: 40.5, t1: 46.5,
-      title: '内太阳系真彩复刻：金星硫酸云层与火星峡谷极冠',
-      sub: '水手10号标定金星乳白 Y 型云带 (0.72 AU) → 海盗号标定火星赭红高地、水手谷与南北极冠',
+      t0: 23.5, t1: 29.0,
+      title: '内太阳系真彩复刻：金星硫酸云层与火星水手大峡谷',
+      sub: '破晓号标定金星行星级 Y 型紫外波纹 (0.72 AU) → 火星 4,000 km 水手谷晨雾、奥林匹斯山与螺旋冰冠',
       chord: [164.81, 246.94, 329.63, 493.88]
     },
     {
-      t0: 46.5, t1: 52.5,
+      t0: 29.0, t1: 35.0,
       title: '地球双层气象云系与月球 1:1 系统 (1.000 AU · 384,400 km)',
-      sub: '斜压逗点气旋、ITCZ 积雨云、超强台风眼、云层三维投影、VIIRS 夜光与潮汐锁定月球轨道',
+      sub: 'DSCOVR 真彩斜压逗点气旋、超强台风眼、云层三维投影、VIIRS 夜光与潮汐锁定正面月海辐射坑',
       chord: [130.81, 196.00, 261.63, 392.00]
     },
     {
-      t0: 52.5, t1: 58.5,
-      title: '木星 Jupiter · 反气旋大红斑与湍流云带 (5.20 AU)',
-      sub: '半径 69,911 km 气态巨行星：氨冰亮区与赤褐暗带、蓝灰羽状流、南纬 21.5° 大红斑与尘埃暗环',
+      t0: 35.0, t1: 40.5,
+      title: '木星 Jupiter · 扁球体极地多边形气旋与大红斑 (5.20 AU)',
+      sub: 'NASA 1:1 扁球体 (Req=71,492 km)：氨冰亮区与赤褐暗带、南纬 22° 反气旋大红斑与朱诺极地气旋簇',
       chord: [110.00, 164.81, 220.00, 329.63]
     },
     {
-      t0: 58.5, t1: 66.5,
-      title: '土星 1:1 冰晶光环互遮阴影与 2024 真彩海王星',
+      t0: 40.5, t1: 46.5,
+      title: '土星卡西尼精密冰环互遮阴影与 2024 真彩海王星',
       sub: '光线追踪 C/B/卡西尼缝/A/恩克缝/F 环与北极六边形 → Irwin 2024 淡蔚青蓝海王星大暗斑与亚当斯环弧',
       chord: [146.83, 220.00, 329.63, 493.88]
     },
     {
-      t0: 66.5, t1: 72.0,
-      title: '跨 15 数量级无断层一镜到底收官 (太阳系 → 银河系)',
-      sub: '从海王星 24,622 km 冰巨星大气指数级平滑拉升至 105,700 光年宏伟银河系全景',
+      t0: 46.5, t1: 54.0,
+      title: '天狼星双星系统 Sirius A 与地球大小白矮星 Sirius B ("The Pup")',
+      sub: '距地 8.60 ly 偏心双星轨道 (50.13 年)：9,940 K 钻石蓝宝石主星 → 半径仅 5,844 km、25,200 K 碳氧简并白矮星！',
+      chord: [164.81, 246.94, 369.99, 554.37]
+    },
+    {
+      t0: 54.0, t1: 60.5,
+      title: '极速自转扁球星织女星 Vega (周期 12.5h · 赤道扁率 17.0%)',
+      sub: 'CHARA 实测 236 km/s 极速自转甩出 17% 赤道隆起：10,020 K 炽白极冠与 7,900 K 冯·蔡佩尔重力昏暗带鲜明对峙！',
+      chord: [174.61, 261.63, 392.00, 523.25]
+    },
+    {
+      t0: 60.5, t1: 67.0,
+      title: '红超巨星参宿四 Betelgeuse (R=764 R☉ = 3.55 AU · 沸腾巨兽)',
+      sub: '超越火星轨道半径！4–6 个怪兽级施瓦西沸腾对流超羽流与 2019–2020“大变暗”西南硅酸盐尘埃云遮蔽',
+      chord: [110.00, 164.81, 246.94, 329.63]
+    },
+    {
+      t0: 67.0, t1: 74.5,
+      title: '猎户座大星云 M42 (24 ly 惠更斯碗) 与四合星泪滴原行星盘',
+      sub: '三维凹面绿松石 [O III] 电离碗、猎户座电离锋脊与鱼口湾 → 潜入 θ¹ Ori C1 四合星团与 5 枚哈勃泪滴原行星盘！',
+      chord: [130.81, 196.00, 293.66, 440.00]
+    },
+    {
+      t0: 74.5, t1: 82.0,
+      title: '蟹状星云 M1 (SN 1054 天关客星) 与高速灯塔脉冲星 PSR B0531+21',
+      sub: '11×7.6 ly 瑞利-泰勒三维丝状笼与钱德拉 X 射线同步辐射环/极向喷流 → 潜入中心高速扫掠的中子星磁层灯塔！',
+      chord: [123.47, 185.00, 277.18, 415.30]
+    },
+    {
+      t0: 82.0, t1: 87.5,
+      title: '人马-船底臂育星工厂：鹰状星云 M16 与年轻 OB 星团 NGC 6611',
+      sub: '距地 5,700 光年 · 跨度 70×55 ly 青翠 [O III] 辐射空腔与赤金分子悬崖，核心矗立高耸的“创生之柱”',
+      chord: [138.59, 207.65, 311.13, 466.16]
+    },
+    {
+      t0: 87.5, t1: 96.0,
+      title: '史诗终章：鹰状星云核心 1:1“创生之柱” Pillars of Creation (4.5 ly)',
+      sub: '哈勃与韦布双绝景融合：4.5 / 3.2 / 1.95 光年不透明冷分子暗尘埃巨柱、指状电离锋 EGGs 与韦布绯红原恒星激波尖端！',
       chord: [146.83, 220.00, 293.66, 440.00]
     }
   ];
@@ -10487,110 +12175,95 @@
     let fov         = 52.0;
 
     if (chIdx === 0) {
-      // 01: Milky Way 1:1 Grand Overview
+      // 01 (0..5.5s): Milky Way 1:1 Grand Overview -> Edge-On Great Rift & Live Dust/Nebula Modulation
       anchorId = 'sgra';
-      anchorLabel = '银河系全景 (105,700 ly)';
-      dist  = logLerp(74.0, 52.0, s);
-      yaw   = lerpNum(0.42, 0.96, u);
-      pitch = lerpNum(0.62, 0.48, s);
-      fov   = 52.0;
+      anchorLabel = '银河系全景与暗尘埃裂谷 (105,700 ly)';
+      dist  = logLerp(72.0, 56.0, s);
+      yaw   = lerpNum(0.42, 1.72, u);
+      pitch = lerpNum(0.60, 0.045, smoothstepJS(0.28, 0.94, u));
+      fov   = lerpNum(52.0, 47.0, s);
+      if (u > 0.35) {
+        const w = (u - 0.35) / 0.65;
+        pDust   = 1.00 + 0.85 * Math.sin(Math.PI * w);
+        pNebula = 1.20 + 0.85 * Math.sin(Math.PI * w);
+        paramBadge = `⚡ 实时调控 · 星际尘埃与电离氢星云`;
+      }
     } else if (chIdx === 1) {
-      // 02: Live Parameter Modulation + Edge-On Great Rift Transition
+      // 02 (5.5..12.0s): S-Star Keplerian Orbits -> Gargantua-Class Relativistic Black Hole Sgr A*
       anchorId = 'sgra';
-      anchorLabel = '实时物理参数与银盘裂谷';
-      dist  = logLerp(52.0, 56.0, s);
-      yaw   = lerpNum(0.96, 1.88, u);
-      pitch = lerpNum(0.48, 0.032, smoothstepJS(0.18, 0.92, u));
-      fov   = lerpNum(52.0, 46.0, s);
-
-      if (u < 0.48) {
-        const w = u / 0.48;
-        pNebula = 1.20 + 1.25 * Math.sin(Math.PI * w);
-        paramBadge = `⚡ 实时调控 · H-II 发射星云: ${pNebula.toFixed(2)}`;
+      if (u < 0.36) {
+        const w = u / 0.36;
+        anchorLabel = '银心 S 星团轨道 (S2 / S62)';
+        dist  = logLerp(56.0, 1650.0 * AU_IN_KLY, smoothstepJS(0.0, 1.0, w));
+        yaw   = lerpNum(1.72, 2.45, w);
+        pitch = lerpNum(0.045, 0.42, smoothstepJS(0.0, 1.0, w));
+        fov   = lerpNum(47.0, 54.0, w);
+      } else if (u < 0.56) {
+        const w = (u - 0.36) / 0.20;
+        anchorLabel = '银心黑洞 Sgr A* (星际穿越 DNGR)';
+        dist  = logLerp(1650.0 * AU_IN_KLY, 29.5 * SGRA_RS_KLY, smoothstepJS(0.0, 1.0, w));
+        yaw   = lerpAngle(2.45, 0.40, smoothstepJS(0.0, 1.0, w));
+        pitch = lerpNum(0.42, -0.098, smoothstepJS(0.0, 1.0, w));
+        fov   = lerpNum(54.0, 40.0, smoothstepJS(0.0, 1.0, w));
       } else {
-        const w = (u - 0.48) / 0.52;
-        pDust = 1.00 + 1.05 * Math.sin(Math.PI * w);
-        paramBadge = `⚡ 实时调控 · 星际暗尘埃带: ${pDust.toFixed(2)}`;
+        const w = (u - 0.56) / 0.44;
+        anchorLabel = '银心黑洞 Sgr A* (星际穿越 DNGR)';
+        dist  = (29.5 - 3.2 * Math.sin(Math.PI * w) - 1.0 * w) * SGRA_RS_KLY;
+        yaw   = lerpNum(0.40, 0.64, w);
+        pitch = -0.098 - 0.014 * Math.sin(Math.PI * w);
+        fov   = 40.0;
+        pAccretion = 1.05 + 0.35 * Math.sin(Math.PI * w);
+        paramBadge = `🕳 卡冈图雅引力透镜双拱 · Rs=1,269 万 km`;
       }
     } else if (chIdx === 2) {
-      // 03: Dive 7 Orders of Magnitude into Galactic Center S-Star Keplerian Orbits
-      anchorId = 'sgra';
-      anchorLabel = '银心 S 星团轨道 (S2 / S62)';
-      if (u < 0.45) {
-        dist = logLerp(56.0, 2350.0 * AU_IN_KLY, smoothstepJS(0.0, 0.45, u));
+      // 03 (12.0..18.0s): 26,673 ly Warp -> Proxima Centauri Flare Dwarf & Habitable Eyeball Planet Proxima b
+      if (u < 0.50) {
+        const w = u / 0.50;
+        const hop = evalInterstellarHop(
+          eph,
+          'sgra', [0, 0, 0], 28.5 * SGRA_RS_KLY, '银心黑洞 Sgr A*',
+          'proxima', [0, 0, 0], 0.60 * RSUN_IN_KLY, '比邻星 Proxima (R=107,277 km)',
+          22.0, w, 0.62
+        );
+        anchorId    = hop.anchorId;
+        anchorLabel = hop.anchorLabel;
+        offset      = hop.offset;
+        dist        = hop.dist;
+        yaw         = lerpAngle(0.64, 0.52, smoothstepJS(0.0, 1.0, w));
+        pitch       = lerpNum(-0.098, 0.16, smoothstepJS(0.0, 1.0, w));
+        fov         = lerpNum(40.0, 46.0, smoothstepJS(0.0, 0.62, w));
+        if (w > 0.62) {
+          pAccretion = 1.45;
+          paramBadge = '🔥 红矮耀星磁重联日珥与耀斑';
+        }
       } else {
-        const w = (u - 0.45) / 0.55;
-        dist = logLerp(2350.0 * AU_IN_KLY, 1350.0 * AU_IN_KLY, smoothstepJS(0.0, 1.0, w));
-        pSpeed = 1.0 + 3.4 * Math.sin(Math.PI * w);
-        paramBadge = `⚡ 轨道动力学演化加速: ${pSpeed.toFixed(1)}x`;
+        const w = (u - 0.50) / 0.50;
+        const hop = evalInterstellarHop(
+          eph,
+          'proxima', [0, 0, 0], 0.60 * RSUN_IN_KLY, '比邻星 Proxima',
+          'proximab', [0, 0, 0], 0.034 * RSUN_IN_KLY, '比邻星 b (宜居行星 · 6,562 km)',
+          0.14 * AU_IN_KLY, w, 0.42
+        );
+        anchorId    = hop.anchorId;
+        anchorLabel = hop.anchorLabel;
+        offset      = hop.offset;
+        const ang0 = sunFacingAngles(eph.proxima, eph.proximab, 0.78, 0.18);
+        if (w < 0.42) {
+          dist  = hop.dist;
+          yaw   = lerpAngle(0.52, ang0.yaw, smoothstepJS(0.0, 0.42, w));
+          pitch = lerpNum(0.16, ang0.pitch, smoothstepJS(0.0, 0.42, w));
+        } else {
+          const rw = (w - 0.42) / 0.58;
+          dist  = logLerp(0.034 * RSUN_IN_KLY, 0.031 * RSUN_IN_KLY, smoothstepJS(0.0, 1.0, rw));
+          yaw   = ang0.yaw + 1.35 * smoothstepJS(0.0, 1.0, rw);
+          pitch = ang0.pitch - 0.10 * smoothstepJS(0.0, 1.0, rw);
+          paramBadge = '🌊 潮汐锁定眼球海洋与晨昏极光';
+        }
+        fov = lerpNum(46.0, 50.0, smoothstepJS(0.0, 0.42, w));
       }
-      yaw   = lerpNum(1.88, 2.65, u);
-      pitch = lerpNum(0.032, 0.44, smoothstepJS(0.0, 0.50, u));
-      fov   = lerpNum(46.0, 54.0, smoothstepJS(0.0, 0.45, u));
     } else if (chIdx === 3) {
-      // 04: 1:1 Kip Thorne / Interstellar Gargantua General Relativistic Black Hole Sgr A*
-      anchorId = 'sgra';
-      anchorLabel = '银心黑洞 Sgr A* (星际穿越 DNGR)';
-      if (u < 0.28) {
-        dist  = logLerp(1350.0 * AU_IN_KLY, 30.0 * SGRA_RS_KLY, smoothstepJS(0.0, 0.28, u));
-        pitch = lerpNum(0.44, -0.098, smoothstepJS(0.0, 0.28, u));
-        yaw   = lerpAngle(2.65, 0.40, smoothstepJS(0.0, 0.28, u));
-      } else {
-        const w = (u - 0.28) / 0.72;
-        dist  = (30.0 - 3.5 * Math.sin(Math.PI * w) - 1.2 * w) * SGRA_RS_KLY;
-        yaw   = lerpNum(0.40, 0.64, w);
-        pitch = -0.098 - 0.015 * Math.sin(Math.PI * w);
-        pAccretion = 1.05 + 0.35 * Math.sin(Math.PI * w);
-        paramBadge = `⚡ 卡冈图雅引力透镜双拱与吸积光度: ${pAccretion.toFixed(2)}`;
-      }
-      fov = lerpNum(54.0, 40.0, smoothstepJS(0.0, 0.30, u));
-    } else if (chIdx === 4) {
-      // 05: 26,673 ly Warp -> Proxima Centauri 1:1 Flare Red Dwarf
-      const hop = evalInterstellarHop(
-        eph,
-        'sgra', [0, 0, 0], 28.8 * SGRA_RS_KLY, '银心黑洞 Sgr A* (星际穿越 DNGR)',
-        'proxima', [0, 0, 0], 0.64 * RSUN_IN_KLY, '比邻星 Proxima (R=107,277 km)',
-        22.0, u, 0.54
-      );
-      anchorId    = hop.anchorId;
-      anchorLabel = hop.anchorLabel;
-      offset      = hop.offset;
-      dist        = hop.dist;
-      if (u >= 0.54) {
-        const w = (u - 0.54) / 0.46;
-        dist = logLerp(0.64 * RSUN_IN_KLY, 0.55 * RSUN_IN_KLY, smoothstepJS(0.0, 1.0, w));
-        pAccretion = 1.15 + 0.90 * Math.sin(Math.PI * w);
-        paramBadge = `⚡ 红矮耀星磁重联耀斑: ${pAccretion.toFixed(2)}`;
-      }
-      yaw   = lerpAngle(0.64, 0.52, smoothstepJS(0.0, 1.0, u));
-      pitch = lerpNum(-0.098, 0.16, s);
-      fov   = lerpNum(40.0, 46.0, smoothstepJS(0.0, 0.35, u));
-    } else if (chIdx === 5) {
-      // 06: Proxima b Habitable Exoplanet (Sunlit Liquid Ocean & Twilight Aurora)
-      const hop = evalInterstellarHop(
-        eph,
-        'proxima', [0, 0, 0], 0.55 * RSUN_IN_KLY, '比邻星 Proxima (R=107,277 km)',
-        'proximab', [0, 0, 0], 0.034 * RSUN_IN_KLY, '比邻星 b (宜居行星 · 6,562 km)',
-        0.14 * AU_IN_KLY, u, 0.36
-      );
-      anchorId    = hop.anchorId;
-      anchorLabel = hop.anchorLabel;
-      offset      = hop.offset;
-      const ang0 = sunFacingAngles(eph.proxima, eph.proximab, 0.78, 0.18);
-      if (u < 0.36) {
-        dist  = hop.dist;
-        yaw   = lerpAngle(0.52, ang0.yaw, smoothstepJS(0.0, 0.36, u));
-        pitch = lerpNum(0.16, ang0.pitch, smoothstepJS(0.0, 0.36, u));
-      } else {
-        const w = (u - 0.36) / 0.64;
-        dist  = logLerp(0.034 * RSUN_IN_KLY, 0.031 * RSUN_IN_KLY, smoothstepJS(0.0, 1.0, w));
-        yaw   = ang0.yaw + 1.45 * smoothstepJS(0.0, 1.0, w);
-        pitch = ang0.pitch - 0.10 * smoothstepJS(0.0, 1.0, w);
-      }
-      fov = lerpNum(46.0, 50.0, smoothstepJS(0.0, 0.36, u));
-    } else if (chIdx === 6) {
-      // 07: 4.2465 ly Flight -> Solar System 60.19° Ecliptic Architecture & Sun Sol
-      const proxEnd = sunFacingAngles(eph.proxima, eph.proximab, 0.78 + 1.45, 0.08);
+      // 04 (18.0..23.5s): 4.2465 ly Flight -> Solar System 60.19° Ecliptic Architecture & Sun Sol
+      const proxEnd = sunFacingAngles(eph.proxima, eph.proximab, 0.78 + 1.35, 0.08);
       const eclDir = normalize3([ECL_Z_BASE[0] * 0.62 + 0.58, ECL_Z_BASE[1] * 0.62 + 0.24, ECL_Z_BASE[2] * 0.62 - 0.35]);
       const sysYaw = Math.atan2(eclDir[2], eclDir[0]);
       const sysPitch = Math.asin(Math.max(-0.92, Math.min(0.92, eclDir[1])));
@@ -10620,8 +12293,8 @@
         pitch       = lerpNum(sysPitch, 0.20, smoothstepJS(0.0, 1.0, w));
         fov         = lerpNum(56.0, 46.0, smoothstepJS(0.0, 1.0, w));
       }
-    } else if (chIdx === 7) {
-      // 08: Inner Terrestrial Planets: Venus Creamy H2SO4 Clouds -> Mars Valles Marineris & Polar Caps
+    } else if (chIdx === 4) {
+      // 05 (23.5..29.0s): Inner Terrestrial Planets: Venus Creamy H2SO4 Clouds -> Mars Valles Marineris & Polar Caps
       const eclDir = normalize3([ECL_Z_BASE[0] * 0.62 + 0.58, ECL_Z_BASE[1] * 0.62 + 0.24, ECL_Z_BASE[2] * 0.62 - 0.35]);
       const sunYawEnd = Math.atan2(eclDir[2], eclDir[0]) + 0.55;
       const venusAng = computePlanetHeroAngles(eph, 'venus');
@@ -10662,8 +12335,8 @@
         pitch       = lerpNum(venusAng.pitch, marsAng.pitch, smoothstepJS(0.0, 0.44, w));
         fov         = 46.0;
       }
-    } else if (chIdx === 8) {
-      // 09: Earth & Moon 1:1 System (1.000 AU · 384,400 km Lunar Orbit)
+    } else if (chIdx === 5) {
+      // 06 (29.0..35.0s): Earth & Moon 1:1 System (1.000 AU · 384,400 km Lunar Orbit)
       const marsEndYaw = computePlanetHeroAngles(eph, 'mars').yaw + 0.72;
       const marsPitch  = computePlanetHeroAngles(eph, 'mars').pitch;
       const earthAng   = computePlanetHeroAngles(eph, 'earth');
@@ -10674,7 +12347,7 @@
         const hop = evalInterstellarHop(
           eph,
           'mars', [0, 0, 0], 0.018 * RSUN_IN_KLY, '火星 Mars',
-          'earth', [0, 0, 0], 0.034 * RSUN_IN_KLY, '地球 Earth (1.000 AU · R=6,371 km)',
+          'earth', [0, 0, 0], 0.034 * RSUN_IN_KLY, '地球 Earth (1.000 AU · R=6,378 km)',
           1.3 * AU_IN_KLY, w, 0.42
         );
         anchorId    = hop.anchorId;
@@ -10702,14 +12375,14 @@
         pitch       = lerpNum(earthAng.pitch, moonAng.pitch, smoothstepJS(0.0, 0.48, w));
         fov         = 46.0;
       }
-    } else if (chIdx === 9) {
-      // 10: Jupiter & the Anticyclonic Great Red Spot (5.204 AU, R=69,911 km)
+    } else if (chIdx === 6) {
+      // 07 (35.0..40.5s): Jupiter & the Anticyclonic Great Red Spot (5.204 AU, R_eq=71,492 km)
       const moonAng = computePlanetHeroAngles(eph, 'moon');
       const jupAng  = computePlanetHeroAngles(eph, 'jupiter');
       const hop = evalInterstellarHop(
         eph,
         'moon', [0, 0, 0], 0.0095 * RSUN_IN_KLY, '月球 Moon',
-        'jupiter', [0, 0, 0], 0.37 * RSUN_IN_KLY, '木星 Jupiter · 大红斑 (R=69,911 km)',
+        'jupiter', [0, 0, 0], 0.37 * RSUN_IN_KLY, '木星 Jupiter · 大红斑 (Req=71,492 km)',
         6.5 * AU_IN_KLY, u, 0.38
       );
       anchorId    = hop.anchorId;
@@ -10724,18 +12397,18 @@
         dist  = logLerp(0.37 * RSUN_IN_KLY, 0.31 * RSUN_IN_KLY, smoothstepJS(0.0, 1.0, w));
         yaw   = (jupAng.yaw - 0.18) + 0.62 * smoothstepJS(0.0, 1.0, w);
         pitch = jupAng.pitch + 0.08 * Math.sin(Math.PI * w);
-        paramBadge = '🪐 木星南纬 21.5° 反气旋大红斑';
+        paramBadge = '🪐 木星南纬 22° 反气旋大红斑与朱诺极地气旋';
       }
       fov = 46.0;
-    } else if (chIdx === 10) {
-      // 11: Saturn Ray-Traced Rings & Mutual Shadows -> Neptune Ice Giant & Great Dark Spot
+    } else if (chIdx === 7) {
+      // 08 (40.5..46.5s): Saturn Ray-Traced Rings & Mutual Shadows -> Neptune Ice Giant & Great Dark Spot
       const jupEndYaw = computePlanetHeroAngles(eph, 'jupiter').yaw + 0.44;
       const jupPitch  = computePlanetHeroAngles(eph, 'jupiter').pitch;
       const satAng    = computePlanetHeroAngles(eph, 'saturn');
       const nepAng    = computePlanetHeroAngles(eph, 'neptune');
 
-      if (u < 0.64) {
-        const w = u / 0.64;
+      if (u < 0.62) {
+        const w = u / 0.62;
         const hop = evalInterstellarHop(
           eph,
           'jupiter', [0, 0, 0], 0.31 * RSUN_IN_KLY, '木星 Jupiter',
@@ -10758,45 +12431,281 @@
         }
         fov = 48.0;
       } else {
-        const w = (u - 0.64) / 0.36;
+        const w = (u - 0.62) / 0.38;
         const hop = evalInterstellarHop(
           eph,
           'saturn', [0, 0, 0], 0.45 * RSUN_IN_KLY, '土星 Saturn',
-          'neptune', [0, 0, 0], 0.132 * RSUN_IN_KLY, '海王星 Neptune (30.1 AU · 大暗斑)',
+          'neptune', [0, 0, 0], 0.136 * RSUN_IN_KLY, '海王星 Neptune (30.1 AU · 大暗斑)',
           24.0 * AU_IN_KLY, w, 0.46
         );
         anchorId    = hop.anchorId;
         anchorLabel = hop.anchorLabel;
         offset      = hop.offset;
         dist        = hop.dist;
-        yaw         = lerpAngle(satAng.yaw + 0.67, nepAng.yaw + 0.42 * smoothstepJS(0.46, 1.0, w), smoothstepJS(0.0, 0.46, w));
+        yaw         = lerpAngle(satAng.yaw + 0.67, nepAng.yaw + 0.38 * smoothstepJS(0.46, 1.0, w), smoothstepJS(0.0, 0.46, w));
         pitch       = lerpNum(satAng.pitch, nepAng.pitch, smoothstepJS(0.0, 0.46, w));
         fov         = 46.0;
       }
-    } else {
-      // 12: Continuous 15-Order-of-Magnitude Unbroken Pull-Out (Neptune 24,622 km -> Milky Way 74,000 ly)
+    } else if (chIdx === 8) {
+      // 09 (46.5..54.0s): Sirius A (9,940 K + Binary Orbits) -> Degenerate White Dwarf Sirius B ("The Pup", R=5,844 km!)
       const nepAng  = computePlanetHeroAngles(eph, 'neptune');
-      const posNep  = eph.neptune;
-      const posSgrA = eph.sgra;
-      const posBlend = smoothstepJS(0.32, 0.88, u);
-      const worldNow = [
-        lerpNum(posNep[0], posSgrA[0], posBlend),
-        lerpNum(posNep[1], posSgrA[1], posBlend),
-        lerpNum(posNep[2], posSgrA[2], posBlend)
-      ];
-      dist = logLerp(0.132 * RSUN_IN_KLY, 74.0, smoothstepJS(0.0, 1.0, u));
-      if (u < 0.5) {
-        anchorId    = 'neptune';
-        anchorLabel = '跨 15 数量级拉升 (太阳系 → 银河系)';
-        offset      = [worldNow[0] - posNep[0], worldNow[1] - posNep[1], worldNow[2] - posNep[2]];
+      const sirAAng = computeSiriusHeroAngles(eph, false);
+      const sirBAng = computeSiriusHeroAngles(eph, true);
+
+      if (u < 0.52) {
+        const w = u / 0.52;
+        const hop = evalInterstellarHop(
+          eph,
+          'neptune', [0, 0, 0], 0.136 * RSUN_IN_KLY, '海王星 Neptune',
+          'sirius_a', [0, 0, 0], 6.4 * RSUN_IN_KLY, '天狼星 A & B 双星系统 (8.60 ly)',
+          0.0045, w, 0.44
+        );
+        anchorId    = hop.anchorId;
+        anchorLabel = hop.anchorLabel;
+        offset      = hop.offset;
+        if (w < 0.44) {
+          dist  = hop.dist;
+          yaw   = lerpAngle(nepAng.yaw + 0.38, sirAAng.yaw - 0.10, smoothstepJS(0.0, 0.44, w));
+          pitch = lerpNum(nepAng.pitch, sirAAng.pitch, smoothstepJS(0.0, 0.44, w));
+        } else {
+          const rw = (w - 0.44) / 0.56;
+          dist  = logLerp(6.4 * RSUN_IN_KLY, 5.8 * RSUN_IN_KLY, smoothstepJS(0.0, 1.0, rw));
+          yaw   = lerpAngle(sirAAng.yaw - 0.10, sirAAng.yaw + 0.08, rw);
+          pitch = sirAAng.pitch + 0.02 * Math.sin(Math.PI * rw);
+          paramBadge = '💎 天狼星 A (1.71 R☉) 与 50.13 年偏心双星开普勒轨道';
+        }
+        fov = lerpNum(46.0, 50.0, smoothstepJS(0.0, 0.44, w));
       } else {
-        anchorId    = 'sgra';
-        anchorLabel = '银河系全景 (105,700 ly)';
-        offset      = [worldNow[0] - posSgrA[0], worldNow[1] - posSgrA[1], worldNow[2] - posSgrA[2]];
+        const w = (u - 0.52) / 0.48;
+        const hop = evalInterstellarHop(
+          eph,
+          'sirius_a', [0, 0, 0], 5.8 * RSUN_IN_KLY, '天狼星 A',
+          'sirius_b', [0, 0, 0], 0.034 * RSUN_IN_KLY, '白矮星天狼星 B (R=5,844 km · 25,200 K)',
+          8.5 * AU_IN_KLY, w, 0.44
+        );
+        anchorId    = hop.anchorId;
+        anchorLabel = hop.anchorLabel;
+        offset      = hop.offset;
+        if (w < 0.44) {
+          dist  = hop.dist;
+          yaw   = lerpAngle(sirAAng.yaw + 0.08, sirBAng.yaw - 0.08, smoothstepJS(0.0, 0.44, w));
+          pitch = lerpNum(sirAAng.pitch, sirBAng.pitch, smoothstepJS(0.0, 0.44, w));
+        } else {
+          const rw = (w - 0.44) / 0.56;
+          dist  = logLerp(0.034 * RSUN_IN_KLY, 0.030 * RSUN_IN_KLY, smoothstepJS(0.0, 1.0, rw));
+          yaw   = lerpAngle(sirBAng.yaw - 0.08, sirBAng.yaw + 0.10, rw);
+          pitch = sirBAng.pitch - 0.02 * Math.sin(Math.PI * rw);
+          paramBadge = '⚡ 白矮星天狼星 B：1.02 M☉ 压缩至地球大小 · 背景主星璀璨同框';
+        }
+        fov = lerpNum(50.0, 48.0, smoothstepJS(0.0, 0.44, w));
       }
-      yaw   = lerpAngle(nepAng.yaw + 0.42, 0.42, smoothstepJS(0.0, 1.0, u));
-      pitch = lerpNum(nepAng.pitch, 0.62, smoothstepJS(0.0, 1.0, u));
-      fov   = lerpNum(46.0, 52.0, smoothstepJS(0.0, 1.0, u));
+    } else if (chIdx === 9) {
+      // 10 (54.0..60.5s): Rapidly Rotating Oblate Vega (P_rot=12.5 hr, f=17.0%, von Zeipel Gravity Darkening!)
+      const sirBAng = computeSiriusHeroAngles(eph, true);
+      const hop = evalInterstellarHop(
+        eph,
+        'sirius_b', [0, 0, 0], 0.030 * RSUN_IN_KLY, '白矮星天狼星 B',
+        'vega', [0, 0, 0], 9.2 * RSUN_IN_KLY, '极速扁球织女星 Vega (f=17.0% · 25.04 ly)',
+        0.016, u, 0.40
+      );
+      anchorId    = hop.anchorId;
+      anchorLabel = hop.anchorLabel;
+      offset      = hop.offset;
+      if (u < 0.40) {
+        dist  = hop.dist;
+        yaw   = lerpAngle(sirBAng.yaw + 0.10, HERO_VEGA_ANG.yaw - 0.22, smoothstepJS(0.0, 0.40, u));
+        pitch = lerpNum(sirBAng.pitch, HERO_VEGA_ANG.pitch + 0.05, smoothstepJS(0.0, 0.40, u));
+      } else {
+        const w = (u - 0.40) / 0.60;
+        dist  = logLerp(9.2 * RSUN_IN_KLY, 7.8 * RSUN_IN_KLY, smoothstepJS(0.0, 1.0, w));
+        yaw   = lerpNum(HERO_VEGA_ANG.yaw - 0.22, HERO_VEGA_ANG.yaw + 0.24, w);
+        pitch = lerpNum(HERO_VEGA_ANG.pitch + 0.05, HERO_VEGA_ANG.pitch - 0.04, smoothstepJS(0.0, 1.0, w));
+        paramBadge = '🌀 织女星 17% 赤道隆起：10,020 K 极冠 ↔ 7,900 K 重力昏暗赤道';
+      }
+      fov = lerpNum(48.0, 46.0, smoothstepJS(0.0, 0.40, u));
+    } else if (chIdx === 10) {
+      // 11 (60.5..67.0s): Boiling Red Supergiant Betelgeuse (R=764 R_sun = 3.55 AU + Great Dimming SW Dust Veil!)
+      const hop = evalInterstellarHop(
+        eph,
+        'vega', [0, 0, 0], 7.8 * RSUN_IN_KLY, '极速扁球织女星 Vega',
+        'betelgeuse', [0, 0, 0], 2280.0 * RSUN_IN_KLY, '红超巨星参宿四 Betelgeuse (R=764 R☉ · 3.55 AU)',
+        0.30, u, 0.40
+      );
+      anchorId    = hop.anchorId;
+      anchorLabel = hop.anchorLabel;
+      offset      = hop.offset;
+      if (u < 0.40) {
+        dist  = hop.dist;
+        yaw   = lerpAngle(HERO_VEGA_ANG.yaw + 0.24, 0.24, smoothstepJS(0.0, 0.40, u));
+        pitch = lerpNum(HERO_VEGA_ANG.pitch - 0.04, -0.10, smoothstepJS(0.0, 0.40, u));
+      } else {
+        const w = (u - 0.40) / 0.60;
+        dist  = logLerp(2280.0 * RSUN_IN_KLY, 1960.0 * RSUN_IN_KLY, smoothstepJS(0.0, 1.0, w));
+        yaw   = lerpNum(0.24, 0.62, w);
+        pitch = lerpNum(-0.10, -0.18, smoothstepJS(0.0, 1.0, w));
+        pAccretion = 1.22;
+        paramBadge = '🔥 参宿四 (764 R☉)：施瓦西沸腾对流超羽流与大变暗尘埃云';
+      }
+      fov = lerpNum(46.0, 50.0, smoothstepJS(0.0, 0.40, u));
+    } else if (chIdx === 11) {
+      // 12 (67.0..74.5s): Orion Nebula M42 (24 ly Concave Huygens Bowl) -> Trapezium Cluster & Teardrop Proplyds!
+      const m42Yaw  = HERO_M42_ANG.yaw + eph.galAngle;
+      const trapYaw = HERO_TRAPEZIUM_ANG.yaw + eph.galAngle;
+      if (u < 0.52) {
+        const w = u / 0.52;
+        const hop = evalInterstellarHop(
+          eph,
+          'betelgeuse', [0, 0, 0], 1960.0 * RSUN_IN_KLY, '红超巨星参宿四',
+          'orion_m42', [0, 0, 0], 0.029, '猎户座大星云 M42 (直径 24 ly · 惠更斯碗)',
+          0.45, w, 0.44
+        );
+        anchorId    = hop.anchorId;
+        anchorLabel = hop.anchorLabel;
+        offset      = hop.offset;
+        if (w < 0.44) {
+          dist  = hop.dist;
+          yaw   = lerpAngle(0.62, m42Yaw - 0.10, smoothstepJS(0.0, 0.44, w));
+          pitch = lerpNum(-0.18, HERO_M42_ANG.pitch, smoothstepJS(0.0, 0.44, w));
+        } else {
+          const rw = (w - 0.44) / 0.56;
+          dist  = logLerp(0.029, 0.024, smoothstepJS(0.0, 1.0, rw));
+          yaw   = lerpNum(m42Yaw - 0.10, m42Yaw + 0.10, rw);
+          pitch = HERO_M42_ANG.pitch + 0.03 * Math.sin(Math.PI * rw);
+          pNebula = 1.28;
+          paramBadge = '🌺 猎户座大星云 M42：[O III] 惠更斯电离碗与猎户座锋脊';
+        }
+        fov = 50.0;
+      } else {
+        const w = (u - 0.52) / 0.48;
+        const hop = evalInterstellarHop(
+          eph,
+          'orion_m42', [0, 0, 0], 0.024, '猎户座大星云 M42',
+          'trapezium', [0, 0, 0], 0.00056, '猎户座四合星团 Trapezium & 泪滴原行星盘',
+          0.0085, w, 0.44
+        );
+        anchorId    = hop.anchorId;
+        anchorLabel = hop.anchorLabel;
+        offset      = hop.offset;
+        if (w < 0.44) {
+          dist  = hop.dist;
+          yaw   = lerpAngle(m42Yaw + 0.10, trapYaw - 0.08, smoothstepJS(0.0, 0.44, w));
+          pitch = lerpNum(HERO_M42_ANG.pitch, HERO_TRAPEZIUM_ANG.pitch, smoothstepJS(0.0, 0.44, w));
+        } else {
+          const rw = (w - 0.44) / 0.56;
+          dist  = logLerp(0.00056, 0.00048, smoothstepJS(0.0, 1.0, rw));
+          yaw   = lerpNum(trapYaw - 0.08, trapYaw + 0.12, rw);
+          pitch = HERO_TRAPEZIUM_ANG.pitch - 0.03 * Math.sin(Math.PI * rw);
+          pNebula = 1.25;
+          paramBadge = '💧 四合星 θ¹ Ori C1 (39,000 K) 与哈勃泪滴状原行星盘 (Proplyds)';
+        }
+        fov = 50.0;
+      }
+    } else if (chIdx === 12) {
+      // 13 (74.5..82.0s): Crab Nebula M1 (SN 1054 天关客星) -> Spinning Crab Pulsar PSR B0531+21 Lighthouse!
+      const trapYaw   = HERO_TRAPEZIUM_ANG.yaw + eph.galAngle;
+      const crabYaw   = HERO_CRAB_ANG.yaw + eph.galAngle;
+      const pulsarYaw = HERO_CRAB_PULSAR_ANG.yaw + eph.galAngle;
+      if (u < 0.52) {
+        const w = u / 0.52;
+        const hop = evalInterstellarHop(
+          eph,
+          'trapezium', [0, 0, 0], 0.00048, '猎户座四合星团',
+          'crab_nebula', [0, 0, 0], 0.0160, '蟹状星云 M1 · 天关客星 SN 1054 (11×7.6 ly)',
+          3.2, w, 0.46
+        );
+        anchorId    = hop.anchorId;
+        anchorLabel = hop.anchorLabel;
+        offset      = hop.offset;
+        if (w < 0.46) {
+          dist  = hop.dist;
+          yaw   = lerpAngle(trapYaw + 0.12, crabYaw - 0.12, smoothstepJS(0.0, 0.46, w));
+          pitch = lerpNum(HERO_TRAPEZIUM_ANG.pitch, HERO_CRAB_ANG.pitch, smoothstepJS(0.0, 0.46, w));
+        } else {
+          const rw = (w - 0.46) / 0.54;
+          dist  = logLerp(0.0160, 0.0142, smoothstepJS(0.0, 1.0, rw));
+          yaw   = lerpNum(crabYaw - 0.12, crabYaw + 0.12, rw);
+          pitch = HERO_CRAB_ANG.pitch + 0.04 * Math.sin(Math.PI * rw);
+          pNebula = 1.32;
+          paramBadge = '🦀 1054 天关客星遗迹：瑞利-泰勒丝状笼与钱德拉同步辐射环';
+        }
+        fov = 48.0;
+      } else {
+        const w = (u - 0.52) / 0.48;
+        const hop = evalInterstellarHop(
+          eph,
+          'crab_nebula', [0, 0, 0], 0.0142, '蟹状星云 M1',
+          'crab_pulsar', [0, 0, 0], 0.15 * RSUN_IN_KLY, '蟹状脉冲星 PSR B0531+21 (高速磁层灯塔)',
+          0.0025, w, 0.44
+        );
+        anchorId    = hop.anchorId;
+        anchorLabel = hop.anchorLabel;
+        offset      = hop.offset;
+        if (w < 0.44) {
+          dist  = hop.dist;
+          yaw   = lerpAngle(crabYaw + 0.12, pulsarYaw - 0.10, smoothstepJS(0.0, 0.44, w));
+          pitch = lerpNum(HERO_CRAB_ANG.pitch, HERO_CRAB_PULSAR_ANG.pitch, smoothstepJS(0.0, 0.44, w));
+        } else {
+          const rw = (w - 0.44) / 0.56;
+          dist  = logLerp(0.15 * RSUN_IN_KLY, 0.125 * RSUN_IN_KLY, smoothstepJS(0.0, 1.0, rw));
+          yaw   = lerpNum(pulsarYaw - 0.10, pulsarYaw + 0.16, rw);
+          pitch = HERO_CRAB_PULSAR_ANG.pitch - 0.04 * Math.sin(Math.PI * rw);
+          pAccretion = 1.25;
+          paramBadge = '⚡ PSR B0531+21：光速圆柱磁层与相对论双极灯塔束';
+        }
+        fov = 48.0;
+      }
+    } else if (chIdx === 13) {
+      // 14 (82.0..87.5s): Sagittarius-Carina Arm Eagle Nebula M16 & Young OB Cluster NGC 6611 (70x55 ly)
+      const pulsarYaw = HERO_CRAB_PULSAR_ANG.yaw + eph.galAngle;
+      const m16Yaw    = HERO_M16_ANG.yaw + eph.galAngle;
+      const hop = evalInterstellarHop(
+        eph,
+        'crab_pulsar', [0, 0, 0], 0.125 * RSUN_IN_KLY, '蟹状脉冲星 PSR B0531+21',
+        'eagle_m16', [0, 0, 0], 0.068, '鹰状星云 M16 与 OB 星团 NGC 6611 (跨度 70 ly)',
+        8.5, u, 0.46
+      );
+      anchorId    = hop.anchorId;
+      anchorLabel = hop.anchorLabel;
+      offset      = hop.offset;
+      if (u < 0.46) {
+        dist  = hop.dist;
+        yaw   = lerpAngle(pulsarYaw + 0.16, m16Yaw - 0.08, smoothstepJS(0.0, 0.46, u));
+        pitch = lerpNum(HERO_CRAB_PULSAR_ANG.pitch, HERO_M16_ANG.pitch + 0.04, smoothstepJS(0.0, 0.46, u));
+      } else {
+        const w = (u - 0.46) / 0.54;
+        dist  = logLerp(0.068, 0.046, smoothstepJS(0.0, 1.0, w));
+        yaw   = lerpNum(m16Yaw - 0.08, m16Yaw + 0.04, w);
+        pitch = lerpNum(HERO_M16_ANG.pitch + 0.04, HERO_M16_ANG.pitch, smoothstepJS(0.0, 1.0, w));
+        pNebula = 1.30;
+        paramBadge = '🦅 鹰状星云 M16：NGC 6611 电离空腔与远景创生之柱';
+      }
+      fov = 50.0;
+    } else {
+      // 15 (87.5..96.0s): Grand Finale — Eagle Nebula Core 1:1 "Pillars of Creation" (4.5 / 3.2 / 1.95 ly!)
+      const m16Yaw = HERO_M16_ANG.yaw + eph.galAngle;
+      const pilYaw = HERO_PILLARS_ANG.yaw + eph.galAngle;
+      const hop = evalInterstellarHop(
+        eph,
+        'eagle_m16', [0, 0, 0], 0.046, '鹰状星云 M16',
+        'pillars_of_creation', [0, 0, 0], 0.0056, '鹰状星云核心 · 创生之柱 (高 4.5 ly)',
+        0.018, u, 0.34
+      );
+      anchorId    = hop.anchorId;
+      anchorLabel = hop.anchorLabel;
+      offset      = hop.offset;
+      if (u < 0.34) {
+        dist  = hop.dist;
+        yaw   = lerpAngle(m16Yaw + 0.04, pilYaw - 0.07, smoothstepJS(0.0, 0.34, u));
+        pitch = lerpNum(HERO_M16_ANG.pitch, HERO_PILLARS_ANG.pitch - 0.02, smoothstepJS(0.0, 0.34, u));
+      } else {
+        const w = (u - 0.34) / 0.66;
+        dist  = logLerp(0.0056, 0.0046, smoothstepJS(0.0, 1.0, w));
+        yaw   = lerpNum(pilYaw - 0.07, pilYaw + 0.09, w);
+        pitch = lerpNum(HERO_PILLARS_ANG.pitch - 0.02, HERO_PILLARS_ANG.pitch + 0.03, smoothstepJS(0.0, 1.0, w));
+        pNebula = 1.34;
+        paramBadge = '🏛 创生之柱 (4.5 ly)：不透明冷分子尘埃柱、电离锋 EGGs 与韦布原恒星激波';
+      }
+      fov = lerpNum(50.0, 52.0, smoothstepJS(0.0, 0.34, u));
     }
 
     // Apply camera & physics state directly without lag
@@ -10828,7 +12737,7 @@
     tour.paramBadge   = paramBadge;
 
     // Update #cinemaBar UI
-    tourChapterBadge.textContent = `${String(chIdx + 1).padStart(2, '0')} / 12`;
+    tourChapterBadge.textContent = `${String(chIdx + 1).padStart(2, '0')} / ${String(TOUR_CHAPTERS.length).padStart(2, '0')}`;
     tourChapterTitle.textContent = ch.title;
     tourChapterSub.textContent   = ch.sub;
     if (paramBadge) {
@@ -10837,7 +12746,7 @@
     } else {
       tourParamBadge.style.display = 'none';
     }
-    tourTimeText.textContent = `${formatMMSS(clampedT)} / 01:12`;
+    tourTimeText.textContent = `${formatMMSS(clampedT)} / ${formatMMSS(TOUR_EP1_DURATION)}`;
     if (document.activeElement !== sliderTourTime) {
       sliderTourTime.value = clampedT.toFixed(2);
     }
@@ -10863,7 +12772,7 @@
       ep2Btn.textContent = (tour.active && tour.episode === 2) ? '🚀 重播·飞出银河大片' : '🚀 飞出银河·本星系群与仙女座大片';
     }
     if (ep1Btn) {
-      ep1Btn.textContent = (tour.active && tour.episode === 1) ? '🎬 重播·第一期大片' : '🎬 第一期：银河太阳系';
+      ep1Btn.textContent = (tour.active && tour.episode === 1) ? '🎬 重播·第一期大片' : '🎬 第一期：银河太阳系与传奇名星';
     }
     updateTourPlayPauseButton();
   }
@@ -11122,7 +13031,7 @@
 
     // 5. Draw Bottom Cinema Chapter Banner, Scientific Subtitle & Progress Bar
     const activeDur = getActiveTourDuration();
-    const durStr = tour.episode === 2 ? '01:32' : '01:12';
+    const durStr = formatMMSS(activeDur);
     rctx.save();
     const subW = Math.min(rw - 36 * ks, 780 * ks);
     const subH = 68 * ks;
@@ -11193,7 +13102,7 @@
   let lastRecUiKey = '';
   function updateRecordButtonsUI() {
     const tStr = recorderState.recording ? formatMMSS(tour.time) : 'idle';
-    const durStr = tour.episode === 2 ? '01:32' : '01:12';
+    const durStr = formatMMSS(getActiveTourDuration());
     const key = `${recorderState.recording ? 1 : 0}:${tour.episode}:${tStr}`;
     if (key === lastRecUiKey) return;
     lastRecUiKey = key;
@@ -11349,6 +13258,10 @@
     'uGalAngle', 'uBhPhase', 'uBhFlavor', 'uAccretionStrength', 'uDustStrength', 'uNebulaStrength', 'uHdrScale', 'uStepCount',
     'uLmcCenter', 'uLmcBasis', 'uSmcCenter', 'uSmcBasis', 'uM31Center', 'uM31Basis', 'uM33Center', 'uM33Basis', 'uSatPosRad'
   ]);
+  const uMwNeb = getUniforms(progMwNebulae, [
+    'uNoise3D', 'uCamPos', 'uCamRelCrabGal', 'uCamRelM42Gal', 'uCamRelM16Gal', 'uCamRelPillarsGal',
+    'uCamBasis', 'uTanHalfFov', 'uAspect', 'uGalAngle', 'uBhPhase', 'uDustStrength', 'uNebulaStrength', 'uHdrScale', 'uStepCount'
+  ]);
   const satPosRadArr = new Float32Array([
     M32_BASE_KLY[0],    M32_BASE_KLY[1],    M32_BASE_KLY[2],    4.2,
     M110_BASE_KLY[0],   M110_BASE_KLY[1],   M110_BASE_KLY[2],   8.8,
@@ -11356,7 +13269,7 @@
     NGC147_BASE_KLY[0], NGC147_BASE_KLY[1], NGC147_BASE_KLY[2], 5.2
   ]);
   const LOCAL_UNIFORM_NAMES = [
-    'uNoise3D', 'uCamBasis', 'uTanHalfFov', 'uAspect', 'uStarAnimTime', 'uHdrScale',
+    'uNoise3D', 'uCamBasis', 'uTanHalfFov', 'uAspect', 'uStarAnimTime', 'uGalAngle', 'uHdrScale',
     'uStarPosRad', 'uStarMeta', 'uPlanetPosRad', 'uPlanetMeta', 'uPlanetAxis', 'uPlanetFlat', 'uPlanetHostTemp'
   ];
   const localPasses = [
@@ -11565,6 +13478,36 @@
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
     // ------------------------------------------------------------------------
+    // PASS 1B: 1:1 Milky Way Iconic Nebulae (Crab M1, Orion M42 & Proplyds, Eagle M16 & Pillars of Creation) -> hdrFBO
+    // ------------------------------------------------------------------------
+    if (!useM31Bh && dGalKly > 0.08 && dGalKly < 115.0) {
+      const cGal = Math.cos(eph.galAngle), sGal = Math.sin(eph.galAngle);
+      const camGalX =  cGal * cam.posKly[0] + sGal * cam.posKly[2];
+      const camGalY =  cam.posKly[1];
+      const camGalZ = -sGal * cam.posKly[0] + cGal * cam.posKly[2];
+
+      gl.enable(gl.BLEND);
+      gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
+      gl.useProgram(progMwNebulae);
+      gl.uniform1i(uMwNeb.uNoise3D, 0);
+      gl.uniform3f(uMwNeb.uCamPos, cam.posKly[0], cam.posKly[1], cam.posKly[2]);
+      gl.uniform3f(uMwNeb.uCamRelCrabGal,    camGalX - CRAB_BASE_KLY[0],        camGalY - CRAB_BASE_KLY[1],        camGalZ - CRAB_BASE_KLY[2]);
+      gl.uniform3f(uMwNeb.uCamRelM42Gal,     camGalX - M42_BASE_KLY[0],         camGalY - M42_BASE_KLY[1],         camGalZ - M42_BASE_KLY[2]);
+      gl.uniform3f(uMwNeb.uCamRelM16Gal,     camGalX - M16_BASE_KLY[0],         camGalY - M16_BASE_KLY[1],         camGalZ - M16_BASE_KLY[2]);
+      gl.uniform3f(uMwNeb.uCamRelPillarsGal, camGalX - PILLARS_M16_BASE_KLY[0], camGalY - PILLARS_M16_BASE_KLY[1], camGalZ - PILLARS_M16_BASE_KLY[2]);
+      gl.uniformMatrix3fv(uMwNeb.uCamBasis, false, mats.basis);
+      gl.uniform1f(uMwNeb.uTanHalfFov, mats.tanHalfFov);
+      gl.uniform1f(uMwNeb.uAspect, aspect);
+      gl.uniform1f(uMwNeb.uGalAngle, eph.galAngle);
+      gl.uniform1f(uMwNeb.uBhPhase, eph.bhPhase);
+      gl.uniform1f(uMwNeb.uDustStrength, state.dust);
+      gl.uniform1f(uMwNeb.uNebulaStrength, state.nebula);
+      gl.uniform1f(uMwNeb.uHdrScale, HDR_SCALE);
+      gl.uniform1i(uMwNeb.uStepCount, state.steps);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    // ------------------------------------------------------------------------
     // PASS 2: 1:1 Ray-Traced Solar System, Proxima/Alpha Cen, AND Andromeda Stars & PA-99-N2 b!
     // ------------------------------------------------------------------------
     starPosRadArr.fill(0);
@@ -11603,6 +13546,31 @@
       planetHostTmpArr[slot] = hostTempK;
     };
 
+    const dSiriusKly = Math.hypot(
+      cam.posKly[0] - eph.sirius[0],
+      cam.posKly[1] - eph.sirius[1],
+      cam.posKly[2] - eph.sirius[2]
+    );
+    const dVegaKly = Math.hypot(
+      cam.posKly[0] - eph.vega[0],
+      cam.posKly[1] - eph.vega[1],
+      cam.posKly[2] - eph.vega[2]
+    );
+    const dBetelgeuseKly = Math.hypot(
+      cam.posKly[0] - eph.betelgeuse[0],
+      cam.posKly[1] - eph.betelgeuse[1],
+      cam.posKly[2] - eph.betelgeuse[2]
+    );
+    const dM42Kly = Math.hypot(
+      cam.posKly[0] - eph.orion_m42[0],
+      cam.posKly[1] - eph.orion_m42[1],
+      cam.posKly[2] - eph.orion_m42[2]
+    );
+    const dCrabKly = Math.hypot(
+      cam.posKly[0] - eph.crab_nebula[0],
+      cam.posKly[1] - eph.crab_nebula[1],
+      cam.posKly[2] - eph.crab_nebula[2]
+    );
     const dLmcKly = Math.hypot(
       cam.posKly[0] - eph.lmc[0],
       cam.posKly[1] - eph.lmc[1],
@@ -11615,7 +13583,28 @@
     );
 
     let runLocalPass = false;
-    if (dGalKly < 0.12) {
+    if (dSiriusKly < 0.0025) {
+      runLocalPass = true;
+      setStarSlot(0, eph.sirius_a, 1.711,   9940.0,  7.0, 1.0,             25.4);
+      setStarSlot(1, eph.sirius_b, 0.00840, 25200.0, 7.5, state.accretion,  2.2);
+      setStarSlot(2, eph.sun,      1.0000,  5772.0,  0.0, 1.0,              1.0);
+    } else if (dVegaKly < 0.0055) {
+      runLocalPass = true;
+      setStarSlot(0, eph.vega, 2.726,  9602.0, 8.0, 1.0, 40.1);
+      setStarSlot(1, eph.sun,  1.0000, 5772.0, 0.0, 1.0,  1.0);
+    } else if (dBetelgeuseKly < 0.06) {
+      runLocalPass = true;
+      setStarSlot(0, eph.betelgeuse, 764.0, 3600.0, 6.0, state.accretion, 95.0);
+    } else if (dM42Kly < 0.04) {
+      runLocalPass = true;
+      for (let i = 0; i < 4; i++) {
+        const st = eph.trapeziumStars[i];
+        setStarSlot(i, st.posKly, st.rRsun, st.tempK, st.style + 0.2, state.accretion, st.lumWeight);
+      }
+    } else if (dCrabKly < 0.04) {
+      runLocalPass = true;
+      setStarSlot(0, eph.crab_pulsar, 0.018, 38000.0, 9.0, state.accretion, 42.0);
+    } else if (dGalKly < 0.12) {
       runLocalPass = true;
       for (let i = 0; i < 4; i++) {
         const st = eph.sStars[i];
@@ -11693,6 +13682,7 @@
         gl.uniform1f(uL.uTanHalfFov, mats.tanHalfFov);
         gl.uniform1f(uL.uAspect, aspect);
         gl.uniform1f(uL.uStarAnimTime, state.starAnim);
+        gl.uniform1f(uL.uGalAngle, eph.galAngle);
         gl.uniform1f(uL.uHdrScale, HDR_SCALE);
         gl.uniform4fv(uL.uStarPosRad, starPosRadArr);
         gl.uniform4fv(uL.uStarMeta, starMetaArr);
@@ -11752,6 +13742,28 @@
           gl.uniform4f(uOrb.uOrbitColor, item.color[0], item.color[1], item.color[2], item.color[3] * fade);
           gl.bindVertexArray(item.mesh.vao);
           gl.drawArrays(gl.LINE_LOOP, 0, item.mesh.count);
+        }
+      }
+
+      // Sirius A & Sirius B Dual Eccentric Keplerian Orbits (a = 19.80 AU, e = 0.59142, P = 50.1284 yr)
+      const dSiriusAU = dSiriusKly / AU_IN_KLY;
+      if (dSiriusAU < 4500.0) {
+        const sirCloseFade = (cam.anchorId === 'sirius_b')
+          ? smoothstepJS(0.06 * RSUN_IN_KLY, 0.25 * RSUN_IN_KLY, cam.distKly)
+          : smoothstepJS(2.0 * RSUN_IN_KLY, 3.8 * RSUN_IN_KLY, cam.distKly);
+        const sirFade = (1.0 - smoothstepJS(900.0, 4500.0, dSiriusAU)) * sirCloseFade;
+        if (sirFade > 0.01) {
+          gl.uniform3f(
+            uOrb.uParentRelCamAU,
+            (eph.sirius[0] - cam.posKly[0]) / AU_IN_KLY,
+            (eph.sirius[1] - cam.posKly[1]) / AU_IN_KLY,
+            (eph.sirius[2] - cam.posKly[2]) / AU_IN_KLY
+          );
+          for (const item of [orbitMeshes.siriusA, orbitMeshes.siriusB]) {
+            gl.uniform4f(uOrb.uOrbitColor, item.color[0], item.color[1], item.color[2], item.color[3] * sirFade);
+            gl.bindVertexArray(item.mesh.vao);
+            gl.drawArrays(gl.LINE_LOOP, 0, item.mesh.count);
+          }
         }
       }
 

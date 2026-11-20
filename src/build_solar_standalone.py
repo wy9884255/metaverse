@@ -563,7 +563,7 @@ header_html = """<!DOCTYPE html>
   <div id="hudRightBox" class="hud-right">
     <div class="action-bar">
       <button id="btnStartTourEp2" class="btn glass btn-primary fade-ui" title="播放第二期 92 秒《飞出银河系 → 大小麦哲伦星系 · 本星系群与仙女座大星系群》电影巡礼">🚀 飞出银河·本星系群与仙女座大片</button>
-      <button id="btnStartTour" class="btn glass fade-ui" title="播放第一期 72 秒《银河系·太阳系与卡冈图雅黑洞》全功能大片">🎬 第一期：银河太阳系</button>
+      <button id="btnStartTour" class="btn glass fade-ui" title="播放第一期 96 秒《银河系 · 太阳系与六大传奇名星/星云》全功能大片">🎬 第一期：银河太阳系与传奇名星</button>
       <button id="btnRecordVideo" class="btn glass fade-ui" title="一键录制并导出当前巡礼大片 MP4/WebM 高清视频素材">⏺ 导出视频素材</button>
       <button id="btnToggleUI" class="btn glass" title="隐藏或显示界面 (快捷键 H) — 适合直接录制纯净无水印空镜素材">纯净视野 (H)</button>
       <button id="btnScreenshot" class="btn glass btn-shot fade-ui">截图</button>
@@ -662,6 +662,14 @@ header_html = """<!DOCTYPE html>
       <button data-preset="overview" class="preset-btn">银河全景</button>
       <button data-preset="sgra" class="preset-btn">银心黑洞 Sgr A*</button>
       <button data-preset="scluster" class="preset-btn">S2 恒星轨道</button>
+      <button data-preset="pillars_of_creation" class="preset-btn">鹰状星云·创生之柱</button>
+      <button data-preset="orion_m42" class="preset-btn">猎户座大星云 M42·四合星</button>
+      <button data-preset="crab_nebula" class="preset-btn">蟹状星云 M1·天关客星</button>
+      <button data-preset="crab_pulsar" class="preset-btn">蟹状脉冲星 PSR B0531</button>
+      <button data-preset="betelgeuse" class="preset-btn">红超巨星参宿四·764 R☉</button>
+      <button data-preset="sirius" class="preset-btn">天狼星 A &amp; B 双星</button>
+      <button data-preset="sirius_b" class="preset-btn">白矮星天狼星 B</button>
+      <button data-preset="vega" class="preset-btn">极速扁球织女星 Vega</button>
       <button data-preset="solarsystem" class="preset-btn">太阳系全景 (60.2°)</button>
       <button data-preset="sun" class="preset-btn">太阳 Sol</button>
       <button data-preset="mercury" class="preset-btn">水星·卡洛里/蜘蛛纹</button>
@@ -744,8 +752,8 @@ header_html = """<!DOCTYPE html>
 
   <div id="loadingOverlay">
     <div class="spinner"></div>
-    <div style="font-size:14px; font-weight:500;">正在构建 1:1 大小麦哲伦星系 (LMC/SMC)、完整本星系群、仙女座星系群与 45 万颗三维恒星...</div>
-    <div style="font-size:12px; color:#94a3b8; margin-top:6px;">3.04 Mly Local Group ↔ 161.7/203.7 kly LMC &amp; SMC ↔ SN 1987A · R136a1 &amp; Solar System</div>
+    <div style="font-size:14px; font-weight:500;">正在构建 1:1 本星系群、银河六大传奇名星与星云、仙女座星系群及 46.8 万颗三维恒星...</div>
+    <div style="font-size:12px; color:#94a3b8; margin-top:6px;">创生之柱 · 猎户座 M42 · 蟹状脉冲星 · 参宿四 (764 R☉) · 天狼双星 · 扁球织女星 ↔ 太阳系 &amp; 本星系群</div>
   </div>
 
 """
